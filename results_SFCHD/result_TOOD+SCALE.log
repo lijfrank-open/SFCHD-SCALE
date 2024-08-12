@@ -1,0 +1,1860 @@
+2024-03-22 22:31:50,604 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.13 (default, Mar 28 2022, 11:38:47) [GCC 7.5.0]
+CUDA available: True
+GPU 0,1,2,3: NVIDIA GeForce RTX 3090
+CUDA_HOME: /home/yfs/anaconda3/envs/mmdet
+NVCC: Not Available
+GCC: gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
+PyTorch: 1.11.0+cu113
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.5.2 (Git Hash a9302535553c73243c632ad3c4c80beec3d19a1e)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.3
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.2
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.3, CUDNN_VERSION=8.2.0, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.11.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=OFF, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.12.0+cu113
+OpenCV: 4.6.0
+MMCV: 1.5.3
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.3
+MMDetection: 2.25.0+56e42e7
+------------------------------------------------------------
+
+2024-03-22 22:31:50,946 - mmdet - INFO - Distributed training: True
+2024-03-22 22:31:51,132 - mmdet - INFO - Config:
+num_classes = 7
+model = dict(
+    type='SCALE_TOOD',
+    pre_encoder=dict(type='SCALE', in_dim=3, init_cfg=None),
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch',
+        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        start_level=1,
+        add_extra_convs='on_output',
+        num_outs=5),
+    bbox_head=dict(
+        type='TOODHead',
+        num_classes=7,
+        in_channels=256,
+        stacked_convs=6,
+        feat_channels=256,
+        anchor_type='anchor_free',
+        anchor_generator=dict(
+            type='AnchorGenerator',
+            ratios=[1.0],
+            octave_base_scale=8,
+            scales_per_octave=1,
+            strides=[8, 16, 32, 64, 128]),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[0.0, 0.0, 0.0, 0.0],
+            target_stds=[0.1, 0.1, 0.2, 0.2]),
+        initial_loss_cls=dict(
+            type='FocalLoss',
+            use_sigmoid=True,
+            activated=True,
+            gamma=2.0,
+            alpha=0.25,
+            loss_weight=1.0),
+        loss_cls=dict(
+            type='QualityFocalLoss',
+            use_sigmoid=True,
+            activated=True,
+            beta=2.0,
+            loss_weight=1.0),
+        loss_bbox=dict(type='GIoULoss', loss_weight=2.0)),
+    train_cfg=dict(
+        initial_epoch=4,
+        initial_assigner=dict(type='ATSSAssigner', topk=9),
+        assigner=dict(type='TaskAlignedAssigner', topk=13),
+        alpha=1,
+        beta=6,
+        allowed_border=-1,
+        pos_weight=-1,
+        debug=False),
+    test_cfg=dict(
+        nms_pre=1000,
+        min_bbox_size=0,
+        score_thr=0.05,
+        nms=dict(type='nms', iou_threshold=0.6),
+        max_per_img=100))
+dataset_type = 'QY_Dataset'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(1333, 800),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=2,
+    workers_per_gpu=2,
+    train=dict(
+        type='QY_Dataset',
+        ann_file='/data/yfs/QY/QY_final_dataset/annotations/train.json',
+        img_prefix='/data/yfs/QY/QY_final_dataset//images',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+        ]),
+    val=dict(
+        type='QY_Dataset',
+        ann_file='/data/yfs/QY/QY_final_dataset/annotations/val.json',
+        img_prefix='/data/yfs/QY/QY_final_dataset//images',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='QY_Dataset',
+        ann_file='/data/yfs/QY/QY_final_dataset/annotations/val.json',
+        img_prefix='/data/yfs/QY/QY_final_dataset//images',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+evaluation = dict(interval=1, metric='bbox', classwise='True')
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=None)
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11])
+runner = dict(type='EpochBasedRunner', max_epochs=16)
+checkpoint_config = dict(interval=18)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='SetEpochInfoHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '/home/yfs/mmdetection/checkpoints/tood_r50_fpn_1x_coco_20211210_103425-20e20746.pth'
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+auto_scale_lr = dict(enable=False, base_batch_size=16)
+work_dir = 'log_dir/QY_SCALE_experiment/SCALE_tood_pre_coco_16e'
+auto_resume = False
+gpu_ids = range(0, 4)
+
+2024-03-22 22:31:51,133 - mmdet - INFO - Set random seed to 3407, deterministic: False
+2024-03-22 22:31:51,475 - mmdet - INFO - initialize ResNet with init_cfg {'type': 'Pretrained', 'checkpoint': 'torchvision://resnet50'}
+2024-03-22 22:31:57,471 - mmdet - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+Name of parameter - Initialization information
+
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+neck.lateral_convs.0.conv.weight - torch.Size([256, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+neck.lateral_convs.1.conv.weight - torch.Size([256, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+neck.lateral_convs.2.conv.weight - torch.Size([256, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+neck.fpn_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+neck.fpn_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+neck.fpn_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+neck.fpn_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+neck.fpn_convs.4.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.4.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.1.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.1.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.2.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.2.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.3.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.3.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.4.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.4.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.4.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.5.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.5.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.inter_convs.5.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.cls_decomp.layer_attention.0.weight - torch.Size([32, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_decomp.layer_attention.0.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_decomp.layer_attention.2.weight - torch.Size([6, 32, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_decomp.layer_attention.2.bias - torch.Size([6]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_decomp.reduction_conv.conv.weight - torch.Size([256, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_decomp.reduction_conv.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.cls_decomp.reduction_conv.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.reg_decomp.layer_attention.0.weight - torch.Size([32, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_decomp.layer_attention.0.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_decomp.layer_attention.2.weight - torch.Size([6, 32, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_decomp.layer_attention.2.bias - torch.Size([6]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_decomp.reduction_conv.conv.weight - torch.Size([256, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_decomp.reduction_conv.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.reg_decomp.reduction_conv.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.tood_cls.weight - torch.Size([7, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.tood_cls.bias - torch.Size([7]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.tood_reg.weight - torch.Size([4, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.tood_reg.bias - torch.Size([4]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_prob_module.0.weight - torch.Size([64, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_prob_module.0.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_prob_module.2.weight - torch.Size([1, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_prob_module.2.bias - torch.Size([1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_offset_module.0.weight - torch.Size([64, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_offset_module.0.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_offset_module.2.weight - torch.Size([8, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_offset_module.2.bias - torch.Size([8]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.scales.0.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.scales.1.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.scales.2.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.scales.3.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+bbox_head.scales.4.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.parallel_conv.encoder.0.weight - torch.Size([16, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.parallel_conv.encoder.0.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.parallel_conv.encoder.2.weight - torch.Size([32, 16, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.parallel_conv.encoder.2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.parallel_conv.conv1.weight - torch.Size([32, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.parallel_conv.conv1.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.parallel_conv.conv2.weight - torch.Size([32, 32, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.parallel_conv.conv2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.parallel_conv.conv3.weight - torch.Size([32, 32, 5, 5]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.parallel_conv.conv3.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.attention1.0.conv.weight - torch.Size([1, 2, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.attention2.0.conv.weight - torch.Size([1, 2, 5, 5]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.decoder.0.weight - torch.Size([96, 192, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.decoder.0.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.decoder.2.weight - torch.Size([32, 96, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.decoder.2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.decoder.4.weight - torch.Size([3, 32, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.sa.decoder.4.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res1.conv.weight - torch.Size([32, 3, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res1.conv.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res1.block.0.conv.weight - torch.Size([3, 3, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res1.block.0.bn.weight - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res1.block.0.bn.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res1.block.1.conv.weight - torch.Size([32, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res1.block.1.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res1.block.1.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.se_block.fc.0.weight - torch.Size([2, 32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.se_block.fc.2.weight - torch.Size([32, 2]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res2.conv.weight - torch.Size([3, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res2.conv.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res2.block.0.conv.weight - torch.Size([32, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res2.block.0.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res2.block.0.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res2.block.1.conv.weight - torch.Size([3, 32, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res2.block.1.bn.weight - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+
+pre_encoder.ca.res2.block.1.bn.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_TOOD  
+2024-03-22 22:31:58,539 - mmdet - INFO - Automatic scaling of learning rate (LR) has been disabled.
+2024-03-22 22:31:58,611 - mmdet - INFO - load checkpoint from local path: /home/yfs/mmdetection/checkpoints/tood_r50_fpn_1x_coco_20211210_103425-20e20746.pth
+2024-03-22 22:31:58,759 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for bbox_head.tood_cls.weight: copying a param with shape torch.Size([80, 256, 3, 3]) from checkpoint, the shape in current model is torch.Size([7, 256, 3, 3]).
+size mismatch for bbox_head.tood_cls.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([7]).
+missing keys in source state_dict: pre_encoder.sa.parallel_conv.encoder.0.weight, pre_encoder.sa.parallel_conv.encoder.0.bias, pre_encoder.sa.parallel_conv.encoder.2.weight, pre_encoder.sa.parallel_conv.encoder.2.bias, pre_encoder.sa.parallel_conv.conv1.weight, pre_encoder.sa.parallel_conv.conv1.bias, pre_encoder.sa.parallel_conv.conv2.weight, pre_encoder.sa.parallel_conv.conv2.bias, pre_encoder.sa.parallel_conv.conv3.weight, pre_encoder.sa.parallel_conv.conv3.bias, pre_encoder.sa.attention1.0.conv.weight, pre_encoder.sa.attention2.0.conv.weight, pre_encoder.sa.decoder.0.weight, pre_encoder.sa.decoder.0.bias, pre_encoder.sa.decoder.2.weight, pre_encoder.sa.decoder.2.bias, pre_encoder.sa.decoder.4.weight, pre_encoder.sa.decoder.4.bias, pre_encoder.ca.res1.conv.weight, pre_encoder.ca.res1.conv.bias, pre_encoder.ca.res1.block.0.conv.weight, pre_encoder.ca.res1.block.0.bn.weight, pre_encoder.ca.res1.block.0.bn.bias, pre_encoder.ca.res1.block.0.bn.running_mean, pre_encoder.ca.res1.block.0.bn.running_var, pre_encoder.ca.res1.block.1.conv.weight, pre_encoder.ca.res1.block.1.bn.weight, pre_encoder.ca.res1.block.1.bn.bias, pre_encoder.ca.res1.block.1.bn.running_mean, pre_encoder.ca.res1.block.1.bn.running_var, pre_encoder.ca.se_block.fc.0.weight, pre_encoder.ca.se_block.fc.2.weight, pre_encoder.ca.res2.conv.weight, pre_encoder.ca.res2.conv.bias, pre_encoder.ca.res2.block.0.conv.weight, pre_encoder.ca.res2.block.0.bn.weight, pre_encoder.ca.res2.block.0.bn.bias, pre_encoder.ca.res2.block.0.bn.running_mean, pre_encoder.ca.res2.block.0.bn.running_var, pre_encoder.ca.res2.block.1.conv.weight, pre_encoder.ca.res2.block.1.bn.weight, pre_encoder.ca.res2.block.1.bn.bias, pre_encoder.ca.res2.block.1.bn.running_mean, pre_encoder.ca.res2.block.1.bn.running_var
+
+2024-03-22 22:31:58,764 - mmdet - INFO - Start running, host: yfs@4029GP-TRT, work_dir: /home/yfs/mmdetection/log_dir/QY_SCALE_experiment/SCALE_tood_pre_coco_16e
+2024-03-22 22:31:58,765 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) SetEpochInfoHook                   
+(NORMAL      ) DistSamplerSeedHook                
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) DistSamplerSeedHook                
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2024-03-22 22:31:58,765 - mmdet - INFO - workflow: [('train', 1)], max: 16 epochs
+2024-03-22 22:31:58,765 - mmdet - INFO - Checkpoints will be saved to /home/yfs/mmdetection/log_dir/QY_SCALE_experiment/SCALE_tood_pre_coco_16e by HardDiskBackend.
+2024-03-22 22:32:27,651 - mmdet - INFO - Epoch [1][50/1238]	lr: 9.890e-04, eta: 3:10:06, time: 0.577, data_time: 0.057, memory: 12077, loss_cls: 0.7009, loss_bbox: 0.6791, loss: 1.3800
+2024-03-22 22:32:52,989 - mmdet - INFO - Epoch [1][100/1238]	lr: 1.988e-03, eta: 2:58:03, time: 0.507, data_time: 0.008, memory: 12077, loss_cls: 0.2825, loss_bbox: 0.4766, loss: 0.7591
+2024-03-22 22:33:18,269 - mmdet - INFO - Epoch [1][150/1238]	lr: 2.987e-03, eta: 2:53:37, time: 0.506, data_time: 0.009, memory: 12077, loss_cls: 0.2389, loss_bbox: 0.4537, loss: 0.6926
+2024-03-22 22:33:43,521 - mmdet - INFO - Epoch [1][200/1238]	lr: 3.986e-03, eta: 2:51:08, time: 0.505, data_time: 0.008, memory: 12077, loss_cls: 0.2103, loss_bbox: 0.4322, loss: 0.6424
+2024-03-22 22:34:08,955 - mmdet - INFO - Epoch [1][250/1238]	lr: 4.985e-03, eta: 2:49:44, time: 0.509, data_time: 0.008, memory: 12077, loss_cls: 0.1866, loss_bbox: 0.4079, loss: 0.5945
+2024-03-22 22:34:34,469 - mmdet - INFO - Epoch [1][300/1238]	lr: 5.984e-03, eta: 2:48:44, time: 0.510, data_time: 0.009, memory: 12077, loss_cls: 0.1790, loss_bbox: 0.3954, loss: 0.5744
+2024-03-22 22:34:59,748 - mmdet - INFO - Epoch [1][350/1238]	lr: 6.983e-03, eta: 2:47:41, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.1730, loss_bbox: 0.3900, loss: 0.5631
+2024-03-22 22:35:24,910 - mmdet - INFO - Epoch [1][400/1238]	lr: 7.982e-03, eta: 2:46:41, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1689, loss_bbox: 0.3933, loss: 0.5623
+2024-03-22 22:35:50,133 - mmdet - INFO - Epoch [1][450/1238]	lr: 8.981e-03, eta: 2:45:51, time: 0.504, data_time: 0.008, memory: 12077, loss_cls: 0.1615, loss_bbox: 0.3918, loss: 0.5533
+2024-03-22 22:36:15,443 - mmdet - INFO - Epoch [1][500/1238]	lr: 9.980e-03, eta: 2:45:11, time: 0.506, data_time: 0.009, memory: 12077, loss_cls: 0.1791, loss_bbox: 0.4136, loss: 0.5928
+2024-03-22 22:36:40,802 - mmdet - INFO - Epoch [1][550/1238]	lr: 1.000e-02, eta: 2:44:34, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.1675, loss_bbox: 0.3839, loss: 0.5514
+2024-03-22 22:37:05,890 - mmdet - INFO - Epoch [1][600/1238]	lr: 1.000e-02, eta: 2:43:51, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1638, loss_bbox: 0.3876, loss: 0.5514
+2024-03-22 22:37:31,092 - mmdet - INFO - Epoch [1][650/1238]	lr: 1.000e-02, eta: 2:43:14, time: 0.504, data_time: 0.008, memory: 12077, loss_cls: 0.1607, loss_bbox: 0.3792, loss: 0.5399
+2024-03-22 22:37:56,225 - mmdet - INFO - Epoch [1][700/1238]	lr: 1.000e-02, eta: 2:42:37, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1628, loss_bbox: 0.3934, loss: 0.5563
+2024-03-22 22:38:21,530 - mmdet - INFO - Epoch [1][750/1238]	lr: 1.000e-02, eta: 2:42:05, time: 0.506, data_time: 0.008, memory: 12077, loss_cls: 0.1629, loss_bbox: 0.3836, loss: 0.5465
+2024-03-22 22:38:46,749 - mmdet - INFO - Epoch [1][800/1238]	lr: 1.000e-02, eta: 2:41:33, time: 0.505, data_time: 0.009, memory: 12077, loss_cls: 0.1575, loss_bbox: 0.3876, loss: 0.5451
+2024-03-22 22:39:12,108 - mmdet - INFO - Epoch [1][850/1238]	lr: 1.000e-02, eta: 2:41:04, time: 0.507, data_time: 0.008, memory: 12077, loss_cls: 0.1505, loss_bbox: 0.3804, loss: 0.5309
+2024-03-22 22:39:37,457 - mmdet - INFO - Epoch [1][900/1238]	lr: 1.000e-02, eta: 2:40:36, time: 0.507, data_time: 0.009, memory: 12077, loss_cls: 0.1563, loss_bbox: 0.3702, loss: 0.5265
+2024-03-22 22:40:02,816 - mmdet - INFO - Epoch [1][950/1238]	lr: 1.000e-02, eta: 2:40:08, time: 0.507, data_time: 0.009, memory: 12077, loss_cls: 0.1584, loss_bbox: 0.3753, loss: 0.5338
+2024-03-22 22:40:27,917 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-22 22:40:27,918 - mmdet - INFO - Epoch [1][1000/1238]	lr: 1.000e-02, eta: 2:39:35, time: 0.502, data_time: 0.008, memory: 12077, loss_cls: 0.1624, loss_bbox: 0.3756, loss: 0.5380
+2024-03-22 22:40:53,065 - mmdet - INFO - Epoch [1][1050/1238]	lr: 1.000e-02, eta: 2:39:04, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1566, loss_bbox: 0.3708, loss: 0.5273
+2024-03-22 22:41:18,290 - mmdet - INFO - Epoch [1][1100/1238]	lr: 1.000e-02, eta: 2:38:35, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.1453, loss_bbox: 0.3663, loss: 0.5116
+2024-03-22 22:41:43,282 - mmdet - INFO - Epoch [1][1150/1238]	lr: 1.000e-02, eta: 2:38:03, time: 0.500, data_time: 0.007, memory: 12077, loss_cls: 0.1372, loss_bbox: 0.3631, loss: 0.5003
+2024-03-22 22:42:08,536 - mmdet - INFO - Epoch [1][1200/1238]	lr: 1.000e-02, eta: 2:37:35, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.1435, loss_bbox: 0.3596, loss: 0.5031
+2024-03-22 22:43:32,217 - mmdet - INFO - Evaluating bbox...
+2024-03-22 22:43:45,522 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.399
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.645
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.433
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.267
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.453
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.557
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.552
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.552
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.552
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.407
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.670
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.751
+
+2024-03-22 22:43:45,523 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.665 | helmet   | 0.585 | self_clothes | 0.296 |
+| safety_clothes | 0.546 | head     | 0.404 | blur_head    | 0.146 |
+| blur_clothes   | 0.149 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-22 22:43:45,742 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-22 22:43:45,742 - mmdet - INFO - Epoch(val) [1][619]	bbox_mAP: 0.3990, bbox_mAP_50: 0.6450, bbox_mAP_75: 0.4330, bbox_mAP_s: 0.2670, bbox_mAP_m: 0.4530, bbox_mAP_l: 0.5570, bbox_mAP_copypaste: 0.399 0.645 0.433 0.267 0.453 0.557
+2024-03-22 22:44:13,184 - mmdet - INFO - Epoch [2][50/1238]	lr: 1.000e-02, eta: 2:32:41, time: 0.548, data_time: 0.054, memory: 12077, loss_cls: 0.1255, loss_bbox: 0.3434, loss: 0.4689
+2024-03-22 22:44:38,140 - mmdet - INFO - Epoch [2][100/1238]	lr: 1.000e-02, eta: 2:32:20, time: 0.499, data_time: 0.007, memory: 12077, loss_cls: 0.1322, loss_bbox: 0.3486, loss: 0.4808
+2024-03-22 22:45:03,137 - mmdet - INFO - Epoch [2][150/1238]	lr: 1.000e-02, eta: 2:31:58, time: 0.500, data_time: 0.006, memory: 12077, loss_cls: 0.1231, loss_bbox: 0.3384, loss: 0.4615
+2024-03-22 22:45:28,238 - mmdet - INFO - Epoch [2][200/1238]	lr: 1.000e-02, eta: 2:31:38, time: 0.502, data_time: 0.006, memory: 12077, loss_cls: 0.1391, loss_bbox: 0.3477, loss: 0.4867
+2024-03-22 22:45:53,345 - mmdet - INFO - Epoch [2][250/1238]	lr: 1.000e-02, eta: 2:31:18, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1250, loss_bbox: 0.3357, loss: 0.4607
+2024-03-22 22:46:18,448 - mmdet - INFO - Epoch [2][300/1238]	lr: 1.000e-02, eta: 2:30:57, time: 0.502, data_time: 0.006, memory: 12077, loss_cls: 0.1346, loss_bbox: 0.3463, loss: 0.4809
+2024-03-22 22:46:43,507 - mmdet - INFO - Epoch [2][350/1238]	lr: 1.000e-02, eta: 2:30:35, time: 0.501, data_time: 0.006, memory: 12077, loss_cls: 0.1254, loss_bbox: 0.3435, loss: 0.4689
+2024-03-22 22:47:08,549 - mmdet - INFO - Epoch [2][400/1238]	lr: 1.000e-02, eta: 2:30:13, time: 0.501, data_time: 0.006, memory: 12077, loss_cls: 0.1260, loss_bbox: 0.3494, loss: 0.4753
+2024-03-22 22:47:33,550 - mmdet - INFO - Epoch [2][450/1238]	lr: 1.000e-02, eta: 2:29:50, time: 0.500, data_time: 0.006, memory: 12077, loss_cls: 0.1254, loss_bbox: 0.3296, loss: 0.4550
+2024-03-22 22:47:58,546 - mmdet - INFO - Epoch [2][500/1238]	lr: 1.000e-02, eta: 2:29:27, time: 0.500, data_time: 0.007, memory: 12077, loss_cls: 0.1311, loss_bbox: 0.3560, loss: 0.4870
+2024-03-22 22:48:23,730 - mmdet - INFO - Epoch [2][550/1238]	lr: 1.000e-02, eta: 2:29:06, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.1340, loss_bbox: 0.3588, loss: 0.4928
+2024-03-22 22:48:49,219 - mmdet - INFO - Epoch [2][600/1238]	lr: 1.000e-02, eta: 2:28:48, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.1326, loss_bbox: 0.3427, loss: 0.4753
+2024-03-22 22:49:14,384 - mmdet - INFO - Epoch [2][650/1238]	lr: 1.000e-02, eta: 2:28:26, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1321, loss_bbox: 0.3521, loss: 0.4842
+2024-03-22 22:49:39,508 - mmdet - INFO - Epoch [2][700/1238]	lr: 1.000e-02, eta: 2:28:04, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1234, loss_bbox: 0.3437, loss: 0.4671
+2024-03-22 22:50:04,596 - mmdet - INFO - Epoch [2][750/1238]	lr: 1.000e-02, eta: 2:27:41, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1187, loss_bbox: 0.3274, loss: 0.4461
+2024-03-22 22:50:29,704 - mmdet - INFO - Epoch [2][800/1238]	lr: 1.000e-02, eta: 2:27:18, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1192, loss_bbox: 0.3575, loss: 0.4767
+2024-03-22 22:50:54,797 - mmdet - INFO - Epoch [2][850/1238]	lr: 1.000e-02, eta: 2:26:55, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1213, loss_bbox: 0.3374, loss: 0.4587
+2024-03-22 22:51:20,030 - mmdet - INFO - Epoch [2][900/1238]	lr: 1.000e-02, eta: 2:26:33, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.1176, loss_bbox: 0.3350, loss: 0.4525
+2024-03-22 22:51:45,224 - mmdet - INFO - Epoch [2][950/1238]	lr: 1.000e-02, eta: 2:26:11, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.1201, loss_bbox: 0.3357, loss: 0.4559
+2024-03-22 22:52:10,293 - mmdet - INFO - Epoch [2][1000/1238]	lr: 1.000e-02, eta: 2:25:47, time: 0.501, data_time: 0.006, memory: 12077, loss_cls: 0.1237, loss_bbox: 0.3555, loss: 0.4793
+2024-03-22 22:52:35,409 - mmdet - INFO - Epoch [2][1050/1238]	lr: 1.000e-02, eta: 2:25:24, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1257, loss_bbox: 0.3513, loss: 0.4770
+2024-03-22 22:53:00,462 - mmdet - INFO - Epoch [2][1100/1238]	lr: 1.000e-02, eta: 2:25:01, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.1360, loss_bbox: 0.3447, loss: 0.4807
+2024-03-22 22:53:25,500 - mmdet - INFO - Epoch [2][1150/1238]	lr: 1.000e-02, eta: 2:24:36, time: 0.500, data_time: 0.006, memory: 12077, loss_cls: 0.1191, loss_bbox: 0.3367, loss: 0.4557
+2024-03-22 22:53:50,505 - mmdet - INFO - Epoch [2][1200/1238]	lr: 1.000e-02, eta: 2:24:12, time: 0.500, data_time: 0.007, memory: 12077, loss_cls: 0.1181, loss_bbox: 0.3372, loss: 0.4553
+2024-03-22 22:55:12,643 - mmdet - INFO - Evaluating bbox...
+2024-03-22 22:55:22,275 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.429
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.673
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.474
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.280
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.492
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.560
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.560
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.560
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.560
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.399
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.697
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.749
+
+2024-03-22 22:55:22,275 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.683 | helmet   | 0.607 | self_clothes | 0.362 |
+| safety_clothes | 0.560 | head     | 0.443 | blur_head    | 0.171 |
+| blur_clothes   | 0.173 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-22 22:55:22,437 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-22 22:55:22,437 - mmdet - INFO - Epoch(val) [2][619]	bbox_mAP: 0.4290, bbox_mAP_50: 0.6730, bbox_mAP_75: 0.4740, bbox_mAP_s: 0.2800, bbox_mAP_m: 0.4920, bbox_mAP_l: 0.5600, bbox_mAP_copypaste: 0.429 0.673 0.474 0.280 0.492 0.560
+2024-03-22 22:55:50,031 - mmdet - INFO - Epoch [3][50/1238]	lr: 1.000e-02, eta: 2:21:37, time: 0.551, data_time: 0.054, memory: 12077, loss_cls: 0.1062, loss_bbox: 0.3279, loss: 0.4341
+2024-03-22 22:56:15,111 - mmdet - INFO - Epoch [3][100/1238]	lr: 1.000e-02, eta: 2:21:16, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.1100, loss_bbox: 0.3164, loss: 0.4264
+2024-03-22 22:56:40,098 - mmdet - INFO - Epoch [3][150/1238]	lr: 1.000e-02, eta: 2:20:54, time: 0.500, data_time: 0.007, memory: 12077, loss_cls: 0.1093, loss_bbox: 0.3253, loss: 0.4346
+2024-03-22 22:57:05,191 - mmdet - INFO - Epoch [3][200/1238]	lr: 1.000e-02, eta: 2:20:32, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1142, loss_bbox: 0.3148, loss: 0.4291
+2024-03-22 22:57:30,329 - mmdet - INFO - Epoch [3][250/1238]	lr: 1.000e-02, eta: 2:20:11, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1199, loss_bbox: 0.3279, loss: 0.4479
+2024-03-22 22:57:55,421 - mmdet - INFO - Epoch [3][300/1238]	lr: 1.000e-02, eta: 2:19:49, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1031, loss_bbox: 0.3121, loss: 0.4153
+2024-03-22 22:58:20,527 - mmdet - INFO - Epoch [3][350/1238]	lr: 1.000e-02, eta: 2:19:28, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1208, loss_bbox: 0.3337, loss: 0.4544
+2024-03-22 22:58:45,698 - mmdet - INFO - Epoch [3][400/1238]	lr: 1.000e-02, eta: 2:19:06, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1132, loss_bbox: 0.3220, loss: 0.4352
+2024-03-22 22:59:10,841 - mmdet - INFO - Epoch [3][450/1238]	lr: 1.000e-02, eta: 2:18:44, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1144, loss_bbox: 0.3325, loss: 0.4468
+2024-03-22 22:59:36,042 - mmdet - INFO - Epoch [3][500/1238]	lr: 1.000e-02, eta: 2:18:23, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.1192, loss_bbox: 0.3233, loss: 0.4425
+2024-03-22 23:00:01,332 - mmdet - INFO - Epoch [3][550/1238]	lr: 1.000e-02, eta: 2:18:02, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.1093, loss_bbox: 0.3256, loss: 0.4349
+2024-03-22 23:00:26,617 - mmdet - INFO - Epoch [3][600/1238]	lr: 1.000e-02, eta: 2:17:40, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.1099, loss_bbox: 0.3247, loss: 0.4346
+2024-03-22 23:00:51,894 - mmdet - INFO - Epoch [3][650/1238]	lr: 1.000e-02, eta: 2:17:19, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.1257, loss_bbox: 0.3363, loss: 0.4620
+2024-03-22 23:01:17,133 - mmdet - INFO - Epoch [3][700/1238]	lr: 1.000e-02, eta: 2:16:57, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.1089, loss_bbox: 0.3119, loss: 0.4208
+2024-03-22 23:01:42,408 - mmdet - INFO - Epoch [3][750/1238]	lr: 1.000e-02, eta: 2:16:35, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.1155, loss_bbox: 0.3229, loss: 0.4384
+2024-03-22 23:02:07,526 - mmdet - INFO - Epoch [3][800/1238]	lr: 1.000e-02, eta: 2:16:12, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1162, loss_bbox: 0.3156, loss: 0.4318
+2024-03-22 23:02:32,694 - mmdet - INFO - Epoch [3][850/1238]	lr: 1.000e-02, eta: 2:15:50, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1170, loss_bbox: 0.3343, loss: 0.4512
+2024-03-22 23:02:58,003 - mmdet - INFO - Epoch [3][900/1238]	lr: 1.000e-02, eta: 2:15:28, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.1118, loss_bbox: 0.3157, loss: 0.4275
+2024-03-22 23:03:23,194 - mmdet - INFO - Epoch [3][950/1238]	lr: 1.000e-02, eta: 2:15:06, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.1208, loss_bbox: 0.3283, loss: 0.4491
+2024-03-22 23:03:48,299 - mmdet - INFO - Epoch [3][1000/1238]	lr: 1.000e-02, eta: 2:14:42, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1114, loss_bbox: 0.3310, loss: 0.4424
+2024-03-22 23:04:13,414 - mmdet - INFO - Epoch [3][1050/1238]	lr: 1.000e-02, eta: 2:14:19, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1065, loss_bbox: 0.3128, loss: 0.4194
+2024-03-22 23:04:38,543 - mmdet - INFO - Epoch [3][1100/1238]	lr: 1.000e-02, eta: 2:13:56, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1119, loss_bbox: 0.3172, loss: 0.4292
+2024-03-22 23:05:03,516 - mmdet - INFO - Epoch [3][1150/1238]	lr: 1.000e-02, eta: 2:13:33, time: 0.500, data_time: 0.008, memory: 12077, loss_cls: 0.1129, loss_bbox: 0.3208, loss: 0.4337
+2024-03-22 23:05:28,439 - mmdet - INFO - Epoch [3][1200/1238]	lr: 1.000e-02, eta: 2:13:09, time: 0.498, data_time: 0.007, memory: 12077, loss_cls: 0.1107, loss_bbox: 0.3219, loss: 0.4327
+2024-03-22 23:06:52,809 - mmdet - INFO - Evaluating bbox...
+2024-03-22 23:07:02,293 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.428
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.694
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.473
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.293
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.476
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.634
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.561
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.561
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.561
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.404
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.691
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.775
+
+2024-03-22 23:07:02,294 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.680 | helmet   | 0.582 | self_clothes | 0.394 |
+| safety_clothes | 0.582 | head     | 0.406 | blur_head    | 0.171 |
+| blur_clothes   | 0.183 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-22 23:07:02,460 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-22 23:07:02,460 - mmdet - INFO - Epoch(val) [3][619]	bbox_mAP: 0.4280, bbox_mAP_50: 0.6940, bbox_mAP_75: 0.4730, bbox_mAP_s: 0.2930, bbox_mAP_m: 0.4760, bbox_mAP_l: 0.6340, bbox_mAP_copypaste: 0.428 0.694 0.473 0.293 0.476 0.634
+2024-03-22 23:07:29,985 - mmdet - INFO - Epoch [4][50/1238]	lr: 1.000e-02, eta: 2:11:16, time: 0.550, data_time: 0.055, memory: 12077, loss_cls: 0.1018, loss_bbox: 0.3005, loss: 0.4022
+2024-03-22 23:07:55,000 - mmdet - INFO - Epoch [4][100/1238]	lr: 1.000e-02, eta: 2:10:54, time: 0.500, data_time: 0.007, memory: 12077, loss_cls: 0.1020, loss_bbox: 0.3019, loss: 0.4038
+2024-03-22 23:08:20,059 - mmdet - INFO - Epoch [4][150/1238]	lr: 1.000e-02, eta: 2:10:31, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.1071, loss_bbox: 0.3104, loss: 0.4175
+2024-03-22 23:08:45,123 - mmdet - INFO - Epoch [4][200/1238]	lr: 1.000e-02, eta: 2:10:09, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1039, loss_bbox: 0.2953, loss: 0.3992
+2024-03-22 23:09:10,324 - mmdet - INFO - Epoch [4][250/1238]	lr: 1.000e-02, eta: 2:09:47, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.1055, loss_bbox: 0.3044, loss: 0.4099
+2024-03-22 23:09:35,494 - mmdet - INFO - Epoch [4][300/1238]	lr: 1.000e-02, eta: 2:09:25, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1017, loss_bbox: 0.3080, loss: 0.4097
+2024-03-22 23:10:00,565 - mmdet - INFO - Epoch [4][350/1238]	lr: 1.000e-02, eta: 2:09:02, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.1054, loss_bbox: 0.3164, loss: 0.4219
+2024-03-22 23:10:25,550 - mmdet - INFO - Epoch [4][400/1238]	lr: 1.000e-02, eta: 2:08:39, time: 0.500, data_time: 0.007, memory: 12077, loss_cls: 0.1030, loss_bbox: 0.3054, loss: 0.4085
+2024-03-22 23:10:50,745 - mmdet - INFO - Epoch [4][450/1238]	lr: 1.000e-02, eta: 2:08:17, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.1027, loss_bbox: 0.3097, loss: 0.4124
+2024-03-22 23:11:15,885 - mmdet - INFO - Epoch [4][500/1238]	lr: 1.000e-02, eta: 2:07:54, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1029, loss_bbox: 0.3033, loss: 0.4062
+2024-03-22 23:11:41,062 - mmdet - INFO - Epoch [4][550/1238]	lr: 1.000e-02, eta: 2:07:31, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.1107, loss_bbox: 0.3274, loss: 0.4381
+2024-03-22 23:12:06,222 - mmdet - INFO - Epoch [4][600/1238]	lr: 1.000e-02, eta: 2:07:09, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.1064, loss_bbox: 0.3108, loss: 0.4172
+2024-03-22 23:12:31,271 - mmdet - INFO - Epoch [4][650/1238]	lr: 1.000e-02, eta: 2:06:46, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.1111, loss_bbox: 0.3157, loss: 0.4268
+2024-03-22 23:12:56,324 - mmdet - INFO - Epoch [4][700/1238]	lr: 1.000e-02, eta: 2:06:22, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.1113, loss_bbox: 0.3139, loss: 0.4253
+2024-03-22 23:13:21,393 - mmdet - INFO - Epoch [4][750/1238]	lr: 1.000e-02, eta: 2:05:59, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1028, loss_bbox: 0.3100, loss: 0.4129
+2024-03-22 23:13:46,519 - mmdet - INFO - Epoch [4][800/1238]	lr: 1.000e-02, eta: 2:05:36, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1044, loss_bbox: 0.3071, loss: 0.4115
+2024-03-22 23:14:11,612 - mmdet - INFO - Epoch [4][850/1238]	lr: 1.000e-02, eta: 2:05:13, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.1149, loss_bbox: 0.3212, loss: 0.4362
+2024-03-22 23:14:36,525 - mmdet - INFO - Epoch [4][900/1238]	lr: 1.000e-02, eta: 2:04:49, time: 0.498, data_time: 0.007, memory: 12077, loss_cls: 0.1055, loss_bbox: 0.3130, loss: 0.4185
+2024-03-22 23:15:01,626 - mmdet - INFO - Epoch [4][950/1238]	lr: 1.000e-02, eta: 2:04:26, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0992, loss_bbox: 0.3032, loss: 0.4025
+2024-03-22 23:15:26,685 - mmdet - INFO - Epoch [4][1000/1238]	lr: 1.000e-02, eta: 2:04:03, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.1074, loss_bbox: 0.3059, loss: 0.4132
+2024-03-22 23:15:51,685 - mmdet - INFO - Epoch [4][1050/1238]	lr: 1.000e-02, eta: 2:03:39, time: 0.500, data_time: 0.008, memory: 12077, loss_cls: 0.1028, loss_bbox: 0.3112, loss: 0.4140
+2024-03-22 23:16:16,971 - mmdet - INFO - Epoch [4][1100/1238]	lr: 1.000e-02, eta: 2:03:17, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.1057, loss_bbox: 0.3119, loss: 0.4175
+2024-03-22 23:16:41,952 - mmdet - INFO - Epoch [4][1150/1238]	lr: 1.000e-02, eta: 2:02:53, time: 0.500, data_time: 0.007, memory: 12077, loss_cls: 0.1050, loss_bbox: 0.3099, loss: 0.4149
+2024-03-22 23:17:07,006 - mmdet - INFO - Epoch [4][1200/1238]	lr: 1.000e-02, eta: 2:02:30, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.1039, loss_bbox: 0.3111, loss: 0.4151
+2024-03-22 23:18:29,521 - mmdet - INFO - Evaluating bbox...
+2024-03-22 23:18:38,592 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.465
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.725
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.512
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.332
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.525
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.623
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.585
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.585
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.585
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.454
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.704
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.766
+
+2024-03-22 23:18:38,593 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.697 | helmet   | 0.634 | self_clothes | 0.455 |
+| safety_clothes | 0.597 | head     | 0.468 | blur_head    | 0.205 |
+| blur_clothes   | 0.199 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-22 23:18:38,750 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-22 23:18:38,750 - mmdet - INFO - Epoch(val) [4][619]	bbox_mAP: 0.4650, bbox_mAP_50: 0.7250, bbox_mAP_75: 0.5120, bbox_mAP_s: 0.3320, bbox_mAP_m: 0.5250, bbox_mAP_l: 0.6230, bbox_mAP_copypaste: 0.465 0.725 0.512 0.332 0.525 0.623
+2024-03-22 23:19:06,331 - mmdet - INFO - Epoch [5][50/1238]	lr: 1.000e-02, eta: 2:00:59, time: 0.551, data_time: 0.054, memory: 12077, loss_cls: 0.0715, loss_bbox: 0.2697, loss: 0.3411
+2024-03-22 23:19:31,457 - mmdet - INFO - Epoch [5][100/1238]	lr: 1.000e-02, eta: 2:00:36, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0672, loss_bbox: 0.2783, loss: 0.3454
+2024-03-22 23:19:56,580 - mmdet - INFO - Epoch [5][150/1238]	lr: 1.000e-02, eta: 2:00:14, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0574, loss_bbox: 0.2715, loss: 0.3289
+2024-03-22 23:20:21,736 - mmdet - INFO - Epoch [5][200/1238]	lr: 1.000e-02, eta: 1:59:51, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0684, loss_bbox: 0.2712, loss: 0.3396
+2024-03-22 23:20:46,999 - mmdet - INFO - Epoch [5][250/1238]	lr: 1.000e-02, eta: 1:59:28, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0667, loss_bbox: 0.2724, loss: 0.3391
+2024-03-22 23:21:12,230 - mmdet - INFO - Epoch [5][300/1238]	lr: 1.000e-02, eta: 1:59:06, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0651, loss_bbox: 0.2689, loss: 0.3340
+2024-03-22 23:21:37,487 - mmdet - INFO - Epoch [5][350/1238]	lr: 1.000e-02, eta: 1:58:43, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0687, loss_bbox: 0.2735, loss: 0.3422
+2024-03-22 23:22:02,679 - mmdet - INFO - Epoch [5][400/1238]	lr: 1.000e-02, eta: 1:58:20, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0568, loss_bbox: 0.2752, loss: 0.3319
+2024-03-22 23:22:27,836 - mmdet - INFO - Epoch [5][450/1238]	lr: 1.000e-02, eta: 1:57:57, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0609, loss_bbox: 0.2709, loss: 0.3317
+2024-03-22 23:22:53,071 - mmdet - INFO - Epoch [5][500/1238]	lr: 1.000e-02, eta: 1:57:35, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0772, loss_bbox: 0.2767, loss: 0.3539
+2024-03-22 23:23:18,496 - mmdet - INFO - Epoch [5][550/1238]	lr: 1.000e-02, eta: 1:57:12, time: 0.508, data_time: 0.006, memory: 12077, loss_cls: 0.0655, loss_bbox: 0.2747, loss: 0.3402
+2024-03-22 23:23:43,792 - mmdet - INFO - Epoch [5][600/1238]	lr: 1.000e-02, eta: 1:56:49, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0677, loss_bbox: 0.2587, loss: 0.3264
+2024-03-22 23:24:09,064 - mmdet - INFO - Epoch [5][650/1238]	lr: 1.000e-02, eta: 1:56:27, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0727, loss_bbox: 0.2743, loss: 0.3470
+2024-03-22 23:24:34,395 - mmdet - INFO - Epoch [5][700/1238]	lr: 1.000e-02, eta: 1:56:04, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0632, loss_bbox: 0.2745, loss: 0.3377
+2024-03-22 23:24:59,643 - mmdet - INFO - Epoch [5][750/1238]	lr: 1.000e-02, eta: 1:55:41, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0621, loss_bbox: 0.2672, loss: 0.3292
+2024-03-22 23:25:25,025 - mmdet - INFO - Epoch [5][800/1238]	lr: 1.000e-02, eta: 1:55:18, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0572, loss_bbox: 0.2775, loss: 0.3347
+2024-03-22 23:25:50,569 - mmdet - INFO - Epoch [5][850/1238]	lr: 1.000e-02, eta: 1:54:56, time: 0.511, data_time: 0.007, memory: 12077, loss_cls: 0.0622, loss_bbox: 0.2791, loss: 0.3413
+2024-03-22 23:26:16,084 - mmdet - INFO - Epoch [5][900/1238]	lr: 1.000e-02, eta: 1:54:33, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0663, loss_bbox: 0.2751, loss: 0.3414
+2024-03-22 23:26:41,566 - mmdet - INFO - Epoch [5][950/1238]	lr: 1.000e-02, eta: 1:54:11, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0602, loss_bbox: 0.2634, loss: 0.3237
+2024-03-22 23:27:06,833 - mmdet - INFO - Epoch [5][1000/1238]	lr: 1.000e-02, eta: 1:53:48, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0587, loss_bbox: 0.2765, loss: 0.3352
+2024-03-22 23:27:32,046 - mmdet - INFO - Epoch [5][1050/1238]	lr: 1.000e-02, eta: 1:53:24, time: 0.504, data_time: 0.008, memory: 12077, loss_cls: 0.0667, loss_bbox: 0.2724, loss: 0.3391
+2024-03-22 23:27:57,340 - mmdet - INFO - Epoch [5][1100/1238]	lr: 1.000e-02, eta: 1:53:01, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0552, loss_bbox: 0.2780, loss: 0.3332
+2024-03-22 23:28:22,678 - mmdet - INFO - Epoch [5][1150/1238]	lr: 1.000e-02, eta: 1:52:38, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0613, loss_bbox: 0.2777, loss: 0.3389
+2024-03-22 23:28:47,897 - mmdet - INFO - Epoch [5][1200/1238]	lr: 1.000e-02, eta: 1:52:15, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0581, loss_bbox: 0.2674, loss: 0.3255
+2024-03-22 23:30:09,695 - mmdet - INFO - Evaluating bbox...
+2024-03-22 23:30:18,055 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.486
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.754
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.546
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.368
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.536
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.665
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.599
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.599
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.599
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.487
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.718
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.762
+
+2024-03-22 23:30:18,056 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.714 | helmet   | 0.629 | self_clothes | 0.491 |
+| safety_clothes | 0.627 | head     | 0.474 | blur_head    | 0.210 |
+| blur_clothes   | 0.256 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-22 23:30:18,213 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-22 23:30:18,213 - mmdet - INFO - Epoch(val) [5][619]	bbox_mAP: 0.4860, bbox_mAP_50: 0.7540, bbox_mAP_75: 0.5460, bbox_mAP_s: 0.3680, bbox_mAP_m: 0.5360, bbox_mAP_l: 0.6650, bbox_mAP_copypaste: 0.486 0.754 0.546 0.368 0.536 0.665
+2024-03-22 23:30:45,824 - mmdet - INFO - Epoch [6][50/1238]	lr: 1.000e-02, eta: 1:50:57, time: 0.552, data_time: 0.055, memory: 12077, loss_cls: 0.0469, loss_bbox: 0.2615, loss: 0.3084
+2024-03-22 23:31:10,970 - mmdet - INFO - Epoch [6][100/1238]	lr: 1.000e-02, eta: 1:50:34, time: 0.503, data_time: 0.006, memory: 12077, loss_cls: 0.0494, loss_bbox: 0.2645, loss: 0.3140
+2024-03-22 23:31:36,001 - mmdet - INFO - Epoch [6][150/1238]	lr: 1.000e-02, eta: 1:50:10, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.0515, loss_bbox: 0.2653, loss: 0.3168
+2024-03-22 23:32:01,157 - mmdet - INFO - Epoch [6][200/1238]	lr: 1.000e-02, eta: 1:49:47, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0512, loss_bbox: 0.2617, loss: 0.3129
+2024-03-22 23:32:26,636 - mmdet - INFO - Epoch [6][250/1238]	lr: 1.000e-02, eta: 1:49:24, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0463, loss_bbox: 0.2495, loss: 0.2958
+2024-03-22 23:32:52,033 - mmdet - INFO - Epoch [6][300/1238]	lr: 1.000e-02, eta: 1:49:01, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0555, loss_bbox: 0.2726, loss: 0.3281
+2024-03-22 23:33:17,446 - mmdet - INFO - Epoch [6][350/1238]	lr: 1.000e-02, eta: 1:48:39, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0442, loss_bbox: 0.2568, loss: 0.3010
+2024-03-22 23:33:42,719 - mmdet - INFO - Epoch [6][400/1238]	lr: 1.000e-02, eta: 1:48:15, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0460, loss_bbox: 0.2607, loss: 0.3067
+2024-03-22 23:34:08,030 - mmdet - INFO - Epoch [6][450/1238]	lr: 1.000e-02, eta: 1:47:52, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0546, loss_bbox: 0.2575, loss: 0.3121
+2024-03-22 23:34:33,343 - mmdet - INFO - Epoch [6][500/1238]	lr: 1.000e-02, eta: 1:47:29, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0553, loss_bbox: 0.2666, loss: 0.3219
+2024-03-22 23:34:58,703 - mmdet - INFO - Epoch [6][550/1238]	lr: 1.000e-02, eta: 1:47:06, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0512, loss_bbox: 0.2652, loss: 0.3164
+2024-03-22 23:35:23,854 - mmdet - INFO - Epoch [6][600/1238]	lr: 1.000e-02, eta: 1:46:43, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0518, loss_bbox: 0.2634, loss: 0.3153
+2024-03-22 23:35:49,100 - mmdet - INFO - Epoch [6][650/1238]	lr: 1.000e-02, eta: 1:46:19, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0433, loss_bbox: 0.2774, loss: 0.3207
+2024-03-22 23:36:14,269 - mmdet - INFO - Epoch [6][700/1238]	lr: 1.000e-02, eta: 1:45:56, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0604, loss_bbox: 0.2786, loss: 0.3390
+2024-03-22 23:36:39,430 - mmdet - INFO - Epoch [6][750/1238]	lr: 1.000e-02, eta: 1:45:32, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0531, loss_bbox: 0.2613, loss: 0.3144
+2024-03-22 23:37:04,707 - mmdet - INFO - Epoch [6][800/1238]	lr: 1.000e-02, eta: 1:45:09, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0414, loss_bbox: 0.2558, loss: 0.2972
+2024-03-22 23:37:30,145 - mmdet - INFO - Epoch [6][850/1238]	lr: 1.000e-02, eta: 1:44:46, time: 0.509, data_time: 0.007, memory: 12077, loss_cls: 0.0409, loss_bbox: 0.2713, loss: 0.3121
+2024-03-22 23:37:55,387 - mmdet - INFO - Epoch [6][900/1238]	lr: 1.000e-02, eta: 1:44:22, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0514, loss_bbox: 0.2579, loss: 0.3093
+2024-03-22 23:38:20,661 - mmdet - INFO - Epoch [6][950/1238]	lr: 1.000e-02, eta: 1:43:59, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0460, loss_bbox: 0.2603, loss: 0.3064
+2024-03-22 23:38:46,176 - mmdet - INFO - Epoch [6][1000/1238]	lr: 1.000e-02, eta: 1:43:36, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0473, loss_bbox: 0.2515, loss: 0.2988
+2024-03-22 23:39:11,436 - mmdet - INFO - Epoch [6][1050/1238]	lr: 1.000e-02, eta: 1:43:12, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0478, loss_bbox: 0.2590, loss: 0.3069
+2024-03-22 23:39:36,818 - mmdet - INFO - Epoch [6][1100/1238]	lr: 1.000e-02, eta: 1:42:49, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0435, loss_bbox: 0.2630, loss: 0.3065
+2024-03-22 23:40:02,009 - mmdet - INFO - Epoch [6][1150/1238]	lr: 1.000e-02, eta: 1:42:25, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0550, loss_bbox: 0.2652, loss: 0.3203
+2024-03-22 23:40:27,327 - mmdet - INFO - Epoch [6][1200/1238]	lr: 1.000e-02, eta: 1:42:01, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0601, loss_bbox: 0.2663, loss: 0.3264
+2024-03-22 23:41:48,793 - mmdet - INFO - Evaluating bbox...
+2024-03-22 23:41:56,104 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.486
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.757
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.537
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.358
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.553
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.628
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.589
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.589
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.589
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.469
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.712
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.720
+
+2024-03-22 23:41:56,105 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.704 | helmet   | 0.624 | self_clothes | 0.533 |
+| safety_clothes | 0.625 | head     | 0.459 | blur_head    | 0.209 |
+| blur_clothes   | 0.247 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-22 23:41:56,222 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-22 23:41:56,222 - mmdet - INFO - Epoch(val) [6][619]	bbox_mAP: 0.4860, bbox_mAP_50: 0.7570, bbox_mAP_75: 0.5370, bbox_mAP_s: 0.3580, bbox_mAP_m: 0.5530, bbox_mAP_l: 0.6280, bbox_mAP_copypaste: 0.486 0.757 0.537 0.358 0.553 0.628
+2024-03-22 23:42:23,829 - mmdet - INFO - Epoch [7][50/1238]	lr: 1.000e-02, eta: 1:40:52, time: 0.552, data_time: 0.054, memory: 12077, loss_cls: 0.0425, loss_bbox: 0.2529, loss: 0.2953
+2024-03-22 23:42:48,959 - mmdet - INFO - Epoch [7][100/1238]	lr: 1.000e-02, eta: 1:40:28, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0456, loss_bbox: 0.2599, loss: 0.3055
+2024-03-22 23:43:14,277 - mmdet - INFO - Epoch [7][150/1238]	lr: 1.000e-02, eta: 1:40:05, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0410, loss_bbox: 0.2545, loss: 0.2955
+2024-03-22 23:43:39,492 - mmdet - INFO - Epoch [7][200/1238]	lr: 1.000e-02, eta: 1:39:42, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0376, loss_bbox: 0.2571, loss: 0.2947
+2024-03-22 23:44:04,809 - mmdet - INFO - Epoch [7][250/1238]	lr: 1.000e-02, eta: 1:39:18, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0417, loss_bbox: 0.2528, loss: 0.2946
+2024-03-22 23:44:30,030 - mmdet - INFO - Epoch [7][300/1238]	lr: 1.000e-02, eta: 1:38:55, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0407, loss_bbox: 0.2571, loss: 0.2978
+2024-03-22 23:44:55,266 - mmdet - INFO - Epoch [7][350/1238]	lr: 1.000e-02, eta: 1:38:31, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0374, loss_bbox: 0.2575, loss: 0.2949
+2024-03-22 23:45:20,573 - mmdet - INFO - Epoch [7][400/1238]	lr: 1.000e-02, eta: 1:38:08, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0344, loss_bbox: 0.2478, loss: 0.2823
+2024-03-22 23:45:45,775 - mmdet - INFO - Epoch [7][450/1238]	lr: 1.000e-02, eta: 1:37:44, time: 0.504, data_time: 0.006, memory: 12077, loss_cls: 0.0386, loss_bbox: 0.2499, loss: 0.2884
+2024-03-22 23:46:11,082 - mmdet - INFO - Epoch [7][500/1238]	lr: 1.000e-02, eta: 1:37:21, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0460, loss_bbox: 0.2576, loss: 0.3036
+2024-03-22 23:46:36,263 - mmdet - INFO - Epoch [7][550/1238]	lr: 1.000e-02, eta: 1:36:57, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0500, loss_bbox: 0.2662, loss: 0.3161
+2024-03-22 23:47:01,692 - mmdet - INFO - Epoch [7][600/1238]	lr: 1.000e-02, eta: 1:36:34, time: 0.508, data_time: 0.006, memory: 12077, loss_cls: 0.0435, loss_bbox: 0.2574, loss: 0.3009
+2024-03-22 23:47:27,013 - mmdet - INFO - Epoch [7][650/1238]	lr: 1.000e-02, eta: 1:36:10, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0492, loss_bbox: 0.2533, loss: 0.3025
+2024-03-22 23:47:52,184 - mmdet - INFO - Epoch [7][700/1238]	lr: 1.000e-02, eta: 1:35:46, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0363, loss_bbox: 0.2506, loss: 0.2869
+2024-03-22 23:48:17,555 - mmdet - INFO - Epoch [7][750/1238]	lr: 1.000e-02, eta: 1:35:23, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0406, loss_bbox: 0.2559, loss: 0.2965
+2024-03-22 23:48:42,904 - mmdet - INFO - Epoch [7][800/1238]	lr: 1.000e-02, eta: 1:34:59, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0400, loss_bbox: 0.2574, loss: 0.2974
+2024-03-22 23:49:08,044 - mmdet - INFO - Epoch [7][850/1238]	lr: 1.000e-02, eta: 1:34:35, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0413, loss_bbox: 0.2445, loss: 0.2858
+2024-03-22 23:49:33,227 - mmdet - INFO - Epoch [7][900/1238]	lr: 1.000e-02, eta: 1:34:12, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0563, loss_bbox: 0.2652, loss: 0.3215
+2024-03-22 23:49:58,431 - mmdet - INFO - Epoch [7][950/1238]	lr: 1.000e-02, eta: 1:33:48, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0421, loss_bbox: 0.2527, loss: 0.2949
+2024-03-22 23:50:23,681 - mmdet - INFO - Epoch [7][1000/1238]	lr: 1.000e-02, eta: 1:33:24, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0469, loss_bbox: 0.2584, loss: 0.3053
+2024-03-22 23:50:48,817 - mmdet - INFO - Epoch [7][1050/1238]	lr: 1.000e-02, eta: 1:33:00, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0433, loss_bbox: 0.2639, loss: 0.3072
+2024-03-22 23:51:13,942 - mmdet - INFO - Epoch [7][1100/1238]	lr: 1.000e-02, eta: 1:32:36, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0486, loss_bbox: 0.2564, loss: 0.3050
+2024-03-22 23:51:39,007 - mmdet - INFO - Epoch [7][1150/1238]	lr: 1.000e-02, eta: 1:32:12, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0421, loss_bbox: 0.2515, loss: 0.2935
+2024-03-22 23:52:04,202 - mmdet - INFO - Epoch [7][1200/1238]	lr: 1.000e-02, eta: 1:31:48, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0467, loss_bbox: 0.2531, loss: 0.2998
+2024-03-22 23:53:26,115 - mmdet - INFO - Evaluating bbox...
+2024-03-22 23:53:33,361 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.484
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.764
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.535
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.371
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.538
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.645
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.596
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.596
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.596
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.497
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.696
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.749
+
+2024-03-22 23:53:33,362 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.707 | helmet   | 0.627 | self_clothes | 0.515 |
+| safety_clothes | 0.625 | head     | 0.461 | blur_head    | 0.205 |
+| blur_clothes   | 0.247 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-22 23:53:33,484 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-22 23:53:33,484 - mmdet - INFO - Epoch(val) [7][619]	bbox_mAP: 0.4840, bbox_mAP_50: 0.7640, bbox_mAP_75: 0.5350, bbox_mAP_s: 0.3710, bbox_mAP_m: 0.5380, bbox_mAP_l: 0.6450, bbox_mAP_copypaste: 0.484 0.764 0.535 0.371 0.538 0.645
+2024-03-22 23:54:01,291 - mmdet - INFO - Epoch [8][50/1238]	lr: 1.000e-02, eta: 1:30:45, time: 0.556, data_time: 0.055, memory: 12077, loss_cls: 0.0344, loss_bbox: 0.2525, loss: 0.2870
+2024-03-22 23:54:26,414 - mmdet - INFO - Epoch [8][100/1238]	lr: 1.000e-02, eta: 1:30:21, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0409, loss_bbox: 0.2472, loss: 0.2881
+2024-03-22 23:54:51,472 - mmdet - INFO - Epoch [8][150/1238]	lr: 1.000e-02, eta: 1:29:57, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.0340, loss_bbox: 0.2439, loss: 0.2779
+2024-03-22 23:55:16,593 - mmdet - INFO - Epoch [8][200/1238]	lr: 1.000e-02, eta: 1:29:33, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0420, loss_bbox: 0.2516, loss: 0.2936
+2024-03-22 23:55:41,805 - mmdet - INFO - Epoch [8][250/1238]	lr: 1.000e-02, eta: 1:29:10, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0362, loss_bbox: 0.2492, loss: 0.2854
+2024-03-22 23:56:07,001 - mmdet - INFO - Epoch [8][300/1238]	lr: 1.000e-02, eta: 1:28:46, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0406, loss_bbox: 0.2503, loss: 0.2909
+2024-03-22 23:56:32,159 - mmdet - INFO - Epoch [8][350/1238]	lr: 1.000e-02, eta: 1:28:22, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0372, loss_bbox: 0.2469, loss: 0.2841
+2024-03-22 23:56:57,402 - mmdet - INFO - Epoch [8][400/1238]	lr: 1.000e-02, eta: 1:27:58, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0393, loss_bbox: 0.2491, loss: 0.2885
+2024-03-22 23:57:22,757 - mmdet - INFO - Epoch [8][450/1238]	lr: 1.000e-02, eta: 1:27:35, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0319, loss_bbox: 0.2502, loss: 0.2821
+2024-03-22 23:57:48,024 - mmdet - INFO - Epoch [8][500/1238]	lr: 1.000e-02, eta: 1:27:11, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0374, loss_bbox: 0.2534, loss: 0.2908
+2024-03-22 23:58:13,338 - mmdet - INFO - Epoch [8][550/1238]	lr: 1.000e-02, eta: 1:26:47, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0313, loss_bbox: 0.2476, loss: 0.2789
+2024-03-22 23:58:38,493 - mmdet - INFO - Epoch [8][600/1238]	lr: 1.000e-02, eta: 1:26:23, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0387, loss_bbox: 0.2502, loss: 0.2889
+2024-03-22 23:59:03,732 - mmdet - INFO - Epoch [8][650/1238]	lr: 1.000e-02, eta: 1:25:59, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0479, loss_bbox: 0.2438, loss: 0.2917
+2024-03-22 23:59:28,800 - mmdet - INFO - Epoch [8][700/1238]	lr: 1.000e-02, eta: 1:25:35, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0340, loss_bbox: 0.2439, loss: 0.2779
+2024-03-22 23:59:54,032 - mmdet - INFO - Epoch [8][750/1238]	lr: 1.000e-02, eta: 1:25:11, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0358, loss_bbox: 0.2508, loss: 0.2866
+2024-03-23 00:00:19,205 - mmdet - INFO - Epoch [8][800/1238]	lr: 1.000e-02, eta: 1:24:47, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0400, loss_bbox: 0.2528, loss: 0.2928
+2024-03-23 00:00:44,548 - mmdet - INFO - Epoch [8][850/1238]	lr: 1.000e-02, eta: 1:24:24, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0461, loss_bbox: 0.2574, loss: 0.3035
+2024-03-23 00:01:09,794 - mmdet - INFO - Epoch [8][900/1238]	lr: 1.000e-02, eta: 1:24:00, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0380, loss_bbox: 0.2456, loss: 0.2836
+2024-03-23 00:01:35,031 - mmdet - INFO - Epoch [8][950/1238]	lr: 1.000e-02, eta: 1:23:36, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0357, loss_bbox: 0.2486, loss: 0.2843
+2024-03-23 00:02:00,171 - mmdet - INFO - Epoch [8][1000/1238]	lr: 1.000e-02, eta: 1:23:12, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0386, loss_bbox: 0.2584, loss: 0.2971
+2024-03-23 00:02:25,268 - mmdet - INFO - Epoch [8][1050/1238]	lr: 1.000e-02, eta: 1:22:48, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0442, loss_bbox: 0.2549, loss: 0.2991
+2024-03-23 00:02:50,319 - mmdet - INFO - Epoch [8][1100/1238]	lr: 1.000e-02, eta: 1:22:23, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.0405, loss_bbox: 0.2473, loss: 0.2879
+2024-03-23 00:03:15,478 - mmdet - INFO - Epoch [8][1150/1238]	lr: 1.000e-02, eta: 1:21:59, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0409, loss_bbox: 0.2471, loss: 0.2881
+2024-03-23 00:03:40,753 - mmdet - INFO - Epoch [8][1200/1238]	lr: 1.000e-02, eta: 1:21:35, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0356, loss_bbox: 0.2599, loss: 0.2956
+2024-03-23 00:05:02,349 - mmdet - INFO - Evaluating bbox...
+2024-03-23 00:05:08,629 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.487
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.756
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.540
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.381
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.543
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.640
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.603
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.603
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.603
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.495
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.727
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.767
+
+2024-03-23 00:05:08,630 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.713 | helmet   | 0.637 | self_clothes | 0.465 |
+| safety_clothes | 0.634 | head     | 0.487 | blur_head    | 0.211 |
+| blur_clothes   | 0.259 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-23 00:05:08,736 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-23 00:05:08,736 - mmdet - INFO - Epoch(val) [8][619]	bbox_mAP: 0.4870, bbox_mAP_50: 0.7560, bbox_mAP_75: 0.5400, bbox_mAP_s: 0.3810, bbox_mAP_m: 0.5430, bbox_mAP_l: 0.6400, bbox_mAP_copypaste: 0.487 0.756 0.540 0.381 0.543 0.640
+2024-03-23 00:05:36,592 - mmdet - INFO - Epoch [9][50/1238]	lr: 1.000e-03, eta: 1:20:37, time: 0.557, data_time: 0.054, memory: 12077, loss_cls: 0.0323, loss_bbox: 0.2394, loss: 0.2717
+2024-03-23 00:06:01,883 - mmdet - INFO - Epoch [9][100/1238]	lr: 1.000e-03, eta: 1:20:13, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0294, loss_bbox: 0.2288, loss: 0.2582
+2024-03-23 00:06:26,961 - mmdet - INFO - Epoch [9][150/1238]	lr: 1.000e-03, eta: 1:19:49, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0299, loss_bbox: 0.2274, loss: 0.2573
+2024-03-23 00:06:52,207 - mmdet - INFO - Epoch [9][200/1238]	lr: 1.000e-03, eta: 1:19:25, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0238, loss_bbox: 0.2205, loss: 0.2443
+2024-03-23 00:07:17,521 - mmdet - INFO - Epoch [9][250/1238]	lr: 1.000e-03, eta: 1:19:01, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0231, loss_bbox: 0.2180, loss: 0.2411
+2024-03-23 00:07:42,776 - mmdet - INFO - Epoch [9][300/1238]	lr: 1.000e-03, eta: 1:18:37, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0263, loss_bbox: 0.2252, loss: 0.2514
+2024-03-23 00:08:08,143 - mmdet - INFO - Epoch [9][350/1238]	lr: 1.000e-03, eta: 1:18:13, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0239, loss_bbox: 0.2197, loss: 0.2436
+2024-03-23 00:08:33,492 - mmdet - INFO - Epoch [9][400/1238]	lr: 1.000e-03, eta: 1:17:50, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0277, loss_bbox: 0.2204, loss: 0.2481
+2024-03-23 00:08:58,852 - mmdet - INFO - Epoch [9][450/1238]	lr: 1.000e-03, eta: 1:17:26, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0305, loss_bbox: 0.2309, loss: 0.2615
+2024-03-23 00:09:24,082 - mmdet - INFO - Epoch [9][500/1238]	lr: 1.000e-03, eta: 1:17:02, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0241, loss_bbox: 0.2216, loss: 0.2456
+2024-03-23 00:09:49,322 - mmdet - INFO - Epoch [9][550/1238]	lr: 1.000e-03, eta: 1:16:38, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0231, loss_bbox: 0.2384, loss: 0.2615
+2024-03-23 00:10:14,705 - mmdet - INFO - Epoch [9][600/1238]	lr: 1.000e-03, eta: 1:16:14, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0263, loss_bbox: 0.2194, loss: 0.2457
+2024-03-23 00:10:39,914 - mmdet - INFO - Epoch [9][650/1238]	lr: 1.000e-03, eta: 1:15:50, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0263, loss_bbox: 0.2139, loss: 0.2402
+2024-03-23 00:11:05,108 - mmdet - INFO - Epoch [9][700/1238]	lr: 1.000e-03, eta: 1:15:26, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0235, loss_bbox: 0.2177, loss: 0.2412
+2024-03-23 00:11:30,360 - mmdet - INFO - Epoch [9][750/1238]	lr: 1.000e-03, eta: 1:15:02, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0251, loss_bbox: 0.2206, loss: 0.2456
+2024-03-23 00:11:55,657 - mmdet - INFO - Epoch [9][800/1238]	lr: 1.000e-03, eta: 1:14:38, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0306, loss_bbox: 0.2232, loss: 0.2538
+2024-03-23 00:12:20,768 - mmdet - INFO - Epoch [9][850/1238]	lr: 1.000e-03, eta: 1:14:14, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0246, loss_bbox: 0.2257, loss: 0.2503
+2024-03-23 00:12:45,947 - mmdet - INFO - Epoch [9][900/1238]	lr: 1.000e-03, eta: 1:13:50, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0305, loss_bbox: 0.2248, loss: 0.2553
+2024-03-23 00:13:11,136 - mmdet - INFO - Epoch [9][950/1238]	lr: 1.000e-03, eta: 1:13:25, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0243, loss_bbox: 0.2177, loss: 0.2420
+2024-03-23 00:13:36,319 - mmdet - INFO - Epoch [9][1000/1238]	lr: 1.000e-03, eta: 1:13:01, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0252, loss_bbox: 0.2238, loss: 0.2490
+2024-03-23 00:14:01,450 - mmdet - INFO - Epoch [9][1050/1238]	lr: 1.000e-03, eta: 1:12:37, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0225, loss_bbox: 0.2227, loss: 0.2452
+2024-03-23 00:14:26,676 - mmdet - INFO - Epoch [9][1100/1238]	lr: 1.000e-03, eta: 1:12:13, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0238, loss_bbox: 0.2254, loss: 0.2492
+2024-03-23 00:14:52,028 - mmdet - INFO - Epoch [9][1150/1238]	lr: 1.000e-03, eta: 1:11:49, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0243, loss_bbox: 0.2245, loss: 0.2488
+2024-03-23 00:15:17,225 - mmdet - INFO - Epoch [9][1200/1238]	lr: 1.000e-03, eta: 1:11:25, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0221, loss_bbox: 0.2205, loss: 0.2426
+2024-03-23 00:16:38,513 - mmdet - INFO - Evaluating bbox...
+2024-03-23 00:16:43,710 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.522
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.788
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.587
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.409
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.572
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.705
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.521
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.734
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.786
+
+2024-03-23 00:16:43,710 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.730 | helmet   | 0.659 | self_clothes | 0.566 |
+| safety_clothes | 0.659 | head     | 0.514 | blur_head    | 0.234 |
+| blur_clothes   | 0.289 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-23 00:16:43,797 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-23 00:16:43,798 - mmdet - INFO - Epoch(val) [9][619]	bbox_mAP: 0.5220, bbox_mAP_50: 0.7880, bbox_mAP_75: 0.5870, bbox_mAP_s: 0.4090, bbox_mAP_m: 0.5720, bbox_mAP_l: 0.7050, bbox_mAP_copypaste: 0.522 0.788 0.587 0.409 0.572 0.705
+2024-03-23 00:17:11,529 - mmdet - INFO - Epoch [10][50/1238]	lr: 1.000e-03, eta: 1:10:29, time: 0.554, data_time: 0.054, memory: 12077, loss_cls: 0.0253, loss_bbox: 0.2146, loss: 0.2400
+2024-03-23 00:17:36,695 - mmdet - INFO - Epoch [10][100/1238]	lr: 1.000e-03, eta: 1:10:05, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0240, loss_bbox: 0.2131, loss: 0.2370
+2024-03-23 00:18:01,907 - mmdet - INFO - Epoch [10][150/1238]	lr: 1.000e-03, eta: 1:09:41, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0204, loss_bbox: 0.2172, loss: 0.2376
+2024-03-23 00:18:27,131 - mmdet - INFO - Epoch [10][200/1238]	lr: 1.000e-03, eta: 1:09:17, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0213, loss_bbox: 0.2211, loss: 0.2425
+2024-03-23 00:18:52,329 - mmdet - INFO - Epoch [10][250/1238]	lr: 1.000e-03, eta: 1:08:53, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0240, loss_bbox: 0.2242, loss: 0.2482
+2024-03-23 00:19:17,633 - mmdet - INFO - Epoch [10][300/1238]	lr: 1.000e-03, eta: 1:08:29, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0281, loss_bbox: 0.2083, loss: 0.2365
+2024-03-23 00:19:43,133 - mmdet - INFO - Epoch [10][350/1238]	lr: 1.000e-03, eta: 1:08:05, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0190, loss_bbox: 0.2118, loss: 0.2307
+2024-03-23 00:20:08,496 - mmdet - INFO - Epoch [10][400/1238]	lr: 1.000e-03, eta: 1:07:41, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0249, loss_bbox: 0.2176, loss: 0.2425
+2024-03-23 00:20:33,867 - mmdet - INFO - Epoch [10][450/1238]	lr: 1.000e-03, eta: 1:07:17, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0230, loss_bbox: 0.2184, loss: 0.2414
+2024-03-23 00:20:59,106 - mmdet - INFO - Epoch [10][500/1238]	lr: 1.000e-03, eta: 1:06:53, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0189, loss_bbox: 0.2165, loss: 0.2354
+2024-03-23 00:21:24,436 - mmdet - INFO - Epoch [10][550/1238]	lr: 1.000e-03, eta: 1:06:29, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0176, loss_bbox: 0.2171, loss: 0.2347
+2024-03-23 00:21:49,662 - mmdet - INFO - Epoch [10][600/1238]	lr: 1.000e-03, eta: 1:06:05, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0232, loss_bbox: 0.2116, loss: 0.2348
+2024-03-23 00:22:15,020 - mmdet - INFO - Epoch [10][650/1238]	lr: 1.000e-03, eta: 1:05:41, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0224, loss_bbox: 0.2179, loss: 0.2403
+2024-03-23 00:22:40,177 - mmdet - INFO - Epoch [10][700/1238]	lr: 1.000e-03, eta: 1:05:17, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0296, loss_bbox: 0.2181, loss: 0.2477
+2024-03-23 00:23:05,457 - mmdet - INFO - Epoch [10][750/1238]	lr: 1.000e-03, eta: 1:04:53, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0219, loss_bbox: 0.2198, loss: 0.2418
+2024-03-23 00:23:30,731 - mmdet - INFO - Epoch [10][800/1238]	lr: 1.000e-03, eta: 1:04:28, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0217, loss_bbox: 0.2199, loss: 0.2416
+2024-03-23 00:23:55,846 - mmdet - INFO - Epoch [10][850/1238]	lr: 1.000e-03, eta: 1:04:04, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0248, loss_bbox: 0.2105, loss: 0.2353
+2024-03-23 00:24:21,085 - mmdet - INFO - Epoch [10][900/1238]	lr: 1.000e-03, eta: 1:03:40, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0219, loss_bbox: 0.2178, loss: 0.2397
+2024-03-23 00:24:46,306 - mmdet - INFO - Epoch [10][950/1238]	lr: 1.000e-03, eta: 1:03:16, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0225, loss_bbox: 0.2220, loss: 0.2445
+2024-03-23 00:25:11,698 - mmdet - INFO - Epoch [10][1000/1238]	lr: 1.000e-03, eta: 1:02:52, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0230, loss_bbox: 0.2136, loss: 0.2366
+2024-03-23 00:25:36,890 - mmdet - INFO - Epoch [10][1050/1238]	lr: 1.000e-03, eta: 1:02:27, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0226, loss_bbox: 0.2111, loss: 0.2337
+2024-03-23 00:26:02,161 - mmdet - INFO - Epoch [10][1100/1238]	lr: 1.000e-03, eta: 1:02:03, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0225, loss_bbox: 0.2159, loss: 0.2385
+2024-03-23 00:26:27,356 - mmdet - INFO - Epoch [10][1150/1238]	lr: 1.000e-03, eta: 1:01:39, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0236, loss_bbox: 0.2174, loss: 0.2410
+2024-03-23 00:26:52,579 - mmdet - INFO - Epoch [10][1200/1238]	lr: 1.000e-03, eta: 1:01:15, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0190, loss_bbox: 0.2139, loss: 0.2329
+2024-03-23 00:28:14,122 - mmdet - INFO - Evaluating bbox...
+2024-03-23 00:28:19,067 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.521
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.792
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.584
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.412
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.577
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.653
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.620
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.620
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.620
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.526
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.727
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.772
+
+2024-03-23 00:28:19,067 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.729 | helmet   | 0.660 | self_clothes | 0.559 |
+| safety_clothes | 0.662 | head     | 0.513 | blur_head    | 0.238 |
+| blur_clothes   | 0.288 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-23 00:28:19,152 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-23 00:28:19,152 - mmdet - INFO - Epoch(val) [10][619]	bbox_mAP: 0.5210, bbox_mAP_50: 0.7920, bbox_mAP_75: 0.5840, bbox_mAP_s: 0.4120, bbox_mAP_m: 0.5770, bbox_mAP_l: 0.6530, bbox_mAP_copypaste: 0.521 0.792 0.584 0.412 0.577 0.653
+2024-03-23 00:28:46,937 - mmdet - INFO - Epoch [11][50/1238]	lr: 1.000e-03, eta: 1:00:22, time: 0.556, data_time: 0.055, memory: 12077, loss_cls: 0.0184, loss_bbox: 0.2099, loss: 0.2283
+2024-03-23 00:29:12,032 - mmdet - INFO - Epoch [11][100/1238]	lr: 1.000e-03, eta: 0:59:58, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0236, loss_bbox: 0.2112, loss: 0.2348
+2024-03-23 00:29:37,100 - mmdet - INFO - Epoch [11][150/1238]	lr: 1.000e-03, eta: 0:59:34, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.0182, loss_bbox: 0.2027, loss: 0.2210
+2024-03-23 00:30:02,217 - mmdet - INFO - Epoch [11][200/1238]	lr: 1.000e-03, eta: 0:59:10, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0205, loss_bbox: 0.2131, loss: 0.2337
+2024-03-23 00:30:27,395 - mmdet - INFO - Epoch [11][250/1238]	lr: 1.000e-03, eta: 0:58:45, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0184, loss_bbox: 0.2157, loss: 0.2341
+2024-03-23 00:30:52,456 - mmdet - INFO - Epoch [11][300/1238]	lr: 1.000e-03, eta: 0:58:21, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.0205, loss_bbox: 0.2080, loss: 0.2285
+2024-03-23 00:31:17,585 - mmdet - INFO - Epoch [11][350/1238]	lr: 1.000e-03, eta: 0:57:57, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0198, loss_bbox: 0.2250, loss: 0.2448
+2024-03-23 00:31:42,709 - mmdet - INFO - Epoch [11][400/1238]	lr: 1.000e-03, eta: 0:57:33, time: 0.502, data_time: 0.008, memory: 12077, loss_cls: 0.0224, loss_bbox: 0.2132, loss: 0.2355
+2024-03-23 00:32:07,940 - mmdet - INFO - Epoch [11][450/1238]	lr: 1.000e-03, eta: 0:57:08, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0213, loss_bbox: 0.2178, loss: 0.2391
+2024-03-23 00:32:33,422 - mmdet - INFO - Epoch [11][500/1238]	lr: 1.000e-03, eta: 0:56:44, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0237, loss_bbox: 0.2092, loss: 0.2329
+2024-03-23 00:32:58,906 - mmdet - INFO - Epoch [11][550/1238]	lr: 1.000e-03, eta: 0:56:20, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0236, loss_bbox: 0.2125, loss: 0.2362
+2024-03-23 00:33:24,064 - mmdet - INFO - Epoch [11][600/1238]	lr: 1.000e-03, eta: 0:55:56, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0182, loss_bbox: 0.2067, loss: 0.2249
+2024-03-23 00:33:49,249 - mmdet - INFO - Epoch [11][650/1238]	lr: 1.000e-03, eta: 0:55:32, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0175, loss_bbox: 0.2159, loss: 0.2334
+2024-03-23 00:34:14,396 - mmdet - INFO - Epoch [11][700/1238]	lr: 1.000e-03, eta: 0:55:07, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0178, loss_bbox: 0.2036, loss: 0.2214
+2024-03-23 00:34:39,526 - mmdet - INFO - Epoch [11][750/1238]	lr: 1.000e-03, eta: 0:54:43, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0209, loss_bbox: 0.2127, loss: 0.2336
+2024-03-23 00:35:04,720 - mmdet - INFO - Epoch [11][800/1238]	lr: 1.000e-03, eta: 0:54:19, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0244, loss_bbox: 0.2106, loss: 0.2350
+2024-03-23 00:35:30,001 - mmdet - INFO - Epoch [11][850/1238]	lr: 1.000e-03, eta: 0:53:55, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0204, loss_bbox: 0.2118, loss: 0.2322
+2024-03-23 00:35:55,383 - mmdet - INFO - Epoch [11][900/1238]	lr: 1.000e-03, eta: 0:53:30, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0212, loss_bbox: 0.2066, loss: 0.2278
+2024-03-23 00:36:20,889 - mmdet - INFO - Epoch [11][950/1238]	lr: 1.000e-03, eta: 0:53:06, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0169, loss_bbox: 0.2087, loss: 0.2256
+2024-03-23 00:36:46,322 - mmdet - INFO - Epoch [11][1000/1238]	lr: 1.000e-03, eta: 0:52:42, time: 0.509, data_time: 0.008, memory: 12077, loss_cls: 0.0202, loss_bbox: 0.2104, loss: 0.2306
+2024-03-23 00:37:11,504 - mmdet - INFO - Epoch [11][1050/1238]	lr: 1.000e-03, eta: 0:52:18, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0192, loss_bbox: 0.2142, loss: 0.2334
+2024-03-23 00:37:36,559 - mmdet - INFO - Epoch [11][1100/1238]	lr: 1.000e-03, eta: 0:51:53, time: 0.501, data_time: 0.008, memory: 12077, loss_cls: 0.0226, loss_bbox: 0.2086, loss: 0.2312
+2024-03-23 00:38:01,734 - mmdet - INFO - Epoch [11][1150/1238]	lr: 1.000e-03, eta: 0:51:29, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0181, loss_bbox: 0.2052, loss: 0.2233
+2024-03-23 00:38:26,896 - mmdet - INFO - Epoch [11][1200/1238]	lr: 1.000e-03, eta: 0:51:05, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0195, loss_bbox: 0.2085, loss: 0.2280
+2024-03-23 00:39:48,506 - mmdet - INFO - Evaluating bbox...
+2024-03-23 00:39:53,385 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.522
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.789
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.590
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.412
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.574
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.687
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.524
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.723
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.777
+
+2024-03-23 00:39:53,385 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.727 | helmet   | 0.661 | self_clothes | 0.567 |
+| safety_clothes | 0.660 | head     | 0.506 | blur_head    | 0.236 |
+| blur_clothes   | 0.295 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-23 00:39:53,467 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-23 00:39:53,467 - mmdet - INFO - Epoch(val) [11][619]	bbox_mAP: 0.5220, bbox_mAP_50: 0.7890, bbox_mAP_75: 0.5900, bbox_mAP_s: 0.4120, bbox_mAP_m: 0.5740, bbox_mAP_l: 0.6870, bbox_mAP_copypaste: 0.522 0.789 0.590 0.412 0.574 0.687
+2024-03-23 00:40:21,276 - mmdet - INFO - Epoch [12][50/1238]	lr: 1.000e-04, eta: 0:50:14, time: 0.556, data_time: 0.055, memory: 12077, loss_cls: 0.0161, loss_bbox: 0.2093, loss: 0.2255
+2024-03-23 00:40:46,466 - mmdet - INFO - Epoch [12][100/1238]	lr: 1.000e-04, eta: 0:49:50, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0213, loss_bbox: 0.2101, loss: 0.2314
+2024-03-23 00:41:11,754 - mmdet - INFO - Epoch [12][150/1238]	lr: 1.000e-04, eta: 0:49:26, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0167, loss_bbox: 0.2057, loss: 0.2224
+2024-03-23 00:41:37,059 - mmdet - INFO - Epoch [12][200/1238]	lr: 1.000e-04, eta: 0:49:02, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0176, loss_bbox: 0.2101, loss: 0.2277
+2024-03-23 00:42:02,225 - mmdet - INFO - Epoch [12][250/1238]	lr: 1.000e-04, eta: 0:48:37, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0186, loss_bbox: 0.2033, loss: 0.2219
+2024-03-23 00:42:27,377 - mmdet - INFO - Epoch [12][300/1238]	lr: 1.000e-04, eta: 0:48:13, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0180, loss_bbox: 0.2039, loss: 0.2219
+2024-03-23 00:42:52,675 - mmdet - INFO - Epoch [12][350/1238]	lr: 1.000e-04, eta: 0:47:49, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0172, loss_bbox: 0.2089, loss: 0.2261
+2024-03-23 00:43:18,046 - mmdet - INFO - Epoch [12][400/1238]	lr: 1.000e-04, eta: 0:47:24, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0182, loss_bbox: 0.2061, loss: 0.2243
+2024-03-23 00:43:43,432 - mmdet - INFO - Epoch [12][450/1238]	lr: 1.000e-04, eta: 0:47:00, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0222, loss_bbox: 0.2110, loss: 0.2331
+2024-03-23 00:44:08,642 - mmdet - INFO - Epoch [12][500/1238]	lr: 1.000e-04, eta: 0:46:36, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0174, loss_bbox: 0.2113, loss: 0.2287
+2024-03-23 00:44:33,964 - mmdet - INFO - Epoch [12][550/1238]	lr: 1.000e-04, eta: 0:46:12, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0221, loss_bbox: 0.2071, loss: 0.2292
+2024-03-23 00:44:59,200 - mmdet - INFO - Epoch [12][600/1238]	lr: 1.000e-04, eta: 0:45:47, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0186, loss_bbox: 0.2015, loss: 0.2202
+2024-03-23 00:45:24,412 - mmdet - INFO - Epoch [12][650/1238]	lr: 1.000e-04, eta: 0:45:23, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0176, loss_bbox: 0.2006, loss: 0.2181
+2024-03-23 00:45:49,680 - mmdet - INFO - Epoch [12][700/1238]	lr: 1.000e-04, eta: 0:44:59, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0191, loss_bbox: 0.1984, loss: 0.2175
+2024-03-23 00:46:15,023 - mmdet - INFO - Epoch [12][750/1238]	lr: 1.000e-04, eta: 0:44:34, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0207, loss_bbox: 0.2090, loss: 0.2296
+2024-03-23 00:46:40,465 - mmdet - INFO - Epoch [12][800/1238]	lr: 1.000e-04, eta: 0:44:10, time: 0.509, data_time: 0.007, memory: 12077, loss_cls: 0.0180, loss_bbox: 0.2047, loss: 0.2228
+2024-03-23 00:47:05,775 - mmdet - INFO - Epoch [12][850/1238]	lr: 1.000e-04, eta: 0:43:46, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0202, loss_bbox: 0.2070, loss: 0.2272
+2024-03-23 00:47:31,026 - mmdet - INFO - Epoch [12][900/1238]	lr: 1.000e-04, eta: 0:43:21, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0178, loss_bbox: 0.2089, loss: 0.2267
+2024-03-23 00:47:56,281 - mmdet - INFO - Epoch [12][950/1238]	lr: 1.000e-04, eta: 0:42:57, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0155, loss_bbox: 0.2021, loss: 0.2176
+2024-03-23 00:48:21,642 - mmdet - INFO - Epoch [12][1000/1238]	lr: 1.000e-04, eta: 0:42:33, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0203, loss_bbox: 0.2036, loss: 0.2239
+2024-03-23 00:48:46,924 - mmdet - INFO - Epoch [12][1050/1238]	lr: 1.000e-04, eta: 0:42:08, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0198, loss_bbox: 0.2085, loss: 0.2283
+2024-03-23 00:49:12,192 - mmdet - INFO - Epoch [12][1100/1238]	lr: 1.000e-04, eta: 0:41:44, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0166, loss_bbox: 0.2040, loss: 0.2207
+2024-03-23 00:49:37,456 - mmdet - INFO - Epoch [12][1150/1238]	lr: 1.000e-04, eta: 0:41:20, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0193, loss_bbox: 0.2046, loss: 0.2239
+2024-03-23 00:50:02,726 - mmdet - INFO - Epoch [12][1200/1238]	lr: 1.000e-04, eta: 0:40:55, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0198, loss_bbox: 0.2028, loss: 0.2226
+2024-03-23 00:51:26,432 - mmdet - INFO - Evaluating bbox...
+2024-03-23 00:51:31,475 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.524
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.792
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.592
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.412
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.572
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.662
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.620
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.620
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.620
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.525
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.726
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.786
+
+2024-03-23 00:51:31,476 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.728 | helmet   | 0.662 | self_clothes | 0.569 |
+| safety_clothes | 0.663 | head     | 0.513 | blur_head    | 0.236 |
+| blur_clothes   | 0.297 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-23 00:51:31,558 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-23 00:51:31,558 - mmdet - INFO - Epoch(val) [12][619]	bbox_mAP: 0.5240, bbox_mAP_50: 0.7920, bbox_mAP_75: 0.5920, bbox_mAP_s: 0.4120, bbox_mAP_m: 0.5720, bbox_mAP_l: 0.6620, bbox_mAP_copypaste: 0.524 0.792 0.592 0.412 0.572 0.662
+2024-03-23 00:51:59,267 - mmdet - INFO - Epoch [13][50/1238]	lr: 1.000e-04, eta: 0:40:07, time: 0.554, data_time: 0.055, memory: 12077, loss_cls: 0.0211, loss_bbox: 0.2132, loss: 0.2344
+2024-03-23 00:52:24,441 - mmdet - INFO - Epoch [13][100/1238]	lr: 1.000e-04, eta: 0:39:42, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0181, loss_bbox: 0.2070, loss: 0.2250
+2024-03-23 00:52:49,725 - mmdet - INFO - Epoch [13][150/1238]	lr: 1.000e-04, eta: 0:39:18, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0214, loss_bbox: 0.2172, loss: 0.2386
+2024-03-23 00:53:14,815 - mmdet - INFO - Epoch [13][200/1238]	lr: 1.000e-04, eta: 0:38:54, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0205, loss_bbox: 0.2087, loss: 0.2292
+2024-03-23 00:53:39,959 - mmdet - INFO - Epoch [13][250/1238]	lr: 1.000e-04, eta: 0:38:29, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0177, loss_bbox: 0.2044, loss: 0.2222
+2024-03-23 00:54:05,126 - mmdet - INFO - Epoch [13][300/1238]	lr: 1.000e-04, eta: 0:38:05, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0200, loss_bbox: 0.2074, loss: 0.2274
+2024-03-23 00:54:30,312 - mmdet - INFO - Epoch [13][350/1238]	lr: 1.000e-04, eta: 0:37:41, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0152, loss_bbox: 0.2085, loss: 0.2236
+2024-03-23 00:54:55,368 - mmdet - INFO - Epoch [13][400/1238]	lr: 1.000e-04, eta: 0:37:16, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.0163, loss_bbox: 0.2018, loss: 0.2181
+2024-03-23 00:55:20,823 - mmdet - INFO - Epoch [13][450/1238]	lr: 1.000e-04, eta: 0:36:52, time: 0.509, data_time: 0.007, memory: 12077, loss_cls: 0.0172, loss_bbox: 0.2071, loss: 0.2243
+2024-03-23 00:55:45,995 - mmdet - INFO - Epoch [13][500/1238]	lr: 1.000e-04, eta: 0:36:28, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0213, loss_bbox: 0.2081, loss: 0.2293
+2024-03-23 00:56:11,173 - mmdet - INFO - Epoch [13][550/1238]	lr: 1.000e-04, eta: 0:36:03, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0209, loss_bbox: 0.2089, loss: 0.2299
+2024-03-23 00:56:36,420 - mmdet - INFO - Epoch [13][600/1238]	lr: 1.000e-04, eta: 0:35:39, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0159, loss_bbox: 0.2048, loss: 0.2206
+2024-03-23 00:57:01,595 - mmdet - INFO - Epoch [13][650/1238]	lr: 1.000e-04, eta: 0:35:14, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0157, loss_bbox: 0.1996, loss: 0.2153
+2024-03-23 00:57:26,773 - mmdet - INFO - Epoch [13][700/1238]	lr: 1.000e-04, eta: 0:34:50, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0223, loss_bbox: 0.2099, loss: 0.2322
+2024-03-23 00:57:51,951 - mmdet - INFO - Epoch [13][750/1238]	lr: 1.000e-04, eta: 0:34:25, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0180, loss_bbox: 0.2115, loss: 0.2295
+2024-03-23 00:58:17,034 - mmdet - INFO - Epoch [13][800/1238]	lr: 1.000e-04, eta: 0:34:01, time: 0.501, data_time: 0.007, memory: 12077, loss_cls: 0.0167, loss_bbox: 0.2003, loss: 0.2170
+2024-03-23 00:58:42,232 - mmdet - INFO - Epoch [13][850/1238]	lr: 1.000e-04, eta: 0:33:37, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0214, loss_bbox: 0.2063, loss: 0.2277
+2024-03-23 00:59:07,369 - mmdet - INFO - Epoch [13][900/1238]	lr: 1.000e-04, eta: 0:33:12, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0166, loss_bbox: 0.1948, loss: 0.2114
+2024-03-23 00:59:32,680 - mmdet - INFO - Epoch [13][950/1238]	lr: 1.000e-04, eta: 0:32:48, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0158, loss_bbox: 0.2020, loss: 0.2179
+2024-03-23 00:59:57,924 - mmdet - INFO - Epoch [13][1000/1238]	lr: 1.000e-04, eta: 0:32:23, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0186, loss_bbox: 0.2108, loss: 0.2294
+2024-03-23 01:00:23,125 - mmdet - INFO - Epoch [13][1050/1238]	lr: 1.000e-04, eta: 0:31:59, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0213, loss_bbox: 0.2087, loss: 0.2300
+2024-03-23 01:00:48,369 - mmdet - INFO - Epoch [13][1100/1238]	lr: 1.000e-04, eta: 0:31:34, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0173, loss_bbox: 0.1989, loss: 0.2163
+2024-03-23 01:01:13,560 - mmdet - INFO - Epoch [13][1150/1238]	lr: 1.000e-04, eta: 0:31:10, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0157, loss_bbox: 0.2087, loss: 0.2244
+2024-03-23 01:01:38,970 - mmdet - INFO - Epoch [13][1200/1238]	lr: 1.000e-04, eta: 0:30:46, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0143, loss_bbox: 0.1995, loss: 0.2138
+2024-03-23 01:03:00,390 - mmdet - INFO - Evaluating bbox...
+2024-03-23 01:03:05,405 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.523
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.790
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.589
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.412
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.570
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.705
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.525
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.726
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.777
+
+2024-03-23 01:03:05,406 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.729 | helmet   | 0.662 | self_clothes | 0.565 |
+| safety_clothes | 0.662 | head     | 0.515 | blur_head    | 0.234 |
+| blur_clothes   | 0.294 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-23 01:03:05,485 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-23 01:03:05,486 - mmdet - INFO - Epoch(val) [13][619]	bbox_mAP: 0.5230, bbox_mAP_50: 0.7900, bbox_mAP_75: 0.5890, bbox_mAP_s: 0.4120, bbox_mAP_m: 0.5700, bbox_mAP_l: 0.7050, bbox_mAP_copypaste: 0.523 0.790 0.589 0.412 0.570 0.705
+2024-03-23 01:03:33,062 - mmdet - INFO - Epoch [14][50/1238]	lr: 1.000e-04, eta: 0:29:59, time: 0.551, data_time: 0.055, memory: 12077, loss_cls: 0.0171, loss_bbox: 0.2075, loss: 0.2246
+2024-03-23 01:03:58,295 - mmdet - INFO - Epoch [14][100/1238]	lr: 1.000e-04, eta: 0:29:34, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0183, loss_bbox: 0.2035, loss: 0.2218
+2024-03-23 01:04:23,453 - mmdet - INFO - Epoch [14][150/1238]	lr: 1.000e-04, eta: 0:29:10, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0181, loss_bbox: 0.1974, loss: 0.2155
+2024-03-23 01:04:48,617 - mmdet - INFO - Epoch [14][200/1238]	lr: 1.000e-04, eta: 0:28:45, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0183, loss_bbox: 0.2069, loss: 0.2253
+2024-03-23 01:05:13,849 - mmdet - INFO - Epoch [14][250/1238]	lr: 1.000e-04, eta: 0:28:21, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0161, loss_bbox: 0.2024, loss: 0.2185
+2024-03-23 01:05:39,068 - mmdet - INFO - Epoch [14][300/1238]	lr: 1.000e-04, eta: 0:27:57, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0199, loss_bbox: 0.2012, loss: 0.2211
+2024-03-23 01:06:04,328 - mmdet - INFO - Epoch [14][350/1238]	lr: 1.000e-04, eta: 0:27:32, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0184, loss_bbox: 0.2083, loss: 0.2268
+2024-03-23 01:06:29,522 - mmdet - INFO - Epoch [14][400/1238]	lr: 1.000e-04, eta: 0:27:08, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0210, loss_bbox: 0.2028, loss: 0.2238
+2024-03-23 01:06:54,694 - mmdet - INFO - Epoch [14][450/1238]	lr: 1.000e-04, eta: 0:26:43, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0191, loss_bbox: 0.2123, loss: 0.2314
+2024-03-23 01:07:19,881 - mmdet - INFO - Epoch [14][500/1238]	lr: 1.000e-04, eta: 0:26:19, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0154, loss_bbox: 0.2041, loss: 0.2194
+2024-03-23 01:07:45,108 - mmdet - INFO - Epoch [14][550/1238]	lr: 1.000e-04, eta: 0:25:54, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0147, loss_bbox: 0.1969, loss: 0.2116
+2024-03-23 01:08:10,445 - mmdet - INFO - Epoch [14][600/1238]	lr: 1.000e-04, eta: 0:25:30, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0147, loss_bbox: 0.1958, loss: 0.2105
+2024-03-23 01:08:35,929 - mmdet - INFO - Epoch [14][650/1238]	lr: 1.000e-04, eta: 0:25:06, time: 0.509, data_time: 0.007, memory: 12077, loss_cls: 0.0199, loss_bbox: 0.2100, loss: 0.2299
+2024-03-23 01:09:01,109 - mmdet - INFO - Epoch [14][700/1238]	lr: 1.000e-04, eta: 0:24:41, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0161, loss_bbox: 0.1998, loss: 0.2158
+2024-03-23 01:09:26,469 - mmdet - INFO - Epoch [14][750/1238]	lr: 1.000e-04, eta: 0:24:17, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0142, loss_bbox: 0.2046, loss: 0.2189
+2024-03-23 01:09:51,955 - mmdet - INFO - Epoch [14][800/1238]	lr: 1.000e-04, eta: 0:23:52, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0167, loss_bbox: 0.2079, loss: 0.2246
+2024-03-23 01:10:17,113 - mmdet - INFO - Epoch [14][850/1238]	lr: 1.000e-04, eta: 0:23:28, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0217, loss_bbox: 0.2131, loss: 0.2348
+2024-03-23 01:10:42,196 - mmdet - INFO - Epoch [14][900/1238]	lr: 1.000e-04, eta: 0:23:03, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0212, loss_bbox: 0.2085, loss: 0.2297
+2024-03-23 01:11:07,331 - mmdet - INFO - Epoch [14][950/1238]	lr: 1.000e-04, eta: 0:22:39, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0162, loss_bbox: 0.2120, loss: 0.2282
+2024-03-23 01:11:32,599 - mmdet - INFO - Epoch [14][1000/1238]	lr: 1.000e-04, eta: 0:22:14, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0222, loss_bbox: 0.2036, loss: 0.2257
+2024-03-23 01:11:57,790 - mmdet - INFO - Epoch [14][1050/1238]	lr: 1.000e-04, eta: 0:21:50, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0173, loss_bbox: 0.2025, loss: 0.2199
+2024-03-23 01:12:23,096 - mmdet - INFO - Epoch [14][1100/1238]	lr: 1.000e-04, eta: 0:21:25, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0148, loss_bbox: 0.2012, loss: 0.2160
+2024-03-23 01:12:48,315 - mmdet - INFO - Epoch [14][1150/1238]	lr: 1.000e-04, eta: 0:21:01, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0185, loss_bbox: 0.2057, loss: 0.2242
+2024-03-23 01:13:13,484 - mmdet - INFO - Epoch [14][1200/1238]	lr: 1.000e-04, eta: 0:20:36, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0164, loss_bbox: 0.2121, loss: 0.2285
+2024-03-23 01:14:34,645 - mmdet - INFO - Evaluating bbox...
+2024-03-23 01:14:39,402 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.524
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.792
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.594
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.413
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.572
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.701
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.620
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.620
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.620
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.525
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.726
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.781
+
+2024-03-23 01:14:39,402 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.729 | helmet   | 0.663 | self_clothes | 0.570 |
+| safety_clothes | 0.662 | head     | 0.516 | blur_head    | 0.237 |
+| blur_clothes   | 0.293 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-23 01:14:39,479 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-23 01:14:39,479 - mmdet - INFO - Epoch(val) [14][619]	bbox_mAP: 0.5240, bbox_mAP_50: 0.7920, bbox_mAP_75: 0.5940, bbox_mAP_s: 0.4130, bbox_mAP_m: 0.5720, bbox_mAP_l: 0.7010, bbox_mAP_copypaste: 0.524 0.792 0.594 0.413 0.572 0.701
+2024-03-23 01:15:07,139 - mmdet - INFO - Epoch [15][50/1238]	lr: 1.000e-04, eta: 0:19:51, time: 0.553, data_time: 0.055, memory: 12077, loss_cls: 0.0202, loss_bbox: 0.2113, loss: 0.2315
+2024-03-23 01:15:32,349 - mmdet - INFO - Epoch [15][100/1238]	lr: 1.000e-04, eta: 0:19:26, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0222, loss_bbox: 0.2040, loss: 0.2262
+2024-03-23 01:15:57,483 - mmdet - INFO - Epoch [15][150/1238]	lr: 1.000e-04, eta: 0:19:02, time: 0.503, data_time: 0.006, memory: 12077, loss_cls: 0.0193, loss_bbox: 0.2094, loss: 0.2287
+2024-03-23 01:16:22,662 - mmdet - INFO - Epoch [15][200/1238]	lr: 1.000e-04, eta: 0:18:37, time: 0.504, data_time: 0.006, memory: 12077, loss_cls: 0.0163, loss_bbox: 0.2011, loss: 0.2174
+2024-03-23 01:16:48,073 - mmdet - INFO - Epoch [15][250/1238]	lr: 1.000e-04, eta: 0:18:13, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0151, loss_bbox: 0.2000, loss: 0.2151
+2024-03-23 01:17:13,289 - mmdet - INFO - Epoch [15][300/1238]	lr: 1.000e-04, eta: 0:17:48, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0157, loss_bbox: 0.2005, loss: 0.2161
+2024-03-23 01:17:38,408 - mmdet - INFO - Epoch [15][350/1238]	lr: 1.000e-04, eta: 0:17:24, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0166, loss_bbox: 0.2041, loss: 0.2207
+2024-03-23 01:18:03,422 - mmdet - INFO - Epoch [15][400/1238]	lr: 1.000e-04, eta: 0:16:59, time: 0.500, data_time: 0.007, memory: 12077, loss_cls: 0.0211, loss_bbox: 0.2054, loss: 0.2266
+2024-03-23 01:18:28,380 - mmdet - INFO - Epoch [15][450/1238]	lr: 1.000e-04, eta: 0:16:35, time: 0.499, data_time: 0.007, memory: 12077, loss_cls: 0.0186, loss_bbox: 0.2059, loss: 0.2244
+2024-03-23 01:18:53,595 - mmdet - INFO - Epoch [15][500/1238]	lr: 1.000e-04, eta: 0:16:10, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0166, loss_bbox: 0.2021, loss: 0.2187
+2024-03-23 01:19:18,842 - mmdet - INFO - Epoch [15][550/1238]	lr: 1.000e-04, eta: 0:15:46, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0189, loss_bbox: 0.2030, loss: 0.2219
+2024-03-23 01:19:44,267 - mmdet - INFO - Epoch [15][600/1238]	lr: 1.000e-04, eta: 0:15:21, time: 0.509, data_time: 0.007, memory: 12077, loss_cls: 0.0164, loss_bbox: 0.2073, loss: 0.2237
+2024-03-23 01:20:09,742 - mmdet - INFO - Epoch [15][650/1238]	lr: 1.000e-04, eta: 0:14:57, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0194, loss_bbox: 0.2136, loss: 0.2331
+2024-03-23 01:20:35,074 - mmdet - INFO - Epoch [15][700/1238]	lr: 1.000e-04, eta: 0:14:32, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0165, loss_bbox: 0.2029, loss: 0.2194
+2024-03-23 01:21:00,379 - mmdet - INFO - Epoch [15][750/1238]	lr: 1.000e-04, eta: 0:14:08, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0238, loss_bbox: 0.2041, loss: 0.2280
+2024-03-23 01:21:25,572 - mmdet - INFO - Epoch [15][800/1238]	lr: 1.000e-04, eta: 0:13:43, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0179, loss_bbox: 0.1998, loss: 0.2176
+2024-03-23 01:21:50,761 - mmdet - INFO - Epoch [15][850/1238]	lr: 1.000e-04, eta: 0:13:19, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0154, loss_bbox: 0.2070, loss: 0.2224
+2024-03-23 01:22:15,915 - mmdet - INFO - Epoch [15][900/1238]	lr: 1.000e-04, eta: 0:12:54, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0172, loss_bbox: 0.2047, loss: 0.2219
+2024-03-23 01:22:41,025 - mmdet - INFO - Epoch [15][950/1238]	lr: 1.000e-04, eta: 0:12:30, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0193, loss_bbox: 0.2031, loss: 0.2224
+2024-03-23 01:23:06,277 - mmdet - INFO - Epoch [15][1000/1238]	lr: 1.000e-04, eta: 0:12:05, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0150, loss_bbox: 0.2023, loss: 0.2173
+2024-03-23 01:23:31,478 - mmdet - INFO - Epoch [15][1050/1238]	lr: 1.000e-04, eta: 0:11:41, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0197, loss_bbox: 0.2064, loss: 0.2261
+2024-03-23 01:23:56,676 - mmdet - INFO - Epoch [15][1100/1238]	lr: 1.000e-04, eta: 0:11:16, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0140, loss_bbox: 0.2002, loss: 0.2142
+2024-03-23 01:24:22,063 - mmdet - INFO - Epoch [15][1150/1238]	lr: 1.000e-04, eta: 0:10:52, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0199, loss_bbox: 0.2051, loss: 0.2250
+2024-03-23 01:24:47,237 - mmdet - INFO - Epoch [15][1200/1238]	lr: 1.000e-04, eta: 0:10:27, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0157, loss_bbox: 0.2059, loss: 0.2216
+2024-03-23 01:26:08,735 - mmdet - INFO - Evaluating bbox...
+2024-03-23 01:26:13,647 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.524
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.793
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.595
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.413
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.573
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.690
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.524
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.722
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.781
+
+2024-03-23 01:26:13,648 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.728 | helmet   | 0.663 | self_clothes | 0.567 |
+| safety_clothes | 0.663 | head     | 0.514 | blur_head    | 0.236 |
+| blur_clothes   | 0.295 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-23 01:26:13,727 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-23 01:26:13,728 - mmdet - INFO - Epoch(val) [15][619]	bbox_mAP: 0.5240, bbox_mAP_50: 0.7930, bbox_mAP_75: 0.5950, bbox_mAP_s: 0.4130, bbox_mAP_m: 0.5730, bbox_mAP_l: 0.6900, bbox_mAP_copypaste: 0.524 0.793 0.595 0.413 0.573 0.690
+2024-03-23 01:26:41,334 - mmdet - INFO - Epoch [16][50/1238]	lr: 1.000e-04, eta: 0:09:43, time: 0.552, data_time: 0.055, memory: 12077, loss_cls: 0.0153, loss_bbox: 0.1965, loss: 0.2118
+2024-03-23 01:27:06,574 - mmdet - INFO - Epoch [16][100/1238]	lr: 1.000e-04, eta: 0:09:18, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0169, loss_bbox: 0.1984, loss: 0.2154
+2024-03-23 01:27:31,643 - mmdet - INFO - Epoch [16][150/1238]	lr: 1.000e-04, eta: 0:08:54, time: 0.502, data_time: 0.007, memory: 12077, loss_cls: 0.0171, loss_bbox: 0.2106, loss: 0.2277
+2024-03-23 01:27:56,789 - mmdet - INFO - Epoch [16][200/1238]	lr: 1.000e-04, eta: 0:08:29, time: 0.503, data_time: 0.007, memory: 12077, loss_cls: 0.0170, loss_bbox: 0.1976, loss: 0.2146
+2024-03-23 01:28:22,090 - mmdet - INFO - Epoch [16][250/1238]	lr: 1.000e-04, eta: 0:08:05, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0182, loss_bbox: 0.2100, loss: 0.2282
+2024-03-23 01:28:47,402 - mmdet - INFO - Epoch [16][300/1238]	lr: 1.000e-04, eta: 0:07:40, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0178, loss_bbox: 0.2068, loss: 0.2246
+2024-03-23 01:29:12,759 - mmdet - INFO - Epoch [16][350/1238]	lr: 1.000e-04, eta: 0:07:16, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0162, loss_bbox: 0.2019, loss: 0.2181
+2024-03-23 01:29:38,079 - mmdet - INFO - Epoch [16][400/1238]	lr: 1.000e-04, eta: 0:06:51, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0209, loss_bbox: 0.2052, loss: 0.2260
+2024-03-23 01:30:03,468 - mmdet - INFO - Epoch [16][450/1238]	lr: 1.000e-04, eta: 0:06:27, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0169, loss_bbox: 0.1995, loss: 0.2165
+2024-03-23 01:30:28,959 - mmdet - INFO - Epoch [16][500/1238]	lr: 1.000e-04, eta: 0:06:02, time: 0.510, data_time: 0.007, memory: 12077, loss_cls: 0.0163, loss_bbox: 0.2057, loss: 0.2219
+2024-03-23 01:30:54,162 - mmdet - INFO - Epoch [16][550/1238]	lr: 1.000e-04, eta: 0:05:38, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0185, loss_bbox: 0.2013, loss: 0.2198
+2024-03-23 01:31:19,514 - mmdet - INFO - Epoch [16][600/1238]	lr: 1.000e-04, eta: 0:05:13, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0166, loss_bbox: 0.2040, loss: 0.2206
+2024-03-23 01:31:44,887 - mmdet - INFO - Epoch [16][650/1238]	lr: 1.000e-04, eta: 0:04:49, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0168, loss_bbox: 0.2089, loss: 0.2257
+2024-03-23 01:32:10,271 - mmdet - INFO - Epoch [16][700/1238]	lr: 1.000e-04, eta: 0:04:24, time: 0.508, data_time: 0.007, memory: 12077, loss_cls: 0.0168, loss_bbox: 0.2072, loss: 0.2240
+2024-03-23 01:32:35,445 - mmdet - INFO - Epoch [16][750/1238]	lr: 1.000e-04, eta: 0:03:59, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0147, loss_bbox: 0.2046, loss: 0.2193
+2024-03-23 01:33:00,660 - mmdet - INFO - Epoch [16][800/1238]	lr: 1.000e-04, eta: 0:03:35, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0196, loss_bbox: 0.2055, loss: 0.2251
+2024-03-23 01:33:25,873 - mmdet - INFO - Epoch [16][850/1238]	lr: 1.000e-04, eta: 0:03:10, time: 0.504, data_time: 0.007, memory: 12077, loss_cls: 0.0188, loss_bbox: 0.2091, loss: 0.2278
+2024-03-23 01:33:51,243 - mmdet - INFO - Epoch [16][900/1238]	lr: 1.000e-04, eta: 0:02:46, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0169, loss_bbox: 0.2095, loss: 0.2265
+2024-03-23 01:34:16,524 - mmdet - INFO - Epoch [16][950/1238]	lr: 1.000e-04, eta: 0:02:21, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0180, loss_bbox: 0.2023, loss: 0.2203
+2024-03-23 01:34:41,868 - mmdet - INFO - Epoch [16][1000/1238]	lr: 1.000e-04, eta: 0:01:57, time: 0.507, data_time: 0.007, memory: 12077, loss_cls: 0.0163, loss_bbox: 0.1976, loss: 0.2140
+2024-03-23 01:35:07,117 - mmdet - INFO - Epoch [16][1050/1238]	lr: 1.000e-04, eta: 0:01:32, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0142, loss_bbox: 0.1996, loss: 0.2138
+2024-03-23 01:35:32,429 - mmdet - INFO - Epoch [16][1100/1238]	lr: 1.000e-04, eta: 0:01:07, time: 0.506, data_time: 0.007, memory: 12077, loss_cls: 0.0206, loss_bbox: 0.2122, loss: 0.2327
+2024-03-23 01:35:57,674 - mmdet - INFO - Epoch [16][1150/1238]	lr: 1.000e-04, eta: 0:00:43, time: 0.505, data_time: 0.007, memory: 12077, loss_cls: 0.0205, loss_bbox: 0.2032, loss: 0.2237
+2024-03-23 01:36:22,817 - mmdet - INFO - Epoch [16][1200/1238]	lr: 1.000e-04, eta: 0:00:18, time: 0.503, data_time: 0.008, memory: 12077, loss_cls: 0.0187, loss_bbox: 0.2047, loss: 0.2234
+2024-03-23 01:36:42,020 - mmdet - INFO - Saving checkpoint at 16 epochs
+2024-03-23 01:37:45,251 - mmdet - INFO - Evaluating bbox...
+2024-03-23 01:37:49,876 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.523
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.792
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.592
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.413
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.572
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.697
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.525
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.726
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.780
+
+2024-03-23 01:37:49,876 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.729 | helmet   | 0.662 | self_clothes | 0.562 |
+| safety_clothes | 0.662 | head     | 0.516 | blur_head    | 0.235 |
+| blur_clothes   | 0.296 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-23 01:37:49,954 - mmdet - INFO - Exp name: SCALE_tood_16e.py
+2024-03-23 01:37:49,954 - mmdet - INFO - Epoch(val) [16][619]	bbox_mAP: 0.5230, bbox_mAP_50: 0.7920, bbox_mAP_75: 0.5920, bbox_mAP_s: 0.4130, bbox_mAP_m: 0.5720, bbox_mAP_l: 0.6970, bbox_mAP_copypaste: 0.523 0.792 0.592 0.413 0.572 0.697

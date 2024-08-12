@@ -1,0 +1,1567 @@
+2023-03-03 09:15:18,409 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.13 (default, Mar 28 2022, 11:38:47) [GCC 7.5.0]
+CUDA available: True
+GPU 0,1,2,3: NVIDIA GeForce RTX 3090
+CUDA_HOME: /home/yfs/anaconda3/envs/mmdet
+NVCC: Not Available
+GCC: gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0
+PyTorch: 1.11.0+cu113
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.5.2 (Git Hash a9302535553c73243c632ad3c4c80beec3d19a1e)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.3
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.2
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.3, CUDNN_VERSION=8.2.0, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.11.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=OFF, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.12.0+cu113
+OpenCV: 4.6.0
+MMCV: 1.5.3
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.3
+MMDetection: 2.25.0+56e42e7
+------------------------------------------------------------
+
+2023-03-03 09:15:18,691 - mmdet - INFO - Distributed training: True
+2023-03-03 09:15:18,979 - mmdet - INFO - Config:
+num_classes = 7
+model = dict(
+    type='TOOD',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        start_level=1,
+        add_extra_convs='on_output',
+        num_outs=5),
+    bbox_head=dict(
+        type='TOODHead',
+        num_classes=7,
+        in_channels=256,
+        stacked_convs=6,
+        feat_channels=256,
+        anchor_type='anchor_free',
+        anchor_generator=dict(
+            type='AnchorGenerator',
+            ratios=[1.0],
+            octave_base_scale=8,
+            scales_per_octave=1,
+            strides=[8, 16, 32, 64, 128]),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[0.0, 0.0, 0.0, 0.0],
+            target_stds=[0.1, 0.1, 0.2, 0.2]),
+        initial_loss_cls=dict(
+            type='FocalLoss',
+            use_sigmoid=True,
+            activated=True,
+            gamma=2.0,
+            alpha=0.25,
+            loss_weight=1.0),
+        loss_cls=dict(
+            type='QualityFocalLoss',
+            use_sigmoid=True,
+            activated=True,
+            beta=2.0,
+            loss_weight=1.0),
+        loss_bbox=dict(type='GIoULoss', loss_weight=2.0)),
+    train_cfg=dict(
+        initial_epoch=4,
+        initial_assigner=dict(type='ATSSAssigner', topk=9),
+        assigner=dict(type='TaskAlignedAssigner', topk=13),
+        alpha=1,
+        beta=6,
+        allowed_border=-1,
+        pos_weight=-1,
+        debug=False),
+    test_cfg=dict(
+        nms_pre=1000,
+        min_bbox_size=0,
+        score_thr=0.05,
+        nms=dict(type='nms', iou_threshold=0.6),
+        max_per_img=100))
+dataset_type = 'QY_Dataset'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(1333, 800),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=2,
+    workers_per_gpu=2,
+    train=dict(
+        type='QY_Dataset',
+        ann_file='/home/yfs/data/QY/QY_final_dataset/annotations/train.json',
+        img_prefix='/home/yfs/data/QY/QY_final_dataset/images',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+        ]),
+    val=dict(
+        type='QY_Dataset',
+        ann_file='/home/yfs/data/QY/QY_final_dataset/annotations/val.json',
+        img_prefix='/home/yfs/data/QY/QY_final_dataset/images',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='QY_Dataset',
+        ann_file='/home/yfs/data/QY/QY_final_dataset/annotations/val.json',
+        img_prefix='/home/yfs/data/QY/QY_final_dataset/images',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+evaluation = dict(interval=1, metric='bbox', classwise='True')
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=None)
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11])
+runner = dict(type='EpochBasedRunner', max_epochs=12)
+checkpoint_config = dict(interval=12)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='SetEpochInfoHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '/home/yfs/mmdetection/checkpoints/tood_r50_fpn_1x_coco_20211210_103425-20e20746.pth'
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+auto_scale_lr = dict(enable=False, base_batch_size=16)
+work_dir = 'log_dir/QY_experiment/tood_1x_r50'
+auto_resume = False
+gpu_ids = range(0, 4)
+
+2023-03-03 09:15:18,979 - mmdet - INFO - Set random seed to 3407, deterministic: False
+2023-03-03 09:15:19,315 - mmdet - INFO - initialize ResNet with init_cfg [{'type': 'Kaiming', 'layer': 'Conv2d'}, {'type': 'Constant', 'val': 1, 'layer': ['_BatchNorm', 'GroupNorm']}]
+2023-03-03 09:15:19,494 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,495 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,495 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,497 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,498 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,498 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,499 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,501 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,503 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,505 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,506 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,508 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,509 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,514 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,520 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,524 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2023-03-03 09:15:19,546 - mmdet - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+Name of parameter - Initialization information
+
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer1.0.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.1.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer1.1.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.2.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.2.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.2.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.2.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.2.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer1.2.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.0.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.1.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.1.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.2.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.2.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.2.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.2.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.2.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.2.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.3.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.3.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.3.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.3.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.3.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.3.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.2.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.2.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.2.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.2.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.3.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.3.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.3.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.3.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.4.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.4.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.4.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.4.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.5.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.5.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.5.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.5.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.2.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.2.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.2.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.2.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+neck.lateral_convs.0.conv.weight - torch.Size([256, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+neck.lateral_convs.1.conv.weight - torch.Size([256, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+neck.lateral_convs.2.conv.weight - torch.Size([256, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+neck.fpn_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+neck.fpn_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+neck.fpn_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+neck.fpn_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+neck.fpn_convs.4.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.4.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.1.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.1.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.2.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.2.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.3.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.3.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.4.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.4.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.4.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.5.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.inter_convs.5.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.inter_convs.5.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.cls_decomp.layer_attention.0.weight - torch.Size([32, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_decomp.layer_attention.0.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_decomp.layer_attention.2.weight - torch.Size([6, 32, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_decomp.layer_attention.2.bias - torch.Size([6]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_decomp.reduction_conv.conv.weight - torch.Size([256, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_decomp.reduction_conv.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.cls_decomp.reduction_conv.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.reg_decomp.layer_attention.0.weight - torch.Size([32, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_decomp.layer_attention.0.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_decomp.layer_attention.2.weight - torch.Size([6, 32, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_decomp.layer_attention.2.bias - torch.Size([6]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_decomp.reduction_conv.conv.weight - torch.Size([256, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_decomp.reduction_conv.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.reg_decomp.reduction_conv.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.tood_cls.weight - torch.Size([7, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.tood_cls.bias - torch.Size([7]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.tood_reg.weight - torch.Size([4, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.tood_reg.bias - torch.Size([4]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_prob_module.0.weight - torch.Size([64, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_prob_module.0.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_prob_module.2.weight - torch.Size([1, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.cls_prob_module.2.bias - torch.Size([1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_offset_module.0.weight - torch.Size([64, 1536, 1, 1]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_offset_module.0.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_offset_module.2.weight - torch.Size([8, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.reg_offset_module.2.bias - torch.Size([8]): 
+Initialized by user-defined `init_weights` in TOODHead  
+
+bbox_head.scales.0.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.scales.1.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.scales.2.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.scales.3.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of TOOD  
+
+bbox_head.scales.4.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of TOOD  
+2023-03-03 09:15:26,119 - mmdet - INFO - Automatic scaling of learning rate (LR) has been disabled.
+2023-03-03 09:15:26,331 - mmdet - INFO - load checkpoint from local path: /home/yfs/mmdetection/checkpoints/tood_r50_fpn_1x_coco_20211210_103425-20e20746.pth
+2023-03-03 09:15:26,482 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for bbox_head.tood_cls.weight: copying a param with shape torch.Size([80, 256, 3, 3]) from checkpoint, the shape in current model is torch.Size([7, 256, 3, 3]).
+size mismatch for bbox_head.tood_cls.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([7]).
+2023-03-03 09:15:26,488 - mmdet - INFO - Start running, host: yfs@4029GP-TRT, work_dir: /home/yfs/mmdetection/log_dir/QY_experiment/tood_1x_r50
+2023-03-03 09:15:26,489 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) SetEpochInfoHook                   
+(NORMAL      ) DistSamplerSeedHook                
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) DistSamplerSeedHook                
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2023-03-03 09:15:26,489 - mmdet - INFO - workflow: [('train', 1)], max: 12 epochs
+2023-03-03 09:15:26,489 - mmdet - INFO - Checkpoints will be saved to /home/yfs/mmdetection/log_dir/QY_experiment/tood_1x_r50 by HardDiskBackend.
+2023-03-03 09:15:39,960 - mmdet - INFO - Epoch [1][50/1238]	lr: 9.890e-04, eta: 1:06:25, time: 0.269, data_time: 0.056, memory: 3821, loss_cls: 0.6062, loss_bbox: 0.6067, loss: 1.2129
+2023-03-03 09:15:50,773 - mmdet - INFO - Epoch [1][100/1238]	lr: 1.988e-03, eta: 0:59:40, time: 0.216, data_time: 0.007, memory: 3821, loss_cls: 0.2249, loss_bbox: 0.4164, loss: 0.6413
+2023-03-03 09:16:01,561 - mmdet - INFO - Epoch [1][150/1238]	lr: 2.987e-03, eta: 0:57:17, time: 0.216, data_time: 0.009, memory: 3821, loss_cls: 0.1983, loss_bbox: 0.4148, loss: 0.6131
+2023-03-03 09:16:12,446 - mmdet - INFO - Epoch [1][200/1238]	lr: 3.986e-03, eta: 0:56:06, time: 0.218, data_time: 0.008, memory: 3821, loss_cls: 0.1900, loss_bbox: 0.4044, loss: 0.5944
+2023-03-03 09:16:22,956 - mmdet - INFO - Epoch [1][250/1238]	lr: 4.985e-03, eta: 0:54:58, time: 0.210, data_time: 0.009, memory: 3821, loss_cls: 0.1754, loss_bbox: 0.3854, loss: 0.5609
+2023-03-03 09:16:33,411 - mmdet - INFO - Epoch [1][300/1238]	lr: 5.984e-03, eta: 0:54:06, time: 0.209, data_time: 0.008, memory: 3821, loss_cls: 0.1561, loss_bbox: 0.3712, loss: 0.5273
+2023-03-03 09:16:43,888 - mmdet - INFO - Epoch [1][350/1238]	lr: 6.983e-03, eta: 0:53:27, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.1653, loss_bbox: 0.3725, loss: 0.5378
+2023-03-03 09:16:54,614 - mmdet - INFO - Epoch [1][400/1238]	lr: 7.982e-03, eta: 0:53:04, time: 0.214, data_time: 0.008, memory: 3821, loss_cls: 0.1618, loss_bbox: 0.3768, loss: 0.5386
+2023-03-03 09:17:05,035 - mmdet - INFO - Epoch [1][450/1238]	lr: 8.981e-03, eta: 0:52:34, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.1605, loss_bbox: 0.3833, loss: 0.5437
+2023-03-03 09:17:15,472 - mmdet - INFO - Epoch [1][500/1238]	lr: 9.980e-03, eta: 0:52:08, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.1643, loss_bbox: 0.3956, loss: 0.5599
+2023-03-03 09:17:26,119 - mmdet - INFO - Epoch [1][550/1238]	lr: 1.000e-02, eta: 0:51:51, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1554, loss_bbox: 0.3717, loss: 0.5271
+2023-03-03 09:17:36,566 - mmdet - INFO - Epoch [1][600/1238]	lr: 1.000e-02, eta: 0:51:30, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.1520, loss_bbox: 0.3799, loss: 0.5319
+2023-03-03 09:17:47,022 - mmdet - INFO - Epoch [1][650/1238]	lr: 1.000e-02, eta: 0:51:11, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.1512, loss_bbox: 0.3757, loss: 0.5270
+2023-03-03 09:17:57,657 - mmdet - INFO - Epoch [1][700/1238]	lr: 1.000e-02, eta: 0:50:56, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1640, loss_bbox: 0.3854, loss: 0.5494
+2023-03-03 09:18:08,394 - mmdet - INFO - Epoch [1][750/1238]	lr: 1.000e-02, eta: 0:50:44, time: 0.215, data_time: 0.008, memory: 3821, loss_cls: 0.1583, loss_bbox: 0.3724, loss: 0.5307
+2023-03-03 09:18:18,968 - mmdet - INFO - Epoch [1][800/1238]	lr: 1.000e-02, eta: 0:50:30, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.1524, loss_bbox: 0.3814, loss: 0.5338
+2023-03-03 09:18:29,549 - mmdet - INFO - Epoch [1][850/1238]	lr: 1.000e-02, eta: 0:50:16, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.1457, loss_bbox: 0.3743, loss: 0.5201
+2023-03-03 09:18:40,025 - mmdet - INFO - Epoch [1][900/1238]	lr: 1.000e-02, eta: 0:50:00, time: 0.209, data_time: 0.008, memory: 3821, loss_cls: 0.1506, loss_bbox: 0.3643, loss: 0.5149
+2023-03-03 09:18:50,804 - mmdet - INFO - Epoch [1][950/1238]	lr: 1.000e-02, eta: 0:49:50, time: 0.216, data_time: 0.008, memory: 3821, loss_cls: 0.1548, loss_bbox: 0.3747, loss: 0.5295
+2023-03-03 09:19:01,316 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 09:19:01,316 - mmdet - INFO - Epoch [1][1000/1238]	lr: 1.000e-02, eta: 0:49:36, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.1623, loss_bbox: 0.3684, loss: 0.5307
+2023-03-03 09:19:12,004 - mmdet - INFO - Epoch [1][1050/1238]	lr: 1.000e-02, eta: 0:49:24, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.1496, loss_bbox: 0.3625, loss: 0.5120
+2023-03-03 09:19:22,500 - mmdet - INFO - Epoch [1][1100/1238]	lr: 1.000e-02, eta: 0:49:11, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.1390, loss_bbox: 0.3630, loss: 0.5019
+2023-03-03 09:19:33,127 - mmdet - INFO - Epoch [1][1150/1238]	lr: 1.000e-02, eta: 0:48:59, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1328, loss_bbox: 0.3511, loss: 0.4840
+2023-03-03 09:19:43,772 - mmdet - INFO - Epoch [1][1200/1238]	lr: 1.000e-02, eta: 0:48:47, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1347, loss_bbox: 0.3529, loss: 0.4876
+2023-03-03 09:20:30,342 - mmdet - INFO - Evaluating bbox...
+2023-03-03 09:20:42,372 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.376
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.628
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.394
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.244
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.428
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.559
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.534
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.534
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.534
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.367
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.663
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.746
+
+2023-03-03 09:20:42,373 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.662 | helmet   | 0.548 | self_clothes | 0.293 |
+| safety_clothes | 0.517 | head     | 0.363 | blur_head    | 0.108 |
+| blur_clothes   | 0.145 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 09:20:42,557 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 09:20:42,557 - mmdet - INFO - Epoch(val) [1][619]	bbox_mAP: 0.3760, bbox_mAP_50: 0.6280, bbox_mAP_75: 0.3940, bbox_mAP_s: 0.2440, bbox_mAP_m: 0.4280, bbox_mAP_l: 0.5590, bbox_mAP_copypaste: 0.376 0.628 0.394 0.244 0.428 0.559
+2023-03-03 09:20:55,880 - mmdet - INFO - Epoch [2][50/1238]	lr: 1.000e-02, eta: 0:47:30, time: 0.266, data_time: 0.055, memory: 3821, loss_cls: 0.1253, loss_bbox: 0.3422, loss: 0.4674
+2023-03-03 09:21:06,549 - mmdet - INFO - Epoch [2][100/1238]	lr: 1.000e-02, eta: 0:47:21, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1316, loss_bbox: 0.3456, loss: 0.4772
+2023-03-03 09:21:17,326 - mmdet - INFO - Epoch [2][150/1238]	lr: 1.000e-02, eta: 0:47:13, time: 0.216, data_time: 0.008, memory: 3821, loss_cls: 0.1221, loss_bbox: 0.3297, loss: 0.4517
+2023-03-03 09:21:28,216 - mmdet - INFO - Epoch [2][200/1238]	lr: 1.000e-02, eta: 0:47:06, time: 0.218, data_time: 0.008, memory: 3821, loss_cls: 0.1365, loss_bbox: 0.3447, loss: 0.4812
+2023-03-03 09:21:38,986 - mmdet - INFO - Epoch [2][250/1238]	lr: 1.000e-02, eta: 0:46:57, time: 0.215, data_time: 0.007, memory: 3821, loss_cls: 0.1191, loss_bbox: 0.3301, loss: 0.4492
+2023-03-03 09:21:49,583 - mmdet - INFO - Epoch [2][300/1238]	lr: 1.000e-02, eta: 0:46:47, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.1260, loss_bbox: 0.3404, loss: 0.4664
+2023-03-03 09:22:00,240 - mmdet - INFO - Epoch [2][350/1238]	lr: 1.000e-02, eta: 0:46:38, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1203, loss_bbox: 0.3381, loss: 0.4584
+2023-03-03 09:22:10,954 - mmdet - INFO - Epoch [2][400/1238]	lr: 1.000e-02, eta: 0:46:29, time: 0.214, data_time: 0.008, memory: 3821, loss_cls: 0.1219, loss_bbox: 0.3412, loss: 0.4630
+2023-03-03 09:22:21,595 - mmdet - INFO - Epoch [2][450/1238]	lr: 1.000e-02, eta: 0:46:19, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1283, loss_bbox: 0.3300, loss: 0.4582
+2023-03-03 09:22:32,043 - mmdet - INFO - Epoch [2][500/1238]	lr: 1.000e-02, eta: 0:46:07, time: 0.209, data_time: 0.008, memory: 3821, loss_cls: 0.1263, loss_bbox: 0.3472, loss: 0.4735
+2023-03-03 09:22:42,466 - mmdet - INFO - Epoch [2][550/1238]	lr: 1.000e-02, eta: 0:45:56, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.1286, loss_bbox: 0.3424, loss: 0.4710
+2023-03-03 09:22:53,107 - mmdet - INFO - Epoch [2][600/1238]	lr: 1.000e-02, eta: 0:45:46, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.1296, loss_bbox: 0.3318, loss: 0.4613
+2023-03-03 09:23:03,627 - mmdet - INFO - Epoch [2][650/1238]	lr: 1.000e-02, eta: 0:45:35, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.1263, loss_bbox: 0.3407, loss: 0.4670
+2023-03-03 09:23:14,081 - mmdet - INFO - Epoch [2][700/1238]	lr: 1.000e-02, eta: 0:45:24, time: 0.209, data_time: 0.008, memory: 3821, loss_cls: 0.1204, loss_bbox: 0.3356, loss: 0.4560
+2023-03-03 09:23:24,705 - mmdet - INFO - Epoch [2][750/1238]	lr: 1.000e-02, eta: 0:45:14, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.1141, loss_bbox: 0.3243, loss: 0.4384
+2023-03-03 09:23:35,838 - mmdet - INFO - Epoch [2][800/1238]	lr: 1.000e-02, eta: 0:45:07, time: 0.223, data_time: 0.008, memory: 3821, loss_cls: 0.1188, loss_bbox: 0.3520, loss: 0.4708
+2023-03-03 09:23:46,761 - mmdet - INFO - Epoch [2][850/1238]	lr: 1.000e-02, eta: 0:44:59, time: 0.218, data_time: 0.009, memory: 3821, loss_cls: 0.1159, loss_bbox: 0.3319, loss: 0.4478
+2023-03-03 09:23:57,403 - mmdet - INFO - Epoch [2][900/1238]	lr: 1.000e-02, eta: 0:44:49, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.1126, loss_bbox: 0.3267, loss: 0.4393
+2023-03-03 09:24:07,916 - mmdet - INFO - Epoch [2][950/1238]	lr: 1.000e-02, eta: 0:44:38, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.1142, loss_bbox: 0.3206, loss: 0.4348
+2023-03-03 09:24:18,237 - mmdet - INFO - Epoch [2][1000/1238]	lr: 1.000e-02, eta: 0:44:26, time: 0.206, data_time: 0.007, memory: 3821, loss_cls: 0.1180, loss_bbox: 0.3487, loss: 0.4667
+2023-03-03 09:24:28,896 - mmdet - INFO - Epoch [2][1050/1238]	lr: 1.000e-02, eta: 0:44:16, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.1201, loss_bbox: 0.3411, loss: 0.4612
+2023-03-03 09:24:39,583 - mmdet - INFO - Epoch [2][1100/1238]	lr: 1.000e-02, eta: 0:44:06, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.1325, loss_bbox: 0.3397, loss: 0.4722
+2023-03-03 09:24:49,893 - mmdet - INFO - Epoch [2][1150/1238]	lr: 1.000e-02, eta: 0:43:54, time: 0.206, data_time: 0.008, memory: 3821, loss_cls: 0.1174, loss_bbox: 0.3396, loss: 0.4570
+2023-03-03 09:25:00,315 - mmdet - INFO - Epoch [2][1200/1238]	lr: 1.000e-02, eta: 0:43:43, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.1180, loss_bbox: 0.3372, loss: 0.4551
+2023-03-03 09:25:47,425 - mmdet - INFO - Evaluating bbox...
+2023-03-03 09:25:55,951 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.436
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.684
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.487
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.295
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.489
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.579
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.562
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.562
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.562
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.415
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.691
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.736
+
+2023-03-03 09:25:55,952 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.674 | helmet   | 0.615 | self_clothes | 0.418 |
+| safety_clothes | 0.569 | head     | 0.441 | blur_head    | 0.177 |
+| blur_clothes   | 0.159 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 09:25:56,086 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 09:25:56,086 - mmdet - INFO - Epoch(val) [2][619]	bbox_mAP: 0.4360, bbox_mAP_50: 0.6840, bbox_mAP_75: 0.4870, bbox_mAP_s: 0.2950, bbox_mAP_m: 0.4890, bbox_mAP_l: 0.5790, bbox_mAP_copypaste: 0.436 0.684 0.487 0.295 0.489 0.579
+2023-03-03 09:26:08,879 - mmdet - INFO - Epoch [3][50/1238]	lr: 1.000e-02, eta: 0:42:56, time: 0.255, data_time: 0.055, memory: 3821, loss_cls: 0.1071, loss_bbox: 0.3253, loss: 0.4324
+2023-03-03 09:26:19,528 - mmdet - INFO - Epoch [3][100/1238]	lr: 1.000e-02, eta: 0:42:46, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1110, loss_bbox: 0.3070, loss: 0.4180
+2023-03-03 09:26:30,097 - mmdet - INFO - Epoch [3][150/1238]	lr: 1.000e-02, eta: 0:42:36, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.1065, loss_bbox: 0.3187, loss: 0.4252
+2023-03-03 09:26:40,515 - mmdet - INFO - Epoch [3][200/1238]	lr: 1.000e-02, eta: 0:42:26, time: 0.208, data_time: 0.008, memory: 3821, loss_cls: 0.1120, loss_bbox: 0.3139, loss: 0.4259
+2023-03-03 09:26:51,092 - mmdet - INFO - Epoch [3][250/1238]	lr: 1.000e-02, eta: 0:42:16, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.1167, loss_bbox: 0.3268, loss: 0.4435
+2023-03-03 09:27:01,443 - mmdet - INFO - Epoch [3][300/1238]	lr: 1.000e-02, eta: 0:42:05, time: 0.207, data_time: 0.007, memory: 3821, loss_cls: 0.1007, loss_bbox: 0.3109, loss: 0.4115
+2023-03-03 09:27:11,911 - mmdet - INFO - Epoch [3][350/1238]	lr: 1.000e-02, eta: 0:41:54, time: 0.209, data_time: 0.008, memory: 3821, loss_cls: 0.1170, loss_bbox: 0.3292, loss: 0.4463
+2023-03-03 09:27:22,222 - mmdet - INFO - Epoch [3][400/1238]	lr: 1.000e-02, eta: 0:41:43, time: 0.206, data_time: 0.008, memory: 3821, loss_cls: 0.1109, loss_bbox: 0.3159, loss: 0.4267
+2023-03-03 09:27:32,642 - mmdet - INFO - Epoch [3][450/1238]	lr: 1.000e-02, eta: 0:41:33, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.1114, loss_bbox: 0.3320, loss: 0.4434
+2023-03-03 09:27:43,314 - mmdet - INFO - Epoch [3][500/1238]	lr: 1.000e-02, eta: 0:41:23, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1169, loss_bbox: 0.3221, loss: 0.4390
+2023-03-03 09:27:53,719 - mmdet - INFO - Epoch [3][550/1238]	lr: 1.000e-02, eta: 0:41:13, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.1045, loss_bbox: 0.3202, loss: 0.4247
+2023-03-03 09:28:04,276 - mmdet - INFO - Epoch [3][600/1238]	lr: 1.000e-02, eta: 0:41:03, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.1055, loss_bbox: 0.3140, loss: 0.4195
+2023-03-03 09:28:14,939 - mmdet - INFO - Epoch [3][650/1238]	lr: 1.000e-02, eta: 0:40:53, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1234, loss_bbox: 0.3315, loss: 0.4550
+2023-03-03 09:28:25,608 - mmdet - INFO - Epoch [3][700/1238]	lr: 1.000e-02, eta: 0:40:43, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.1086, loss_bbox: 0.3117, loss: 0.4203
+2023-03-03 09:28:35,858 - mmdet - INFO - Epoch [3][750/1238]	lr: 1.000e-02, eta: 0:40:32, time: 0.205, data_time: 0.007, memory: 3821, loss_cls: 0.1143, loss_bbox: 0.3247, loss: 0.4390
+2023-03-03 09:28:46,352 - mmdet - INFO - Epoch [3][800/1238]	lr: 1.000e-02, eta: 0:40:22, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.1145, loss_bbox: 0.3096, loss: 0.4241
+2023-03-03 09:28:56,866 - mmdet - INFO - Epoch [3][850/1238]	lr: 1.000e-02, eta: 0:40:11, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.1133, loss_bbox: 0.3313, loss: 0.4446
+2023-03-03 09:29:07,263 - mmdet - INFO - Epoch [3][900/1238]	lr: 1.000e-02, eta: 0:40:01, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.1112, loss_bbox: 0.3157, loss: 0.4269
+2023-03-03 09:29:17,879 - mmdet - INFO - Epoch [3][950/1238]	lr: 1.000e-02, eta: 0:39:51, time: 0.212, data_time: 0.007, memory: 3821, loss_cls: 0.1184, loss_bbox: 0.3248, loss: 0.4432
+2023-03-03 09:29:28,207 - mmdet - INFO - Epoch [3][1000/1238]	lr: 1.000e-02, eta: 0:39:40, time: 0.207, data_time: 0.007, memory: 3821, loss_cls: 0.1137, loss_bbox: 0.3306, loss: 0.4443
+2023-03-03 09:29:38,564 - mmdet - INFO - Epoch [3][1050/1238]	lr: 1.000e-02, eta: 0:39:29, time: 0.207, data_time: 0.008, memory: 3821, loss_cls: 0.1072, loss_bbox: 0.3108, loss: 0.4180
+2023-03-03 09:29:49,087 - mmdet - INFO - Epoch [3][1100/1238]	lr: 1.000e-02, eta: 0:39:19, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.1059, loss_bbox: 0.3175, loss: 0.4234
+2023-03-03 09:29:59,574 - mmdet - INFO - Epoch [3][1150/1238]	lr: 1.000e-02, eta: 0:39:08, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.1088, loss_bbox: 0.3169, loss: 0.4257
+2023-03-03 09:30:09,933 - mmdet - INFO - Epoch [3][1200/1238]	lr: 1.000e-02, eta: 0:38:58, time: 0.207, data_time: 0.008, memory: 3821, loss_cls: 0.1073, loss_bbox: 0.3142, loss: 0.4216
+2023-03-03 09:30:53,940 - mmdet - INFO - Evaluating bbox...
+2023-03-03 09:31:02,413 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.437
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.703
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.480
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.290
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.502
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.624
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.561
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.561
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.561
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.399
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.692
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.772
+
+2023-03-03 09:31:02,414 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.690 | helmet   | 0.584 | self_clothes | 0.428 |
+| safety_clothes | 0.579 | head     | 0.427 | blur_head    | 0.171 |
+| blur_clothes   | 0.182 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 09:31:02,554 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 09:31:02,554 - mmdet - INFO - Epoch(val) [3][619]	bbox_mAP: 0.4370, bbox_mAP_50: 0.7030, bbox_mAP_75: 0.4800, bbox_mAP_s: 0.2900, bbox_mAP_m: 0.5020, bbox_mAP_l: 0.6240, bbox_mAP_copypaste: 0.437 0.703 0.480 0.290 0.502 0.624
+2023-03-03 09:31:15,434 - mmdet - INFO - Epoch [4][50/1238]	lr: 1.000e-02, eta: 0:38:23, time: 0.257, data_time: 0.056, memory: 3821, loss_cls: 0.0991, loss_bbox: 0.2982, loss: 0.3973
+2023-03-03 09:31:25,940 - mmdet - INFO - Epoch [4][100/1238]	lr: 1.000e-02, eta: 0:38:13, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.1020, loss_bbox: 0.3024, loss: 0.4044
+2023-03-03 09:31:36,474 - mmdet - INFO - Epoch [4][150/1238]	lr: 1.000e-02, eta: 0:38:03, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.1054, loss_bbox: 0.3098, loss: 0.4153
+2023-03-03 09:31:47,073 - mmdet - INFO - Epoch [4][200/1238]	lr: 1.000e-02, eta: 0:37:53, time: 0.212, data_time: 0.007, memory: 3821, loss_cls: 0.1014, loss_bbox: 0.2920, loss: 0.3935
+2023-03-03 09:31:57,767 - mmdet - INFO - Epoch [4][250/1238]	lr: 1.000e-02, eta: 0:37:44, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.1046, loss_bbox: 0.3019, loss: 0.4065
+2023-03-03 09:32:08,223 - mmdet - INFO - Epoch [4][300/1238]	lr: 1.000e-02, eta: 0:37:33, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0985, loss_bbox: 0.3056, loss: 0.4042
+2023-03-03 09:32:18,584 - mmdet - INFO - Epoch [4][350/1238]	lr: 1.000e-02, eta: 0:37:23, time: 0.207, data_time: 0.008, memory: 3821, loss_cls: 0.1026, loss_bbox: 0.3088, loss: 0.4114
+2023-03-03 09:32:28,935 - mmdet - INFO - Epoch [4][400/1238]	lr: 1.000e-02, eta: 0:37:12, time: 0.207, data_time: 0.008, memory: 3821, loss_cls: 0.1003, loss_bbox: 0.2985, loss: 0.3989
+2023-03-03 09:32:39,525 - mmdet - INFO - Epoch [4][450/1238]	lr: 1.000e-02, eta: 0:37:03, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.1017, loss_bbox: 0.3041, loss: 0.4058
+2023-03-03 09:32:50,253 - mmdet - INFO - Epoch [4][500/1238]	lr: 1.000e-02, eta: 0:36:53, time: 0.214, data_time: 0.008, memory: 3821, loss_cls: 0.1013, loss_bbox: 0.3033, loss: 0.4046
+2023-03-03 09:33:00,738 - mmdet - INFO - Epoch [4][550/1238]	lr: 1.000e-02, eta: 0:36:43, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.1096, loss_bbox: 0.3203, loss: 0.4299
+2023-03-03 09:33:11,157 - mmdet - INFO - Epoch [4][600/1238]	lr: 1.000e-02, eta: 0:36:32, time: 0.208, data_time: 0.008, memory: 3821, loss_cls: 0.1059, loss_bbox: 0.3103, loss: 0.4162
+2023-03-03 09:33:21,555 - mmdet - INFO - Epoch [4][650/1238]	lr: 1.000e-02, eta: 0:36:22, time: 0.208, data_time: 0.008, memory: 3821, loss_cls: 0.1101, loss_bbox: 0.3170, loss: 0.4271
+2023-03-03 09:33:31,900 - mmdet - INFO - Epoch [4][700/1238]	lr: 1.000e-02, eta: 0:36:11, time: 0.207, data_time: 0.007, memory: 3821, loss_cls: 0.1115, loss_bbox: 0.3199, loss: 0.4314
+2023-03-03 09:33:42,406 - mmdet - INFO - Epoch [4][750/1238]	lr: 1.000e-02, eta: 0:36:01, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.1037, loss_bbox: 0.3043, loss: 0.4080
+2023-03-03 09:33:52,818 - mmdet - INFO - Epoch [4][800/1238]	lr: 1.000e-02, eta: 0:35:51, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.1054, loss_bbox: 0.3077, loss: 0.4131
+2023-03-03 09:34:03,262 - mmdet - INFO - Epoch [4][850/1238]	lr: 1.000e-02, eta: 0:35:41, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.1148, loss_bbox: 0.3244, loss: 0.4392
+2023-03-03 09:34:13,904 - mmdet - INFO - Epoch [4][900/1238]	lr: 1.000e-02, eta: 0:35:31, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1034, loss_bbox: 0.3119, loss: 0.4153
+2023-03-03 09:34:24,485 - mmdet - INFO - Epoch [4][950/1238]	lr: 1.000e-02, eta: 0:35:21, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0985, loss_bbox: 0.3034, loss: 0.4019
+2023-03-03 09:34:35,141 - mmdet - INFO - Epoch [4][1000/1238]	lr: 1.000e-02, eta: 0:35:11, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.1052, loss_bbox: 0.3054, loss: 0.4106
+2023-03-03 09:34:45,721 - mmdet - INFO - Epoch [4][1050/1238]	lr: 1.000e-02, eta: 0:35:01, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.1006, loss_bbox: 0.3041, loss: 0.4048
+2023-03-03 09:34:56,362 - mmdet - INFO - Epoch [4][1100/1238]	lr: 1.000e-02, eta: 0:34:51, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.1059, loss_bbox: 0.3102, loss: 0.4162
+2023-03-03 09:35:06,933 - mmdet - INFO - Epoch [4][1150/1238]	lr: 1.000e-02, eta: 0:34:41, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.1020, loss_bbox: 0.3083, loss: 0.4102
+2023-03-03 09:35:17,443 - mmdet - INFO - Epoch [4][1200/1238]	lr: 1.000e-02, eta: 0:34:31, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.1041, loss_bbox: 0.3118, loss: 0.4159
+2023-03-03 09:36:01,842 - mmdet - INFO - Evaluating bbox...
+2023-03-03 09:36:09,956 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.469
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.732
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.529
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.339
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.517
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.620
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.586
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.586
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.586
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.462
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.693
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.757
+
+2023-03-03 09:36:09,957 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.698 | helmet   | 0.628 | self_clothes | 0.489 |
+| safety_clothes | 0.601 | head     | 0.463 | blur_head    | 0.196 |
+| blur_clothes   | 0.211 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 09:36:10,093 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 09:36:10,093 - mmdet - INFO - Epoch(val) [4][619]	bbox_mAP: 0.4690, bbox_mAP_50: 0.7320, bbox_mAP_75: 0.5290, bbox_mAP_s: 0.3390, bbox_mAP_m: 0.5170, bbox_mAP_l: 0.6200, bbox_mAP_copypaste: 0.469 0.732 0.529 0.339 0.517 0.620
+2023-03-03 09:36:23,285 - mmdet - INFO - Epoch [5][50/1238]	lr: 1.000e-02, eta: 0:34:02, time: 0.263, data_time: 0.055, memory: 3821, loss_cls: 0.0728, loss_bbox: 0.2664, loss: 0.3392
+2023-03-03 09:36:33,774 - mmdet - INFO - Epoch [5][100/1238]	lr: 1.000e-02, eta: 0:33:52, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0653, loss_bbox: 0.2806, loss: 0.3459
+2023-03-03 09:36:44,328 - mmdet - INFO - Epoch [5][150/1238]	lr: 1.000e-02, eta: 0:33:42, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0546, loss_bbox: 0.2707, loss: 0.3253
+2023-03-03 09:36:55,078 - mmdet - INFO - Epoch [5][200/1238]	lr: 1.000e-02, eta: 0:33:32, time: 0.215, data_time: 0.007, memory: 3821, loss_cls: 0.0600, loss_bbox: 0.2738, loss: 0.3338
+2023-03-03 09:37:05,891 - mmdet - INFO - Epoch [5][250/1238]	lr: 1.000e-02, eta: 0:33:23, time: 0.216, data_time: 0.007, memory: 3821, loss_cls: 0.0600, loss_bbox: 0.2706, loss: 0.3306
+2023-03-03 09:37:16,355 - mmdet - INFO - Epoch [5][300/1238]	lr: 1.000e-02, eta: 0:33:13, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0582, loss_bbox: 0.2700, loss: 0.3282
+2023-03-03 09:37:26,979 - mmdet - INFO - Epoch [5][350/1238]	lr: 1.000e-02, eta: 0:33:03, time: 0.212, data_time: 0.007, memory: 3821, loss_cls: 0.0683, loss_bbox: 0.2797, loss: 0.3480
+2023-03-03 09:37:37,655 - mmdet - INFO - Epoch [5][400/1238]	lr: 1.000e-02, eta: 0:32:53, time: 0.214, data_time: 0.008, memory: 3821, loss_cls: 0.0578, loss_bbox: 0.2744, loss: 0.3322
+2023-03-03 09:37:48,174 - mmdet - INFO - Epoch [5][450/1238]	lr: 1.000e-02, eta: 0:32:43, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0576, loss_bbox: 0.2646, loss: 0.3222
+2023-03-03 09:37:58,578 - mmdet - INFO - Epoch [5][500/1238]	lr: 1.000e-02, eta: 0:32:32, time: 0.208, data_time: 0.008, memory: 3821, loss_cls: 0.0659, loss_bbox: 0.2703, loss: 0.3362
+2023-03-03 09:38:08,977 - mmdet - INFO - Epoch [5][550/1238]	lr: 1.000e-02, eta: 0:32:22, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0590, loss_bbox: 0.2726, loss: 0.3316
+2023-03-03 09:38:19,401 - mmdet - INFO - Epoch [5][600/1238]	lr: 1.000e-02, eta: 0:32:12, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0667, loss_bbox: 0.2566, loss: 0.3233
+2023-03-03 09:38:29,734 - mmdet - INFO - Epoch [5][650/1238]	lr: 1.000e-02, eta: 0:32:01, time: 0.207, data_time: 0.007, memory: 3821, loss_cls: 0.0643, loss_bbox: 0.2683, loss: 0.3326
+2023-03-03 09:38:40,182 - mmdet - INFO - Epoch [5][700/1238]	lr: 1.000e-02, eta: 0:31:51, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0561, loss_bbox: 0.2714, loss: 0.3275
+2023-03-03 09:38:50,818 - mmdet - INFO - Epoch [5][750/1238]	lr: 1.000e-02, eta: 0:31:41, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.0584, loss_bbox: 0.2697, loss: 0.3282
+2023-03-03 09:39:01,694 - mmdet - INFO - Epoch [5][800/1238]	lr: 1.000e-02, eta: 0:31:31, time: 0.217, data_time: 0.007, memory: 3821, loss_cls: 0.0562, loss_bbox: 0.2676, loss: 0.3238
+2023-03-03 09:39:12,193 - mmdet - INFO - Epoch [5][850/1238]	lr: 1.000e-02, eta: 0:31:21, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0640, loss_bbox: 0.2699, loss: 0.3339
+2023-03-03 09:39:22,935 - mmdet - INFO - Epoch [5][900/1238]	lr: 1.000e-02, eta: 0:31:11, time: 0.215, data_time: 0.007, memory: 3821, loss_cls: 0.0623, loss_bbox: 0.2783, loss: 0.3407
+2023-03-03 09:39:33,499 - mmdet - INFO - Epoch [5][950/1238]	lr: 1.000e-02, eta: 0:31:01, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0559, loss_bbox: 0.2637, loss: 0.3196
+2023-03-03 09:39:43,962 - mmdet - INFO - Epoch [5][1000/1238]	lr: 1.000e-02, eta: 0:30:51, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0609, loss_bbox: 0.2745, loss: 0.3354
+2023-03-03 09:39:54,303 - mmdet - INFO - Epoch [5][1050/1238]	lr: 1.000e-02, eta: 0:30:40, time: 0.207, data_time: 0.008, memory: 3821, loss_cls: 0.0616, loss_bbox: 0.2652, loss: 0.3267
+2023-03-03 09:40:04,689 - mmdet - INFO - Epoch [5][1100/1238]	lr: 1.000e-02, eta: 0:30:30, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0523, loss_bbox: 0.2776, loss: 0.3299
+2023-03-03 09:40:15,124 - mmdet - INFO - Epoch [5][1150/1238]	lr: 1.000e-02, eta: 0:30:20, time: 0.209, data_time: 0.008, memory: 3821, loss_cls: 0.0572, loss_bbox: 0.2728, loss: 0.3301
+2023-03-03 09:40:25,633 - mmdet - INFO - Epoch [5][1200/1238]	lr: 1.000e-02, eta: 0:30:09, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0565, loss_bbox: 0.2642, loss: 0.3207
+2023-03-03 09:41:09,706 - mmdet - INFO - Evaluating bbox...
+2023-03-03 09:41:17,241 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.470
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.743
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.521
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.346
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.522
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.660
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.587
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.587
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.587
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.470
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.717
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.757
+
+2023-03-03 09:41:17,242 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.715 | helmet   | 0.617 | self_clothes | 0.509 |
+| safety_clothes | 0.613 | head     | 0.429 | blur_head    | 0.179 |
+| blur_clothes   | 0.231 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 09:41:17,369 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 09:41:17,369 - mmdet - INFO - Epoch(val) [5][619]	bbox_mAP: 0.4700, bbox_mAP_50: 0.7430, bbox_mAP_75: 0.5210, bbox_mAP_s: 0.3460, bbox_mAP_m: 0.5220, bbox_mAP_l: 0.6600, bbox_mAP_copypaste: 0.470 0.743 0.521 0.346 0.522 0.660
+2023-03-03 09:41:30,484 - mmdet - INFO - Epoch [6][50/1238]	lr: 1.000e-02, eta: 0:29:44, time: 0.262, data_time: 0.055, memory: 3821, loss_cls: 0.0461, loss_bbox: 0.2563, loss: 0.3024
+2023-03-03 09:41:41,156 - mmdet - INFO - Epoch [6][100/1238]	lr: 1.000e-02, eta: 0:29:34, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.0524, loss_bbox: 0.2617, loss: 0.3141
+2023-03-03 09:41:52,186 - mmdet - INFO - Epoch [6][150/1238]	lr: 1.000e-02, eta: 0:29:24, time: 0.221, data_time: 0.007, memory: 3821, loss_cls: 0.0536, loss_bbox: 0.2657, loss: 0.3194
+2023-03-03 09:42:02,772 - mmdet - INFO - Epoch [6][200/1238]	lr: 1.000e-02, eta: 0:29:14, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.0528, loss_bbox: 0.2631, loss: 0.3159
+2023-03-03 09:42:13,537 - mmdet - INFO - Epoch [6][250/1238]	lr: 1.000e-02, eta: 0:29:05, time: 0.215, data_time: 0.007, memory: 3821, loss_cls: 0.0453, loss_bbox: 0.2519, loss: 0.2972
+2023-03-03 09:42:24,222 - mmdet - INFO - Epoch [6][300/1238]	lr: 1.000e-02, eta: 0:28:55, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.0534, loss_bbox: 0.2708, loss: 0.3242
+2023-03-03 09:42:34,649 - mmdet - INFO - Epoch [6][350/1238]	lr: 1.000e-02, eta: 0:28:44, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0462, loss_bbox: 0.2549, loss: 0.3010
+2023-03-03 09:42:45,439 - mmdet - INFO - Epoch [6][400/1238]	lr: 1.000e-02, eta: 0:28:34, time: 0.216, data_time: 0.007, memory: 3821, loss_cls: 0.0449, loss_bbox: 0.2538, loss: 0.2987
+2023-03-03 09:42:56,099 - mmdet - INFO - Epoch [6][450/1238]	lr: 1.000e-02, eta: 0:28:24, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.0531, loss_bbox: 0.2579, loss: 0.3110
+2023-03-03 09:43:06,509 - mmdet - INFO - Epoch [6][500/1238]	lr: 1.000e-02, eta: 0:28:14, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0525, loss_bbox: 0.2676, loss: 0.3202
+2023-03-03 09:43:17,020 - mmdet - INFO - Epoch [6][550/1238]	lr: 1.000e-02, eta: 0:28:04, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0509, loss_bbox: 0.2689, loss: 0.3198
+2023-03-03 09:43:27,410 - mmdet - INFO - Epoch [6][600/1238]	lr: 1.000e-02, eta: 0:27:54, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0513, loss_bbox: 0.2610, loss: 0.3122
+2023-03-03 09:43:37,957 - mmdet - INFO - Epoch [6][650/1238]	lr: 1.000e-02, eta: 0:27:43, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.0465, loss_bbox: 0.2746, loss: 0.3211
+2023-03-03 09:43:48,327 - mmdet - INFO - Epoch [6][700/1238]	lr: 1.000e-02, eta: 0:27:33, time: 0.207, data_time: 0.007, memory: 3821, loss_cls: 0.0550, loss_bbox: 0.2714, loss: 0.3264
+2023-03-03 09:43:58,737 - mmdet - INFO - Epoch [6][750/1238]	lr: 1.000e-02, eta: 0:27:23, time: 0.208, data_time: 0.008, memory: 3821, loss_cls: 0.0516, loss_bbox: 0.2572, loss: 0.3088
+2023-03-03 09:44:09,035 - mmdet - INFO - Epoch [6][800/1238]	lr: 1.000e-02, eta: 0:27:12, time: 0.206, data_time: 0.007, memory: 3821, loss_cls: 0.0415, loss_bbox: 0.2522, loss: 0.2937
+2023-03-03 09:44:19,578 - mmdet - INFO - Epoch [6][850/1238]	lr: 1.000e-02, eta: 0:27:02, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0417, loss_bbox: 0.2639, loss: 0.3056
+2023-03-03 09:44:30,215 - mmdet - INFO - Epoch [6][900/1238]	lr: 1.000e-02, eta: 0:26:52, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.0460, loss_bbox: 0.2564, loss: 0.3024
+2023-03-03 09:44:40,985 - mmdet - INFO - Epoch [6][950/1238]	lr: 1.000e-02, eta: 0:26:42, time: 0.215, data_time: 0.008, memory: 3821, loss_cls: 0.0454, loss_bbox: 0.2581, loss: 0.3035
+2023-03-03 09:44:51,866 - mmdet - INFO - Epoch [6][1000/1238]	lr: 1.000e-02, eta: 0:26:32, time: 0.218, data_time: 0.008, memory: 3821, loss_cls: 0.0477, loss_bbox: 0.2516, loss: 0.2993
+2023-03-03 09:45:02,504 - mmdet - INFO - Epoch [6][1050/1238]	lr: 1.000e-02, eta: 0:26:22, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.0522, loss_bbox: 0.2627, loss: 0.3149
+2023-03-03 09:45:12,936 - mmdet - INFO - Epoch [6][1100/1238]	lr: 1.000e-02, eta: 0:26:12, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0482, loss_bbox: 0.2640, loss: 0.3121
+2023-03-03 09:45:23,510 - mmdet - INFO - Epoch [6][1150/1238]	lr: 1.000e-02, eta: 0:26:01, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0498, loss_bbox: 0.2645, loss: 0.3143
+2023-03-03 09:45:33,943 - mmdet - INFO - Epoch [6][1200/1238]	lr: 1.000e-02, eta: 0:25:51, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0596, loss_bbox: 0.2663, loss: 0.3258
+2023-03-03 09:46:18,924 - mmdet - INFO - Evaluating bbox...
+2023-03-03 09:46:25,616 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.484
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.756
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.536
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.365
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.544
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.641
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.589
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.589
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.589
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.477
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.719
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.716
+
+2023-03-03 09:46:25,616 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.709 | helmet   | 0.623 | self_clothes | 0.523 |
+| safety_clothes | 0.627 | head     | 0.469 | blur_head    | 0.191 |
+| blur_clothes   | 0.247 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 09:46:25,715 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 09:46:25,715 - mmdet - INFO - Epoch(val) [6][619]	bbox_mAP: 0.4840, bbox_mAP_50: 0.7560, bbox_mAP_75: 0.5360, bbox_mAP_s: 0.3650, bbox_mAP_m: 0.5440, bbox_mAP_l: 0.6410, bbox_mAP_copypaste: 0.484 0.756 0.536 0.365 0.544 0.641
+2023-03-03 09:46:38,964 - mmdet - INFO - Epoch [7][50/1238]	lr: 1.000e-02, eta: 0:25:28, time: 0.265, data_time: 0.056, memory: 3821, loss_cls: 0.0430, loss_bbox: 0.2510, loss: 0.2940
+2023-03-03 09:46:49,344 - mmdet - INFO - Epoch [7][100/1238]	lr: 1.000e-02, eta: 0:25:17, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0479, loss_bbox: 0.2557, loss: 0.3036
+2023-03-03 09:46:59,991 - mmdet - INFO - Epoch [7][150/1238]	lr: 1.000e-02, eta: 0:25:07, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.0390, loss_bbox: 0.2550, loss: 0.2939
+2023-03-03 09:47:10,874 - mmdet - INFO - Epoch [7][200/1238]	lr: 1.000e-02, eta: 0:24:57, time: 0.218, data_time: 0.007, memory: 3821, loss_cls: 0.0373, loss_bbox: 0.2498, loss: 0.2870
+2023-03-03 09:47:21,351 - mmdet - INFO - Epoch [7][250/1238]	lr: 1.000e-02, eta: 0:24:47, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0430, loss_bbox: 0.2532, loss: 0.2962
+2023-03-03 09:47:31,666 - mmdet - INFO - Epoch [7][300/1238]	lr: 1.000e-02, eta: 0:24:37, time: 0.206, data_time: 0.007, memory: 3821, loss_cls: 0.0435, loss_bbox: 0.2475, loss: 0.2910
+2023-03-03 09:47:42,214 - mmdet - INFO - Epoch [7][350/1238]	lr: 1.000e-02, eta: 0:24:27, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0377, loss_bbox: 0.2479, loss: 0.2856
+2023-03-03 09:47:52,668 - mmdet - INFO - Epoch [7][400/1238]	lr: 1.000e-02, eta: 0:24:16, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0350, loss_bbox: 0.2496, loss: 0.2846
+2023-03-03 09:48:03,242 - mmdet - INFO - Epoch [7][450/1238]	lr: 1.000e-02, eta: 0:24:06, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.0420, loss_bbox: 0.2472, loss: 0.2893
+2023-03-03 09:48:13,870 - mmdet - INFO - Epoch [7][500/1238]	lr: 1.000e-02, eta: 0:23:56, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.0419, loss_bbox: 0.2573, loss: 0.2993
+2023-03-03 09:48:24,425 - mmdet - INFO - Epoch [7][550/1238]	lr: 1.000e-02, eta: 0:23:46, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0478, loss_bbox: 0.2644, loss: 0.3122
+2023-03-03 09:48:35,086 - mmdet - INFO - Epoch [7][600/1238]	lr: 1.000e-02, eta: 0:23:36, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.0418, loss_bbox: 0.2536, loss: 0.2954
+2023-03-03 09:48:45,991 - mmdet - INFO - Epoch [7][650/1238]	lr: 1.000e-02, eta: 0:23:26, time: 0.218, data_time: 0.008, memory: 3821, loss_cls: 0.0514, loss_bbox: 0.2547, loss: 0.3060
+2023-03-03 09:48:56,523 - mmdet - INFO - Epoch [7][700/1238]	lr: 1.000e-02, eta: 0:23:16, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.0380, loss_bbox: 0.2489, loss: 0.2869
+2023-03-03 09:49:07,184 - mmdet - INFO - Epoch [7][750/1238]	lr: 1.000e-02, eta: 0:23:05, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.0399, loss_bbox: 0.2541, loss: 0.2940
+2023-03-03 09:49:17,612 - mmdet - INFO - Epoch [7][800/1238]	lr: 1.000e-02, eta: 0:22:55, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0394, loss_bbox: 0.2584, loss: 0.2977
+2023-03-03 09:49:28,091 - mmdet - INFO - Epoch [7][850/1238]	lr: 1.000e-02, eta: 0:22:45, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0408, loss_bbox: 0.2431, loss: 0.2839
+2023-03-03 09:49:38,575 - mmdet - INFO - Epoch [7][900/1238]	lr: 1.000e-02, eta: 0:22:34, time: 0.209, data_time: 0.008, memory: 3821, loss_cls: 0.0401, loss_bbox: 0.2613, loss: 0.3014
+2023-03-03 09:49:49,390 - mmdet - INFO - Epoch [7][950/1238]	lr: 1.000e-02, eta: 0:22:24, time: 0.217, data_time: 0.008, memory: 3821, loss_cls: 0.0384, loss_bbox: 0.2481, loss: 0.2865
+2023-03-03 09:49:59,824 - mmdet - INFO - Epoch [7][1000/1238]	lr: 1.000e-02, eta: 0:22:14, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0430, loss_bbox: 0.2571, loss: 0.3002
+2023-03-03 09:50:10,276 - mmdet - INFO - Epoch [7][1050/1238]	lr: 1.000e-02, eta: 0:22:04, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0401, loss_bbox: 0.2601, loss: 0.3002
+2023-03-03 09:50:20,671 - mmdet - INFO - Epoch [7][1100/1238]	lr: 1.000e-02, eta: 0:21:53, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0454, loss_bbox: 0.2588, loss: 0.3042
+2023-03-03 09:50:31,051 - mmdet - INFO - Epoch [7][1150/1238]	lr: 1.000e-02, eta: 0:21:43, time: 0.208, data_time: 0.008, memory: 3821, loss_cls: 0.0429, loss_bbox: 0.2454, loss: 0.2884
+2023-03-03 09:50:41,483 - mmdet - INFO - Epoch [7][1200/1238]	lr: 1.000e-02, eta: 0:21:33, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0420, loss_bbox: 0.2530, loss: 0.2950
+2023-03-03 09:51:25,622 - mmdet - INFO - Evaluating bbox...
+2023-03-03 09:51:32,286 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.490
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.768
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.538
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.372
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.546
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.664
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.597
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.597
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.597
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.487
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.715
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.776
+
+2023-03-03 09:51:32,286 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.709 | helmet   | 0.638 | self_clothes | 0.524 |
+| safety_clothes | 0.632 | head     | 0.478 | blur_head    | 0.203 |
+| blur_clothes   | 0.244 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 09:51:32,399 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 09:51:32,399 - mmdet - INFO - Epoch(val) [7][619]	bbox_mAP: 0.4900, bbox_mAP_50: 0.7680, bbox_mAP_75: 0.5380, bbox_mAP_s: 0.3720, bbox_mAP_m: 0.5460, bbox_mAP_l: 0.6640, bbox_mAP_copypaste: 0.490 0.768 0.538 0.372 0.546 0.664
+2023-03-03 09:51:45,640 - mmdet - INFO - Epoch [8][50/1238]	lr: 1.000e-02, eta: 0:21:11, time: 0.264, data_time: 0.060, memory: 3821, loss_cls: 0.0407, loss_bbox: 0.2523, loss: 0.2930
+2023-03-03 09:51:56,118 - mmdet - INFO - Epoch [8][100/1238]	lr: 1.000e-02, eta: 0:21:01, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0464, loss_bbox: 0.2483, loss: 0.2948
+2023-03-03 09:52:07,024 - mmdet - INFO - Epoch [8][150/1238]	lr: 1.000e-02, eta: 0:20:51, time: 0.218, data_time: 0.008, memory: 3821, loss_cls: 0.0382, loss_bbox: 0.2470, loss: 0.2852
+2023-03-03 09:52:17,709 - mmdet - INFO - Epoch [8][200/1238]	lr: 1.000e-02, eta: 0:20:40, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.0367, loss_bbox: 0.2519, loss: 0.2886
+2023-03-03 09:52:28,426 - mmdet - INFO - Epoch [8][250/1238]	lr: 1.000e-02, eta: 0:20:30, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.0323, loss_bbox: 0.2468, loss: 0.2791
+2023-03-03 09:52:39,055 - mmdet - INFO - Epoch [8][300/1238]	lr: 1.000e-02, eta: 0:20:20, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.0384, loss_bbox: 0.2437, loss: 0.2820
+2023-03-03 09:52:49,480 - mmdet - INFO - Epoch [8][350/1238]	lr: 1.000e-02, eta: 0:20:10, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0343, loss_bbox: 0.2480, loss: 0.2822
+2023-03-03 09:53:00,155 - mmdet - INFO - Epoch [8][400/1238]	lr: 1.000e-02, eta: 0:20:00, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.0354, loss_bbox: 0.2476, loss: 0.2831
+2023-03-03 09:53:10,999 - mmdet - INFO - Epoch [8][450/1238]	lr: 1.000e-02, eta: 0:19:50, time: 0.217, data_time: 0.008, memory: 3821, loss_cls: 0.0327, loss_bbox: 0.2511, loss: 0.2838
+2023-03-03 09:53:21,738 - mmdet - INFO - Epoch [8][500/1238]	lr: 1.000e-02, eta: 0:19:39, time: 0.215, data_time: 0.007, memory: 3821, loss_cls: 0.0428, loss_bbox: 0.2498, loss: 0.2926
+2023-03-03 09:53:32,531 - mmdet - INFO - Epoch [8][550/1238]	lr: 1.000e-02, eta: 0:19:29, time: 0.216, data_time: 0.007, memory: 3821, loss_cls: 0.0334, loss_bbox: 0.2454, loss: 0.2788
+2023-03-03 09:53:43,292 - mmdet - INFO - Epoch [8][600/1238]	lr: 1.000e-02, eta: 0:19:19, time: 0.215, data_time: 0.007, memory: 3821, loss_cls: 0.0342, loss_bbox: 0.2520, loss: 0.2862
+2023-03-03 09:53:53,981 - mmdet - INFO - Epoch [8][650/1238]	lr: 1.000e-02, eta: 0:19:09, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.0391, loss_bbox: 0.2427, loss: 0.2818
+2023-03-03 09:54:04,511 - mmdet - INFO - Epoch [8][700/1238]	lr: 1.000e-02, eta: 0:18:59, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0343, loss_bbox: 0.2426, loss: 0.2768
+2023-03-03 09:54:15,126 - mmdet - INFO - Epoch [8][750/1238]	lr: 1.000e-02, eta: 0:18:49, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.0351, loss_bbox: 0.2480, loss: 0.2830
+2023-03-03 09:54:26,026 - mmdet - INFO - Epoch [8][800/1238]	lr: 1.000e-02, eta: 0:18:38, time: 0.218, data_time: 0.008, memory: 3821, loss_cls: 0.0384, loss_bbox: 0.2519, loss: 0.2904
+2023-03-03 09:54:36,867 - mmdet - INFO - Epoch [8][850/1238]	lr: 1.000e-02, eta: 0:18:28, time: 0.217, data_time: 0.008, memory: 3821, loss_cls: 0.0439, loss_bbox: 0.2526, loss: 0.2965
+2023-03-03 09:54:47,675 - mmdet - INFO - Epoch [8][900/1238]	lr: 1.000e-02, eta: 0:18:18, time: 0.216, data_time: 0.007, memory: 3821, loss_cls: 0.0369, loss_bbox: 0.2387, loss: 0.2755
+2023-03-03 09:54:58,241 - mmdet - INFO - Epoch [8][950/1238]	lr: 1.000e-02, eta: 0:18:08, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0365, loss_bbox: 0.2441, loss: 0.2806
+2023-03-03 09:55:08,698 - mmdet - INFO - Epoch [8][1000/1238]	lr: 1.000e-02, eta: 0:17:58, time: 0.209, data_time: 0.008, memory: 3821, loss_cls: 0.0390, loss_bbox: 0.2603, loss: 0.2993
+2023-03-03 09:55:19,207 - mmdet - INFO - Epoch [8][1050/1238]	lr: 1.000e-02, eta: 0:17:47, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0427, loss_bbox: 0.2508, loss: 0.2934
+2023-03-03 09:55:29,683 - mmdet - INFO - Epoch [8][1100/1238]	lr: 1.000e-02, eta: 0:17:37, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0374, loss_bbox: 0.2462, loss: 0.2836
+2023-03-03 09:55:40,436 - mmdet - INFO - Epoch [8][1150/1238]	lr: 1.000e-02, eta: 0:17:27, time: 0.215, data_time: 0.007, memory: 3821, loss_cls: 0.0427, loss_bbox: 0.2451, loss: 0.2878
+2023-03-03 09:55:51,028 - mmdet - INFO - Epoch [8][1200/1238]	lr: 1.000e-02, eta: 0:17:16, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.0377, loss_bbox: 0.2588, loss: 0.2965
+2023-03-03 09:56:36,835 - mmdet - INFO - Evaluating bbox...
+2023-03-03 09:56:43,068 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.488
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.764
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.543
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.381
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.541
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.621
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.601
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.601
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.601
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.496
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.718
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.755
+
+2023-03-03 09:56:43,068 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.699 | helmet   | 0.633 | self_clothes | 0.485 |
+| safety_clothes | 0.631 | head     | 0.503 | blur_head    | 0.214 |
+| blur_clothes   | 0.252 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 09:56:43,177 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 09:56:43,177 - mmdet - INFO - Epoch(val) [8][619]	bbox_mAP: 0.4880, bbox_mAP_50: 0.7640, bbox_mAP_75: 0.5430, bbox_mAP_s: 0.3810, bbox_mAP_m: 0.5410, bbox_mAP_l: 0.6210, bbox_mAP_copypaste: 0.488 0.764 0.543 0.381 0.541 0.621
+2023-03-03 09:56:56,249 - mmdet - INFO - Epoch [9][50/1238]	lr: 1.000e-03, eta: 0:16:56, time: 0.261, data_time: 0.055, memory: 3821, loss_cls: 0.0307, loss_bbox: 0.2348, loss: 0.2655
+2023-03-03 09:57:06,676 - mmdet - INFO - Epoch [9][100/1238]	lr: 1.000e-03, eta: 0:16:45, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0298, loss_bbox: 0.2273, loss: 0.2571
+2023-03-03 09:57:17,195 - mmdet - INFO - Epoch [9][150/1238]	lr: 1.000e-03, eta: 0:16:35, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0314, loss_bbox: 0.2274, loss: 0.2587
+2023-03-03 09:57:27,811 - mmdet - INFO - Epoch [9][200/1238]	lr: 1.000e-03, eta: 0:16:25, time: 0.212, data_time: 0.007, memory: 3821, loss_cls: 0.0226, loss_bbox: 0.2195, loss: 0.2421
+2023-03-03 09:57:38,324 - mmdet - INFO - Epoch [9][250/1238]	lr: 1.000e-03, eta: 0:16:14, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0225, loss_bbox: 0.2167, loss: 0.2392
+2023-03-03 09:57:48,958 - mmdet - INFO - Epoch [9][300/1238]	lr: 1.000e-03, eta: 0:16:04, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.0248, loss_bbox: 0.2229, loss: 0.2477
+2023-03-03 09:57:59,511 - mmdet - INFO - Epoch [9][350/1238]	lr: 1.000e-03, eta: 0:15:54, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.0232, loss_bbox: 0.2172, loss: 0.2404
+2023-03-03 09:58:10,232 - mmdet - INFO - Epoch [9][400/1238]	lr: 1.000e-03, eta: 0:15:44, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.0261, loss_bbox: 0.2200, loss: 0.2461
+2023-03-03 09:58:20,689 - mmdet - INFO - Epoch [9][450/1238]	lr: 1.000e-03, eta: 0:15:33, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0273, loss_bbox: 0.2301, loss: 0.2574
+2023-03-03 09:58:31,226 - mmdet - INFO - Epoch [9][500/1238]	lr: 1.000e-03, eta: 0:15:23, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0252, loss_bbox: 0.2203, loss: 0.2455
+2023-03-03 09:58:41,761 - mmdet - INFO - Epoch [9][550/1238]	lr: 1.000e-03, eta: 0:15:13, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0231, loss_bbox: 0.2374, loss: 0.2605
+2023-03-03 09:58:52,232 - mmdet - INFO - Epoch [9][600/1238]	lr: 1.000e-03, eta: 0:15:02, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0285, loss_bbox: 0.2207, loss: 0.2491
+2023-03-03 09:59:02,581 - mmdet - INFO - Epoch [9][650/1238]	lr: 1.000e-03, eta: 0:14:52, time: 0.207, data_time: 0.008, memory: 3821, loss_cls: 0.0254, loss_bbox: 0.2125, loss: 0.2379
+2023-03-03 09:59:13,250 - mmdet - INFO - Epoch [9][700/1238]	lr: 1.000e-03, eta: 0:14:42, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.0236, loss_bbox: 0.2150, loss: 0.2386
+2023-03-03 09:59:23,956 - mmdet - INFO - Epoch [9][750/1238]	lr: 1.000e-03, eta: 0:14:31, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.0255, loss_bbox: 0.2179, loss: 0.2434
+2023-03-03 09:59:34,708 - mmdet - INFO - Epoch [9][800/1238]	lr: 1.000e-03, eta: 0:14:21, time: 0.215, data_time: 0.008, memory: 3821, loss_cls: 0.0273, loss_bbox: 0.2215, loss: 0.2488
+2023-03-03 09:59:45,582 - mmdet - INFO - Epoch [9][850/1238]	lr: 1.000e-03, eta: 0:14:11, time: 0.217, data_time: 0.007, memory: 3821, loss_cls: 0.0251, loss_bbox: 0.2226, loss: 0.2477
+2023-03-03 09:59:56,116 - mmdet - INFO - Epoch [9][900/1238]	lr: 1.000e-03, eta: 0:14:01, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0278, loss_bbox: 0.2236, loss: 0.2514
+2023-03-03 10:00:06,565 - mmdet - INFO - Epoch [9][950/1238]	lr: 1.000e-03, eta: 0:13:50, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0222, loss_bbox: 0.2169, loss: 0.2391
+2023-03-03 10:00:17,486 - mmdet - INFO - Epoch [9][1000/1238]	lr: 1.000e-03, eta: 0:13:40, time: 0.218, data_time: 0.007, memory: 3821, loss_cls: 0.0240, loss_bbox: 0.2243, loss: 0.2483
+2023-03-03 10:00:27,931 - mmdet - INFO - Epoch [9][1050/1238]	lr: 1.000e-03, eta: 0:13:30, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0227, loss_bbox: 0.2224, loss: 0.2451
+2023-03-03 10:00:38,361 - mmdet - INFO - Epoch [9][1100/1238]	lr: 1.000e-03, eta: 0:13:19, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0227, loss_bbox: 0.2208, loss: 0.2435
+2023-03-03 10:00:48,856 - mmdet - INFO - Epoch [9][1150/1238]	lr: 1.000e-03, eta: 0:13:09, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0249, loss_bbox: 0.2231, loss: 0.2480
+2023-03-03 10:00:59,424 - mmdet - INFO - Epoch [9][1200/1238]	lr: 1.000e-03, eta: 0:12:59, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0223, loss_bbox: 0.2227, loss: 0.2450
+2023-03-03 10:01:45,417 - mmdet - INFO - Evaluating bbox...
+2023-03-03 10:01:50,688 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.520
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.786
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.593
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.411
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.583
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.674
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.616
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.616
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.616
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.524
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.731
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.774
+
+2023-03-03 10:01:50,689 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.729 | helmet   | 0.658 | self_clothes | 0.556 |
+| safety_clothes | 0.657 | head     | 0.519 | blur_head    | 0.226 |
+| blur_clothes   | 0.297 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 10:01:50,773 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 10:01:50,773 - mmdet - INFO - Epoch(val) [9][619]	bbox_mAP: 0.5200, bbox_mAP_50: 0.7860, bbox_mAP_75: 0.5930, bbox_mAP_s: 0.4110, bbox_mAP_m: 0.5830, bbox_mAP_l: 0.6740, bbox_mAP_copypaste: 0.520 0.786 0.593 0.411 0.583 0.674
+2023-03-03 10:02:04,095 - mmdet - INFO - Epoch [10][50/1238]	lr: 1.000e-03, eta: 0:12:39, time: 0.266, data_time: 0.057, memory: 3821, loss_cls: 0.0236, loss_bbox: 0.2151, loss: 0.2388
+2023-03-03 10:02:14,481 - mmdet - INFO - Epoch [10][100/1238]	lr: 1.000e-03, eta: 0:12:29, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0234, loss_bbox: 0.2097, loss: 0.2332
+2023-03-03 10:02:25,182 - mmdet - INFO - Epoch [10][150/1238]	lr: 1.000e-03, eta: 0:12:18, time: 0.214, data_time: 0.008, memory: 3821, loss_cls: 0.0197, loss_bbox: 0.2151, loss: 0.2348
+2023-03-03 10:02:35,537 - mmdet - INFO - Epoch [10][200/1238]	lr: 1.000e-03, eta: 0:12:08, time: 0.207, data_time: 0.007, memory: 3821, loss_cls: 0.0204, loss_bbox: 0.2172, loss: 0.2376
+2023-03-03 10:02:45,967 - mmdet - INFO - Epoch [10][250/1238]	lr: 1.000e-03, eta: 0:11:58, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0237, loss_bbox: 0.2216, loss: 0.2454
+2023-03-03 10:02:56,389 - mmdet - INFO - Epoch [10][300/1238]	lr: 1.000e-03, eta: 0:11:47, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0247, loss_bbox: 0.2075, loss: 0.2322
+2023-03-03 10:03:06,903 - mmdet - INFO - Epoch [10][350/1238]	lr: 1.000e-03, eta: 0:11:37, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0201, loss_bbox: 0.2119, loss: 0.2320
+2023-03-03 10:03:17,396 - mmdet - INFO - Epoch [10][400/1238]	lr: 1.000e-03, eta: 0:11:27, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0259, loss_bbox: 0.2156, loss: 0.2415
+2023-03-03 10:03:27,897 - mmdet - INFO - Epoch [10][450/1238]	lr: 1.000e-03, eta: 0:11:16, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0242, loss_bbox: 0.2174, loss: 0.2417
+2023-03-03 10:03:38,444 - mmdet - INFO - Epoch [10][500/1238]	lr: 1.000e-03, eta: 0:11:06, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0191, loss_bbox: 0.2144, loss: 0.2335
+2023-03-03 10:03:48,940 - mmdet - INFO - Epoch [10][550/1238]	lr: 1.000e-03, eta: 0:10:56, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0195, loss_bbox: 0.2163, loss: 0.2357
+2023-03-03 10:03:59,430 - mmdet - INFO - Epoch [10][600/1238]	lr: 1.000e-03, eta: 0:10:45, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0246, loss_bbox: 0.2083, loss: 0.2329
+2023-03-03 10:04:09,915 - mmdet - INFO - Epoch [10][650/1238]	lr: 1.000e-03, eta: 0:10:35, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0236, loss_bbox: 0.2157, loss: 0.2393
+2023-03-03 10:04:20,307 - mmdet - INFO - Epoch [10][700/1238]	lr: 1.000e-03, eta: 0:10:25, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0266, loss_bbox: 0.2147, loss: 0.2413
+2023-03-03 10:04:30,736 - mmdet - INFO - Epoch [10][750/1238]	lr: 1.000e-03, eta: 0:10:14, time: 0.209, data_time: 0.008, memory: 3821, loss_cls: 0.0206, loss_bbox: 0.2168, loss: 0.2374
+2023-03-03 10:04:41,173 - mmdet - INFO - Epoch [10][800/1238]	lr: 1.000e-03, eta: 0:10:04, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0213, loss_bbox: 0.2188, loss: 0.2401
+2023-03-03 10:04:51,792 - mmdet - INFO - Epoch [10][850/1238]	lr: 1.000e-03, eta: 0:09:54, time: 0.212, data_time: 0.007, memory: 3821, loss_cls: 0.0255, loss_bbox: 0.2123, loss: 0.2378
+2023-03-03 10:05:02,480 - mmdet - INFO - Epoch [10][900/1238]	lr: 1.000e-03, eta: 0:09:43, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.0200, loss_bbox: 0.2150, loss: 0.2349
+2023-03-03 10:05:13,191 - mmdet - INFO - Epoch [10][950/1238]	lr: 1.000e-03, eta: 0:09:33, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.0207, loss_bbox: 0.2195, loss: 0.2402
+2023-03-03 10:05:23,828 - mmdet - INFO - Epoch [10][1000/1238]	lr: 1.000e-03, eta: 0:09:23, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.0218, loss_bbox: 0.2119, loss: 0.2337
+2023-03-03 10:05:34,448 - mmdet - INFO - Epoch [10][1050/1238]	lr: 1.000e-03, eta: 0:09:12, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.0211, loss_bbox: 0.2090, loss: 0.2301
+2023-03-03 10:05:45,024 - mmdet - INFO - Epoch [10][1100/1238]	lr: 1.000e-03, eta: 0:09:02, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0231, loss_bbox: 0.2135, loss: 0.2366
+2023-03-03 10:05:55,624 - mmdet - INFO - Epoch [10][1150/1238]	lr: 1.000e-03, eta: 0:08:52, time: 0.212, data_time: 0.007, memory: 3821, loss_cls: 0.0211, loss_bbox: 0.2158, loss: 0.2369
+2023-03-03 10:06:06,558 - mmdet - INFO - Epoch [10][1200/1238]	lr: 1.000e-03, eta: 0:08:41, time: 0.219, data_time: 0.007, memory: 3821, loss_cls: 0.0182, loss_bbox: 0.2111, loss: 0.2293
+2023-03-03 10:06:50,917 - mmdet - INFO - Evaluating bbox...
+2023-03-03 10:06:56,064 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.522
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.788
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.592
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.421
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.582
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.646
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.530
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.731
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.760
+
+2023-03-03 10:06:56,065 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.731 | helmet   | 0.660 | self_clothes | 0.560 |
+| safety_clothes | 0.658 | head     | 0.526 | blur_head    | 0.226 |
+| blur_clothes   | 0.294 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 10:06:56,148 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 10:06:56,149 - mmdet - INFO - Epoch(val) [10][619]	bbox_mAP: 0.5220, bbox_mAP_50: 0.7880, bbox_mAP_75: 0.5920, bbox_mAP_s: 0.4210, bbox_mAP_m: 0.5820, bbox_mAP_l: 0.6460, bbox_mAP_copypaste: 0.522 0.788 0.592 0.421 0.582 0.646
+2023-03-03 10:07:09,214 - mmdet - INFO - Epoch [11][50/1238]	lr: 1.000e-03, eta: 0:08:22, time: 0.261, data_time: 0.056, memory: 3821, loss_cls: 0.0177, loss_bbox: 0.2070, loss: 0.2246
+2023-03-03 10:07:19,631 - mmdet - INFO - Epoch [11][100/1238]	lr: 1.000e-03, eta: 0:08:12, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0235, loss_bbox: 0.2088, loss: 0.2323
+2023-03-03 10:07:30,078 - mmdet - INFO - Epoch [11][150/1238]	lr: 1.000e-03, eta: 0:08:01, time: 0.209, data_time: 0.008, memory: 3821, loss_cls: 0.0169, loss_bbox: 0.1981, loss: 0.2150
+2023-03-03 10:07:40,589 - mmdet - INFO - Epoch [11][200/1238]	lr: 1.000e-03, eta: 0:07:51, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0192, loss_bbox: 0.2116, loss: 0.2308
+2023-03-03 10:07:51,105 - mmdet - INFO - Epoch [11][250/1238]	lr: 1.000e-03, eta: 0:07:41, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0183, loss_bbox: 0.2138, loss: 0.2321
+2023-03-03 10:08:01,545 - mmdet - INFO - Epoch [11][300/1238]	lr: 1.000e-03, eta: 0:07:30, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0196, loss_bbox: 0.2084, loss: 0.2281
+2023-03-03 10:08:12,550 - mmdet - INFO - Epoch [11][350/1238]	lr: 1.000e-03, eta: 0:07:20, time: 0.220, data_time: 0.008, memory: 3821, loss_cls: 0.0195, loss_bbox: 0.2212, loss: 0.2406
+2023-03-03 10:08:23,089 - mmdet - INFO - Epoch [11][400/1238]	lr: 1.000e-03, eta: 0:07:10, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.0186, loss_bbox: 0.2080, loss: 0.2267
+2023-03-03 10:08:33,470 - mmdet - INFO - Epoch [11][450/1238]	lr: 1.000e-03, eta: 0:06:59, time: 0.208, data_time: 0.008, memory: 3821, loss_cls: 0.0210, loss_bbox: 0.2142, loss: 0.2352
+2023-03-03 10:08:43,973 - mmdet - INFO - Epoch [11][500/1238]	lr: 1.000e-03, eta: 0:06:49, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0228, loss_bbox: 0.2105, loss: 0.2333
+2023-03-03 10:08:54,472 - mmdet - INFO - Epoch [11][550/1238]	lr: 1.000e-03, eta: 0:06:39, time: 0.210, data_time: 0.007, memory: 3821, loss_cls: 0.0225, loss_bbox: 0.2107, loss: 0.2332
+2023-03-03 10:09:04,999 - mmdet - INFO - Epoch [11][600/1238]	lr: 1.000e-03, eta: 0:06:28, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.0185, loss_bbox: 0.2041, loss: 0.2226
+2023-03-03 10:09:15,597 - mmdet - INFO - Epoch [11][650/1238]	lr: 1.000e-03, eta: 0:06:18, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.0186, loss_bbox: 0.2132, loss: 0.2319
+2023-03-03 10:09:26,224 - mmdet - INFO - Epoch [11][700/1238]	lr: 1.000e-03, eta: 0:06:08, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.0170, loss_bbox: 0.2006, loss: 0.2176
+2023-03-03 10:09:37,196 - mmdet - INFO - Epoch [11][750/1238]	lr: 1.000e-03, eta: 0:05:57, time: 0.219, data_time: 0.008, memory: 3821, loss_cls: 0.0194, loss_bbox: 0.2116, loss: 0.2309
+2023-03-03 10:09:47,810 - mmdet - INFO - Epoch [11][800/1238]	lr: 1.000e-03, eta: 0:05:47, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.0222, loss_bbox: 0.2071, loss: 0.2293
+2023-03-03 10:09:58,532 - mmdet - INFO - Epoch [11][850/1238]	lr: 1.000e-03, eta: 0:05:37, time: 0.214, data_time: 0.008, memory: 3821, loss_cls: 0.0176, loss_bbox: 0.2127, loss: 0.2303
+2023-03-03 10:10:08,921 - mmdet - INFO - Epoch [11][900/1238]	lr: 1.000e-03, eta: 0:05:26, time: 0.208, data_time: 0.008, memory: 3821, loss_cls: 0.0208, loss_bbox: 0.2070, loss: 0.2279
+2023-03-03 10:10:19,451 - mmdet - INFO - Epoch [11][950/1238]	lr: 1.000e-03, eta: 0:05:16, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.0164, loss_bbox: 0.2063, loss: 0.2227
+2023-03-03 10:10:29,961 - mmdet - INFO - Epoch [11][1000/1238]	lr: 1.000e-03, eta: 0:05:06, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0219, loss_bbox: 0.2100, loss: 0.2319
+2023-03-03 10:10:40,392 - mmdet - INFO - Epoch [11][1050/1238]	lr: 1.000e-03, eta: 0:04:55, time: 0.208, data_time: 0.008, memory: 3821, loss_cls: 0.0197, loss_bbox: 0.2129, loss: 0.2326
+2023-03-03 10:10:51,239 - mmdet - INFO - Epoch [11][1100/1238]	lr: 1.000e-03, eta: 0:04:45, time: 0.217, data_time: 0.007, memory: 3821, loss_cls: 0.0201, loss_bbox: 0.2088, loss: 0.2289
+2023-03-03 10:11:01,710 - mmdet - INFO - Epoch [11][1150/1238]	lr: 1.000e-03, eta: 0:04:35, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0184, loss_bbox: 0.2043, loss: 0.2227
+2023-03-03 10:11:12,318 - mmdet - INFO - Epoch [11][1200/1238]	lr: 1.000e-03, eta: 0:04:24, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.0187, loss_bbox: 0.2061, loss: 0.2248
+2023-03-03 10:11:56,800 - mmdet - INFO - Evaluating bbox...
+2023-03-03 10:12:01,415 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.523
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.790
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.589
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.418
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.584
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.664
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.618
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.527
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.728
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.770
+
+2023-03-03 10:12:01,416 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.730 | helmet   | 0.660 | self_clothes | 0.567 |
+| safety_clothes | 0.660 | head     | 0.525 | blur_head    | 0.224 |
+| blur_clothes   | 0.295 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 10:12:01,494 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 10:12:01,494 - mmdet - INFO - Epoch(val) [11][619]	bbox_mAP: 0.5230, bbox_mAP_50: 0.7900, bbox_mAP_75: 0.5890, bbox_mAP_s: 0.4180, bbox_mAP_m: 0.5840, bbox_mAP_l: 0.6640, bbox_mAP_copypaste: 0.523 0.790 0.589 0.418 0.584 0.664
+2023-03-03 10:12:14,472 - mmdet - INFO - Epoch [12][50/1238]	lr: 1.000e-04, eta: 0:04:06, time: 0.259, data_time: 0.056, memory: 3821, loss_cls: 0.0154, loss_bbox: 0.2084, loss: 0.2238
+2023-03-03 10:12:24,845 - mmdet - INFO - Epoch [12][100/1238]	lr: 1.000e-04, eta: 0:03:55, time: 0.208, data_time: 0.007, memory: 3821, loss_cls: 0.0216, loss_bbox: 0.2087, loss: 0.2303
+2023-03-03 10:12:35,440 - mmdet - INFO - Epoch [12][150/1238]	lr: 1.000e-04, eta: 0:03:45, time: 0.212, data_time: 0.007, memory: 3821, loss_cls: 0.0175, loss_bbox: 0.2056, loss: 0.2231
+2023-03-03 10:12:46,093 - mmdet - INFO - Epoch [12][200/1238]	lr: 1.000e-04, eta: 0:03:35, time: 0.213, data_time: 0.008, memory: 3821, loss_cls: 0.0178, loss_bbox: 0.2094, loss: 0.2271
+2023-03-03 10:12:56,644 - mmdet - INFO - Epoch [12][250/1238]	lr: 1.000e-04, eta: 0:03:24, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0188, loss_bbox: 0.2021, loss: 0.2210
+2023-03-03 10:13:07,255 - mmdet - INFO - Epoch [12][300/1238]	lr: 1.000e-04, eta: 0:03:14, time: 0.212, data_time: 0.008, memory: 3821, loss_cls: 0.0181, loss_bbox: 0.2041, loss: 0.2222
+2023-03-03 10:13:17,883 - mmdet - INFO - Epoch [12][350/1238]	lr: 1.000e-04, eta: 0:03:04, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.0166, loss_bbox: 0.2066, loss: 0.2231
+2023-03-03 10:13:28,516 - mmdet - INFO - Epoch [12][400/1238]	lr: 1.000e-04, eta: 0:02:53, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.0174, loss_bbox: 0.2053, loss: 0.2227
+2023-03-03 10:13:39,077 - mmdet - INFO - Epoch [12][450/1238]	lr: 1.000e-04, eta: 0:02:43, time: 0.211, data_time: 0.008, memory: 3821, loss_cls: 0.0224, loss_bbox: 0.2078, loss: 0.2302
+2023-03-03 10:13:49,797 - mmdet - INFO - Epoch [12][500/1238]	lr: 1.000e-04, eta: 0:02:32, time: 0.214, data_time: 0.008, memory: 3821, loss_cls: 0.0180, loss_bbox: 0.2082, loss: 0.2262
+2023-03-03 10:14:00,321 - mmdet - INFO - Epoch [12][550/1238]	lr: 1.000e-04, eta: 0:02:22, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0219, loss_bbox: 0.2038, loss: 0.2257
+2023-03-03 10:14:10,933 - mmdet - INFO - Epoch [12][600/1238]	lr: 1.000e-04, eta: 0:02:12, time: 0.212, data_time: 0.007, memory: 3821, loss_cls: 0.0181, loss_bbox: 0.2025, loss: 0.2205
+2023-03-03 10:14:21,370 - mmdet - INFO - Epoch [12][650/1238]	lr: 1.000e-04, eta: 0:02:01, time: 0.209, data_time: 0.007, memory: 3821, loss_cls: 0.0176, loss_bbox: 0.1985, loss: 0.2161
+2023-03-03 10:14:31,689 - mmdet - INFO - Epoch [12][700/1238]	lr: 1.000e-04, eta: 0:01:51, time: 0.206, data_time: 0.008, memory: 3821, loss_cls: 0.0188, loss_bbox: 0.1968, loss: 0.2156
+2023-03-03 10:14:42,412 - mmdet - INFO - Epoch [12][750/1238]	lr: 1.000e-04, eta: 0:01:41, time: 0.214, data_time: 0.007, memory: 3821, loss_cls: 0.0208, loss_bbox: 0.2068, loss: 0.2276
+2023-03-03 10:14:53,255 - mmdet - INFO - Epoch [12][800/1238]	lr: 1.000e-04, eta: 0:01:30, time: 0.217, data_time: 0.007, memory: 3821, loss_cls: 0.0183, loss_bbox: 0.2032, loss: 0.2214
+2023-03-03 10:15:04,156 - mmdet - INFO - Epoch [12][850/1238]	lr: 1.000e-04, eta: 0:01:20, time: 0.218, data_time: 0.007, memory: 3821, loss_cls: 0.0184, loss_bbox: 0.2046, loss: 0.2230
+2023-03-03 10:15:14,989 - mmdet - INFO - Epoch [12][900/1238]	lr: 1.000e-04, eta: 0:01:10, time: 0.217, data_time: 0.007, memory: 3821, loss_cls: 0.0172, loss_bbox: 0.2090, loss: 0.2261
+2023-03-03 10:15:25,761 - mmdet - INFO - Epoch [12][950/1238]	lr: 1.000e-04, eta: 0:00:59, time: 0.215, data_time: 0.008, memory: 3821, loss_cls: 0.0154, loss_bbox: 0.2000, loss: 0.2154
+2023-03-03 10:15:36,342 - mmdet - INFO - Epoch [12][1000/1238]	lr: 1.000e-04, eta: 0:00:49, time: 0.211, data_time: 0.007, memory: 3821, loss_cls: 0.0176, loss_bbox: 0.2021, loss: 0.2197
+2023-03-03 10:15:47,001 - mmdet - INFO - Epoch [12][1050/1238]	lr: 1.000e-04, eta: 0:00:39, time: 0.213, data_time: 0.007, memory: 3821, loss_cls: 0.0185, loss_bbox: 0.2035, loss: 0.2220
+2023-03-03 10:15:57,859 - mmdet - INFO - Epoch [12][1100/1238]	lr: 1.000e-04, eta: 0:00:28, time: 0.217, data_time: 0.007, memory: 3821, loss_cls: 0.0157, loss_bbox: 0.2017, loss: 0.2175
+2023-03-03 10:16:08,796 - mmdet - INFO - Epoch [12][1150/1238]	lr: 1.000e-04, eta: 0:00:18, time: 0.219, data_time: 0.007, memory: 3821, loss_cls: 0.0198, loss_bbox: 0.2063, loss: 0.2261
+2023-03-03 10:16:19,309 - mmdet - INFO - Epoch [12][1200/1238]	lr: 1.000e-04, eta: 0:00:07, time: 0.210, data_time: 0.008, memory: 3821, loss_cls: 0.0191, loss_bbox: 0.2000, loss: 0.2191
+2023-03-03 10:16:27,323 - mmdet - INFO - Saving checkpoint at 12 epochs
+2023-03-03 10:17:03,298 - mmdet - INFO - Evaluating bbox...
+2023-03-03 10:17:07,817 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.523
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.789
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.596
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.418
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.581
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.669
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.617
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.617
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.617
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.528
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.731
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.764
+
+2023-03-03 10:17:07,817 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.729 | helmet   | 0.660 | self_clothes | 0.562 |
+| safety_clothes | 0.659 | head     | 0.528 | blur_head    | 0.223 |
+| blur_clothes   | 0.296 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2023-03-03 10:17:07,901 - mmdet - INFO - Exp name: tood_1x_50.py
+2023-03-03 10:17:07,901 - mmdet - INFO - Epoch(val) [12][619]	bbox_mAP: 0.5230, bbox_mAP_50: 0.7890, bbox_mAP_75: 0.5960, bbox_mAP_s: 0.4180, bbox_mAP_m: 0.5810, bbox_mAP_l: 0.6690, bbox_mAP_copypaste: 0.523 0.789 0.596 0.418 0.581 0.669

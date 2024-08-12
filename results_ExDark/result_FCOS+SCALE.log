@@ -1,0 +1,1882 @@
+2024-04-04 13:05:47,927 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.13 (default, Mar 28 2022, 11:38:47) [GCC 7.5.0]
+CUDA available: True
+GPU 0,1,2,3: NVIDIA GeForce RTX 3090
+CUDA_HOME: /home/yfs/anaconda3/envs/mmdet
+NVCC: Not Available
+GCC: gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
+PyTorch: 1.11.0+cu113
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.5.2 (Git Hash a9302535553c73243c632ad3c4c80beec3d19a1e)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.3
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.2
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.3, CUDNN_VERSION=8.2.0, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.11.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=OFF, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.12.0+cu113
+OpenCV: 4.6.0
+MMCV: 1.5.3
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.3
+MMDetection: 2.25.0+56e42e7
+------------------------------------------------------------
+
+2024-04-04 13:05:48,209 - mmdet - INFO - Distributed training: True
+2024-04-04 13:05:48,375 - mmdet - INFO - Config:
+num_classes = 12
+model = dict(
+    type='SCALE_FCOS',
+    pre_encoder=dict(type='SCALE', in_dim=3, init_cfg=None),
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=False),
+        norm_eval=True),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        start_level=1,
+        add_extra_convs='on_output',
+        num_outs=5,
+        relu_before_extra_convs=True),
+    bbox_head=dict(
+        type='FCOSHead',
+        num_classes=12,
+        in_channels=256,
+        stacked_convs=4,
+        feat_channels=256,
+        strides=[8, 16, 32, 64, 128],
+        loss_cls=dict(
+            type='FocalLoss',
+            use_sigmoid=True,
+            gamma=2.0,
+            alpha=0.25,
+            loss_weight=1.0),
+        loss_bbox=dict(type='IoULoss', loss_weight=1.0),
+        loss_centerness=dict(
+            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)),
+    train_cfg=dict(
+        assigner=dict(
+            type='MaxIoUAssigner',
+            pos_iou_thr=0.5,
+            neg_iou_thr=0.4,
+            min_pos_iou=0,
+            ignore_iof_thr=-1),
+        allowed_border=-1,
+        pos_weight=-1,
+        debug=False),
+    test_cfg=dict(
+        nms_pre=1000,
+        min_bbox_size=0,
+        score_thr=0.05,
+        nms=dict(type='nms', iou_threshold=0.5),
+        max_per_img=100))
+dataset_type = 'ExdarkDataset'
+data_root = '/home/yfs/data/Exdark/'
+img_norm_cfg = dict(
+    mean=[102.9801, 115.9465, 122.7717], std=[1.0, 1.0, 1.0], to_rgb=False)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[102.9801, 115.9465, 122.7717],
+        std=[1.0, 1.0, 1.0],
+        to_rgb=False),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(1333, 800),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[102.9801, 115.9465, 122.7717],
+                std=[1.0, 1.0, 1.0],
+                to_rgb=False),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=2,
+    workers_per_gpu=2,
+    train=dict(
+        type='ExdarkDataset',
+        ann_file='/home/yfs/data/Exdark/main/train.txt',
+        img_prefix='/home/yfs/data/Exdark/JPEGImages/IMGS',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='Normalize',
+                mean=[102.9801, 115.9465, 122.7717],
+                std=[1.0, 1.0, 1.0],
+                to_rgb=False),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+        ]),
+    val=dict(
+        type='ExdarkDataset',
+        ann_file='/home/yfs/data/Exdark/main/val.txt',
+        img_prefix='/home/yfs/data/Exdark/JPEGImages/IMGS',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[102.9801, 115.9465, 122.7717],
+                        std=[1.0, 1.0, 1.0],
+                        to_rgb=False),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='ExdarkDataset',
+        ann_file='/home/yfs/data/Exdark/main/val.txt',
+        img_prefix='/home/yfs/data/Exdark/JPEGImages/IMGS',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[102.9801, 115.9465, 122.7717],
+                        std=[1.0, 1.0, 1.0],
+                        to_rgb=False),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+evaluation = dict(interval=1, metric=['mAP'])
+optimizer = dict(
+    type='SGD',
+    lr=0.01,
+    momentum=0.9,
+    weight_decay=0.0001,
+    paramwise_cfg=dict(bias_lr_mult=2.0, bias_decay_mult=0.0))
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.3333333333333333,
+    step=[18, 23])
+runner = dict(type='EpochBasedRunner', max_epochs=24)
+checkpoint_config = dict(interval=25)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '/home/yfs/mmdetection/checkpoints/fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth'
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+auto_scale_lr = dict(enable=False, base_batch_size=16)
+work_dir = 'log_dir/ExDark_SCALE_experiment/fcos_r50_1x_exdark'
+auto_resume = False
+gpu_ids = range(0, 4)
+
+2024-04-04 13:05:48,375 - mmdet - INFO - Set random seed to 3407, deterministic: False
+2024-04-04 13:05:48,706 - mmdet - INFO - initialize ResNet with init_cfg [{'type': 'Kaiming', 'layer': 'Conv2d'}, {'type': 'Constant', 'val': 1, 'layer': ['_BatchNorm', 'GroupNorm']}]
+2024-04-04 13:05:48,878 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,879 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,880 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,881 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,882 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,883 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,884 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,885 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,887 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,889 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,890 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,892 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,893 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,897 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,902 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,906 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-04-04 13:05:48,924 - mmdet - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+2024-04-04 13:05:48,958 - mmdet - INFO - initialize FCOSHead with init_cfg {'type': 'Normal', 'layer': 'Conv2d', 'std': 0.01, 'override': {'type': 'Normal', 'name': 'conv_cls', 'std': 0.01, 'bias_prob': 0.01}}
+Name of parameter - Initialization information
+
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer1.0.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.1.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer1.1.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.2.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.2.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.2.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.2.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.2.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer1.2.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.0.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.1.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.1.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.2.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.2.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.2.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.2.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.2.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.2.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.3.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.3.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.3.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.3.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.3.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.3.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.2.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.2.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.2.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.2.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.3.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.3.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.3.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.3.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.4.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.4.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.4.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.4.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.5.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.5.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.5.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.5.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.2.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.2.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.2.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.2.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.lateral_convs.0.conv.weight - torch.Size([256, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.lateral_convs.1.conv.weight - torch.Size([256, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.lateral_convs.2.conv.weight - torch.Size([256, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.fpn_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.fpn_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.fpn_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.fpn_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.fpn_convs.4.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.4.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.cls_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.cls_convs.1.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.1.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.cls_convs.2.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.2.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.cls_convs.3.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.3.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.reg_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.reg_convs.1.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.1.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.reg_convs.2.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.2.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.reg_convs.3.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.3.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.conv_cls.weight - torch.Size([12, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=-4.59511985013459 
+
+bbox_head.conv_cls.bias - torch.Size([12]): 
+NormalInit: mean=0, std=0.01, bias=-4.59511985013459 
+
+bbox_head.conv_reg.weight - torch.Size([4, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.conv_reg.bias - torch.Size([4]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.conv_centerness.weight - torch.Size([1, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.conv_centerness.bias - torch.Size([1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.scales.0.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.scales.1.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.scales.2.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.scales.3.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.scales.4.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.encoder.0.weight - torch.Size([16, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.encoder.0.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.encoder.2.weight - torch.Size([32, 16, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.encoder.2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv1.weight - torch.Size([32, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv1.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv2.weight - torch.Size([32, 32, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv3.weight - torch.Size([32, 32, 5, 5]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv3.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.attention1.0.conv.weight - torch.Size([1, 2, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.attention2.0.conv.weight - torch.Size([1, 2, 5, 5]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.0.weight - torch.Size([96, 192, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.0.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.2.weight - torch.Size([32, 96, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.4.weight - torch.Size([3, 32, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.4.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.conv.weight - torch.Size([32, 3, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.conv.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.0.conv.weight - torch.Size([3, 3, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.0.bn.weight - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.0.bn.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.1.conv.weight - torch.Size([32, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.1.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.1.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.se_block.fc.0.weight - torch.Size([2, 32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.se_block.fc.2.weight - torch.Size([32, 2]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.conv.weight - torch.Size([3, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.conv.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.0.conv.weight - torch.Size([32, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.0.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.0.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.1.conv.weight - torch.Size([3, 32, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.1.bn.weight - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.1.bn.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+2024-04-04 13:05:55,754 - mmdet - INFO - Automatic scaling of learning rate (LR) has been disabled.
+2024-04-04 13:05:55,833 - mmdet - INFO - load checkpoint from local path: /home/yfs/mmdetection/checkpoints/fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth
+2024-04-04 13:05:55,977 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for bbox_head.conv_cls.weight: copying a param with shape torch.Size([80, 256, 3, 3]) from checkpoint, the shape in current model is torch.Size([12, 256, 3, 3]).
+size mismatch for bbox_head.conv_cls.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([12]).
+missing keys in source state_dict: pre_encoder.sa.parallel_conv.encoder.0.weight, pre_encoder.sa.parallel_conv.encoder.0.bias, pre_encoder.sa.parallel_conv.encoder.2.weight, pre_encoder.sa.parallel_conv.encoder.2.bias, pre_encoder.sa.parallel_conv.conv1.weight, pre_encoder.sa.parallel_conv.conv1.bias, pre_encoder.sa.parallel_conv.conv2.weight, pre_encoder.sa.parallel_conv.conv2.bias, pre_encoder.sa.parallel_conv.conv3.weight, pre_encoder.sa.parallel_conv.conv3.bias, pre_encoder.sa.attention1.0.conv.weight, pre_encoder.sa.attention2.0.conv.weight, pre_encoder.sa.decoder.0.weight, pre_encoder.sa.decoder.0.bias, pre_encoder.sa.decoder.2.weight, pre_encoder.sa.decoder.2.bias, pre_encoder.sa.decoder.4.weight, pre_encoder.sa.decoder.4.bias, pre_encoder.ca.res1.conv.weight, pre_encoder.ca.res1.conv.bias, pre_encoder.ca.res1.block.0.conv.weight, pre_encoder.ca.res1.block.0.bn.weight, pre_encoder.ca.res1.block.0.bn.bias, pre_encoder.ca.res1.block.0.bn.running_mean, pre_encoder.ca.res1.block.0.bn.running_var, pre_encoder.ca.res1.block.1.conv.weight, pre_encoder.ca.res1.block.1.bn.weight, pre_encoder.ca.res1.block.1.bn.bias, pre_encoder.ca.res1.block.1.bn.running_mean, pre_encoder.ca.res1.block.1.bn.running_var, pre_encoder.ca.se_block.fc.0.weight, pre_encoder.ca.se_block.fc.2.weight, pre_encoder.ca.res2.conv.weight, pre_encoder.ca.res2.conv.bias, pre_encoder.ca.res2.block.0.conv.weight, pre_encoder.ca.res2.block.0.bn.weight, pre_encoder.ca.res2.block.0.bn.bias, pre_encoder.ca.res2.block.0.bn.running_mean, pre_encoder.ca.res2.block.0.bn.running_var, pre_encoder.ca.res2.block.1.conv.weight, pre_encoder.ca.res2.block.1.bn.weight, pre_encoder.ca.res2.block.1.bn.bias, pre_encoder.ca.res2.block.1.bn.running_mean, pre_encoder.ca.res2.block.1.bn.running_var
+
+2024-04-04 13:05:55,985 - mmdet - INFO - Start running, host: yfs@4029GP-TRT, work_dir: /home/yfs/mmdetection/log_dir/ExDark_SCALE_experiment/fcos_r50_1x_exdark
+2024-04-04 13:05:55,985 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) NumClassCheckHook                  
+(NORMAL      ) DistSamplerSeedHook                
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) NumClassCheckHook                  
+(NORMAL      ) DistSamplerSeedHook                
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2024-04-04 13:05:55,986 - mmdet - INFO - workflow: [('train', 1)], max: 24 epochs
+2024-04-04 13:05:55,986 - mmdet - INFO - Checkpoints will be saved to /home/yfs/mmdetection/log_dir/ExDark_SCALE_experiment/fcos_r50_1x_exdark by HardDiskBackend.
+2024-04-04 13:06:22,940 - mmdet - INFO - Epoch [1][50/738]	lr: 3.987e-03, eta: 2:38:39, time: 0.539, data_time: 0.055, memory: 11893, loss_cls: 0.7240, loss_bbox: 0.4823, loss_centerness: 0.6193, loss: 1.8255, grad_norm: 6.4367
+2024-04-04 13:06:47,186 - mmdet - INFO - Epoch [1][100/738]	lr: 4.653e-03, eta: 2:30:16, time: 0.485, data_time: 0.007, memory: 11893, loss_cls: 0.4021, loss_bbox: 0.4074, loss_centerness: 0.6107, loss: 1.4202, grad_norm: 5.4128
+2024-04-04 13:07:11,251 - mmdet - INFO - Epoch [1][150/738]	lr: 5.320e-03, eta: 2:26:51, time: 0.481, data_time: 0.007, memory: 11893, loss_cls: 0.4003, loss_bbox: 0.4120, loss_centerness: 0.6096, loss: 1.4219, grad_norm: 5.9419
+2024-04-04 13:07:35,334 - mmdet - INFO - Epoch [1][200/738]	lr: 5.987e-03, eta: 2:24:58, time: 0.482, data_time: 0.006, memory: 11893, loss_cls: 0.3718, loss_bbox: 0.3951, loss_centerness: 0.6081, loss: 1.3750, grad_norm: 5.0346
+2024-04-04 13:07:59,381 - mmdet - INFO - Epoch [1][250/738]	lr: 6.653e-03, eta: 2:23:38, time: 0.481, data_time: 0.006, memory: 11893, loss_cls: 0.3962, loss_bbox: 0.4237, loss_centerness: 0.6087, loss: 1.4286, grad_norm: 5.4750
+2024-04-04 13:08:23,797 - mmdet - INFO - Epoch [1][300/738]	lr: 7.320e-03, eta: 2:22:58, time: 0.488, data_time: 0.006, memory: 11893, loss_cls: 0.3838, loss_bbox: 0.4343, loss_centerness: 0.6098, loss: 1.4279, grad_norm: 4.7155
+2024-04-04 13:08:48,219 - mmdet - INFO - Epoch [1][350/738]	lr: 7.987e-03, eta: 2:22:23, time: 0.488, data_time: 0.006, memory: 11893, loss_cls: 0.3604, loss_bbox: 0.4113, loss_centerness: 0.6081, loss: 1.3798, grad_norm: 4.6299
+2024-04-04 13:09:12,440 - mmdet - INFO - Epoch [1][400/738]	lr: 8.653e-03, eta: 2:21:42, time: 0.484, data_time: 0.007, memory: 11893, loss_cls: 0.3874, loss_bbox: 0.4275, loss_centerness: 0.6083, loss: 1.4233, grad_norm: 4.7436
+2024-04-04 13:09:36,538 - mmdet - INFO - Epoch [1][450/738]	lr: 9.320e-03, eta: 2:21:00, time: 0.482, data_time: 0.006, memory: 11893, loss_cls: 0.3831, loss_bbox: 0.4368, loss_centerness: 0.6125, loss: 1.4324, grad_norm: 4.5168
+2024-04-04 13:10:01,006 - mmdet - INFO - Epoch [1][500/738]	lr: 9.987e-03, eta: 2:20:34, time: 0.489, data_time: 0.007, memory: 11893, loss_cls: 0.3623, loss_bbox: 0.4311, loss_centerness: 0.6089, loss: 1.4024, grad_norm: 4.2513
+2024-04-04 13:10:25,449 - mmdet - INFO - Epoch [1][550/738]	lr: 1.000e-02, eta: 2:20:07, time: 0.489, data_time: 0.007, memory: 11893, loss_cls: 0.3710, loss_bbox: 0.4378, loss_centerness: 0.6118, loss: 1.4205, grad_norm: 4.3432
+2024-04-04 13:10:49,820 - mmdet - INFO - Epoch [1][600/738]	lr: 1.000e-02, eta: 2:19:39, time: 0.487, data_time: 0.007, memory: 11893, loss_cls: 0.3653, loss_bbox: 0.4241, loss_centerness: 0.6096, loss: 1.3989, grad_norm: 4.3904
+2024-04-04 13:11:14,162 - mmdet - INFO - Epoch [1][650/738]	lr: 1.000e-02, eta: 2:19:11, time: 0.487, data_time: 0.007, memory: 11893, loss_cls: 0.3917, loss_bbox: 0.4560, loss_centerness: 0.6113, loss: 1.4589, grad_norm: 3.9467
+2024-04-04 13:11:38,520 - mmdet - INFO - Epoch [1][700/738]	lr: 1.000e-02, eta: 2:18:44, time: 0.487, data_time: 0.007, memory: 11893, loss_cls: 0.3494, loss_bbox: 0.4301, loss_centerness: 0.6080, loss: 1.3875, grad_norm: 3.9107
+2024-04-04 13:12:30,304 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 9309  | 0.882  | 0.479 |
+| Boat      | 289  | 14742 | 0.882  | 0.464 |
+| Bottle    | 282  | 4926  | 0.809  | 0.537 |
+| Bus       | 135  | 4463  | 0.963  | 0.814 |
+| Car       | 597  | 16625 | 0.911  | 0.625 |
+| Cat       | 183  | 6488  | 0.896  | 0.380 |
+| Chair     | 466  | 25946 | 0.785  | 0.262 |
+| Cup       | 366  | 1902  | 0.740  | 0.512 |
+| Dog       | 207  | 9044  | 0.971  | 0.462 |
+| Motorbike | 233  | 9215  | 0.854  | 0.292 |
+| People    | 1562 | 36142 | 0.903  | 0.585 |
+| Table     | 333  | 6362  | 0.652  | 0.249 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.472 |
++-----------+------+-------+--------+-------+
+2024-04-04 13:12:30,424 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 13:12:30,424 - mmdet - INFO - Epoch(val) [1][367]	AP50: 0.4720, mAP: 0.4716
+2024-04-04 13:12:57,138 - mmdet - INFO - Epoch [2][50/738]	lr: 1.000e-02, eta: 2:12:09, time: 0.534, data_time: 0.055, memory: 11893, loss_cls: 0.3031, loss_bbox: 0.3880, loss_centerness: 0.6036, loss: 1.2947, grad_norm: 3.6164
+2024-04-04 13:13:21,074 - mmdet - INFO - Epoch [2][100/738]	lr: 1.000e-02, eta: 2:11:56, time: 0.479, data_time: 0.008, memory: 11893, loss_cls: 0.2947, loss_bbox: 0.4092, loss_centerness: 0.6007, loss: 1.3046, grad_norm: 3.8031
+2024-04-04 13:13:45,229 - mmdet - INFO - Epoch [2][150/738]	lr: 1.000e-02, eta: 2:11:46, time: 0.483, data_time: 0.008, memory: 11893, loss_cls: 0.3279, loss_bbox: 0.3924, loss_centerness: 0.6044, loss: 1.3247, grad_norm: 3.7463
+2024-04-04 13:14:09,446 - mmdet - INFO - Epoch [2][200/738]	lr: 1.000e-02, eta: 2:11:35, time: 0.484, data_time: 0.008, memory: 11893, loss_cls: 0.3164, loss_bbox: 0.3846, loss_centerness: 0.6031, loss: 1.3041, grad_norm: 3.6615
+2024-04-04 13:14:33,861 - mmdet - INFO - Epoch [2][250/738]	lr: 1.000e-02, eta: 2:11:27, time: 0.488, data_time: 0.008, memory: 11893, loss_cls: 0.3079, loss_bbox: 0.3925, loss_centerness: 0.6028, loss: 1.3032, grad_norm: 3.8314
+2024-04-04 13:14:57,967 - mmdet - INFO - Epoch [2][300/738]	lr: 1.000e-02, eta: 2:11:12, time: 0.482, data_time: 0.008, memory: 11893, loss_cls: 0.3213, loss_bbox: 0.4071, loss_centerness: 0.6044, loss: 1.3328, grad_norm: 3.7900
+2024-04-04 13:15:22,269 - mmdet - INFO - Epoch [2][350/738]	lr: 1.000e-02, eta: 2:10:59, time: 0.486, data_time: 0.008, memory: 11893, loss_cls: 0.3107, loss_bbox: 0.3866, loss_centerness: 0.6037, loss: 1.3011, grad_norm: 3.6673
+2024-04-04 13:15:46,238 - mmdet - INFO - Epoch [2][400/738]	lr: 1.000e-02, eta: 2:10:40, time: 0.479, data_time: 0.008, memory: 11893, loss_cls: 0.2982, loss_bbox: 0.3988, loss_centerness: 0.6045, loss: 1.3015, grad_norm: 3.5417
+2024-04-04 13:16:10,468 - mmdet - INFO - Epoch [2][450/738]	lr: 1.000e-02, eta: 2:10:24, time: 0.485, data_time: 0.008, memory: 11893, loss_cls: 0.3095, loss_bbox: 0.3827, loss_centerness: 0.6027, loss: 1.2948, grad_norm: 3.5197
+2024-04-04 13:16:34,835 - mmdet - INFO - Epoch [2][500/738]	lr: 1.000e-02, eta: 2:10:10, time: 0.487, data_time: 0.008, memory: 11893, loss_cls: 0.3177, loss_bbox: 0.4026, loss_centerness: 0.6043, loss: 1.3247, grad_norm: 3.5335
+2024-04-04 13:16:58,873 - mmdet - INFO - Epoch [2][550/738]	lr: 1.000e-02, eta: 2:09:50, time: 0.481, data_time: 0.008, memory: 11893, loss_cls: 0.2909, loss_bbox: 0.3743, loss_centerness: 0.6028, loss: 1.2680, grad_norm: 3.5245
+2024-04-04 13:17:23,113 - mmdet - INFO - Epoch [2][600/738]	lr: 1.000e-02, eta: 2:09:33, time: 0.485, data_time: 0.008, memory: 11893, loss_cls: 0.3116, loss_bbox: 0.3939, loss_centerness: 0.6024, loss: 1.3078, grad_norm: 3.6566
+2024-04-04 13:17:47,299 - mmdet - INFO - Epoch [2][650/738]	lr: 1.000e-02, eta: 2:09:14, time: 0.484, data_time: 0.008, memory: 11893, loss_cls: 0.3076, loss_bbox: 0.3895, loss_centerness: 0.6010, loss: 1.2982, grad_norm: 3.7617
+2024-04-04 13:18:11,662 - mmdet - INFO - Epoch [2][700/738]	lr: 1.000e-02, eta: 2:08:58, time: 0.487, data_time: 0.008, memory: 11893, loss_cls: 0.2807, loss_bbox: 0.3731, loss_centerness: 0.6004, loss: 1.2542, grad_norm: 3.1352
+2024-04-04 13:19:02,842 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 5098  | 0.896  | 0.631 |
+| Boat      | 289  | 10977 | 0.900  | 0.558 |
+| Bottle    | 282  | 8917  | 0.840  | 0.624 |
+| Bus       | 135  | 3809  | 0.963  | 0.805 |
+| Car       | 597  | 20968 | 0.948  | 0.719 |
+| Cat       | 183  | 7016  | 0.891  | 0.545 |
+| Chair     | 466  | 17717 | 0.893  | 0.470 |
+| Cup       | 366  | 12684 | 0.902  | 0.609 |
+| Dog       | 207  | 7360  | 0.971  | 0.616 |
+| Motorbike | 233  | 7927  | 0.871  | 0.462 |
+| People    | 1562 | 20865 | 0.882  | 0.645 |
+| Table     | 333  | 13205 | 0.796  | 0.362 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.587 |
++-----------+------+-------+--------+-------+
+2024-04-04 13:19:02,956 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 13:19:02,956 - mmdet - INFO - Epoch(val) [2][367]	AP50: 0.5870, mAP: 0.5872
+2024-04-04 13:19:29,478 - mmdet - INFO - Epoch [3][50/738]	lr: 1.000e-02, eta: 2:05:33, time: 0.530, data_time: 0.055, memory: 11893, loss_cls: 0.2564, loss_bbox: 0.3376, loss_centerness: 0.5952, loss: 1.1892, grad_norm: 3.2612
+2024-04-04 13:19:53,663 - mmdet - INFO - Epoch [3][100/738]	lr: 1.000e-02, eta: 2:05:19, time: 0.484, data_time: 0.008, memory: 11893, loss_cls: 0.2628, loss_bbox: 0.3370, loss_centerness: 0.5967, loss: 1.1965, grad_norm: 3.3130
+2024-04-04 13:20:17,994 - mmdet - INFO - Epoch [3][150/738]	lr: 1.000e-02, eta: 2:05:06, time: 0.487, data_time: 0.008, memory: 11893, loss_cls: 0.2849, loss_bbox: 0.3544, loss_centerness: 0.6014, loss: 1.2407, grad_norm: 3.4924
+2024-04-04 13:20:42,118 - mmdet - INFO - Epoch [3][200/738]	lr: 1.000e-02, eta: 2:04:50, time: 0.482, data_time: 0.008, memory: 11893, loss_cls: 0.2957, loss_bbox: 0.3635, loss_centerness: 0.5978, loss: 1.2571, grad_norm: 3.8418
+2024-04-04 13:21:06,642 - mmdet - INFO - Epoch [3][250/738]	lr: 1.000e-02, eta: 2:04:38, time: 0.490, data_time: 0.008, memory: 11893, loss_cls: 0.2760, loss_bbox: 0.3594, loss_centerness: 0.5983, loss: 1.2338, grad_norm: 3.4078
+2024-04-04 13:21:30,823 - mmdet - INFO - Epoch [3][300/738]	lr: 1.000e-02, eta: 2:04:21, time: 0.484, data_time: 0.008, memory: 11893, loss_cls: 0.2853, loss_bbox: 0.3597, loss_centerness: 0.6011, loss: 1.2461, grad_norm: 3.6038
+2024-04-04 13:21:55,260 - mmdet - INFO - Epoch [3][350/738]	lr: 1.000e-02, eta: 2:04:07, time: 0.489, data_time: 0.008, memory: 11893, loss_cls: 0.2780, loss_bbox: 0.3642, loss_centerness: 0.5994, loss: 1.2416, grad_norm: 3.5105
+2024-04-04 13:22:19,285 - mmdet - INFO - Epoch [3][400/738]	lr: 1.000e-02, eta: 2:03:48, time: 0.481, data_time: 0.008, memory: 11893, loss_cls: 0.2829, loss_bbox: 0.3742, loss_centerness: 0.6003, loss: 1.2574, grad_norm: 3.3834
+2024-04-04 13:22:43,797 - mmdet - INFO - Epoch [3][450/738]	lr: 1.000e-02, eta: 2:03:34, time: 0.490, data_time: 0.008, memory: 11893, loss_cls: 0.2786, loss_bbox: 0.3701, loss_centerness: 0.5993, loss: 1.2481, grad_norm: 3.6037
+2024-04-04 13:23:08,126 - mmdet - INFO - Epoch [3][500/738]	lr: 1.000e-02, eta: 2:03:17, time: 0.487, data_time: 0.008, memory: 11893, loss_cls: 0.2640, loss_bbox: 0.3574, loss_centerness: 0.5988, loss: 1.2201, grad_norm: 3.2977
+2024-04-04 13:23:32,361 - mmdet - INFO - Epoch [3][550/738]	lr: 1.000e-02, eta: 2:02:59, time: 0.485, data_time: 0.008, memory: 11893, loss_cls: 0.2759, loss_bbox: 0.3508, loss_centerness: 0.5965, loss: 1.2231, grad_norm: 3.5242
+2024-04-04 13:23:56,631 - mmdet - INFO - Epoch [3][600/738]	lr: 1.000e-02, eta: 2:02:41, time: 0.485, data_time: 0.008, memory: 11893, loss_cls: 0.2623, loss_bbox: 0.3845, loss_centerness: 0.5967, loss: 1.2436, grad_norm: 3.6987
+2024-04-04 13:24:20,683 - mmdet - INFO - Epoch [3][650/738]	lr: 1.000e-02, eta: 2:02:21, time: 0.481, data_time: 0.008, memory: 11893, loss_cls: 0.2576, loss_bbox: 0.3514, loss_centerness: 0.5984, loss: 1.2074, grad_norm: 3.1646
+2024-04-04 13:24:44,863 - mmdet - INFO - Epoch [3][700/738]	lr: 1.000e-02, eta: 2:02:02, time: 0.484, data_time: 0.008, memory: 11893, loss_cls: 0.2683, loss_bbox: 0.3690, loss_centerness: 0.5992, loss: 1.2365, grad_norm: 3.4540
+2024-04-04 13:25:36,134 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 8559  | 0.925  | 0.642 |
+| Boat      | 289  | 9497  | 0.910  | 0.548 |
+| Bottle    | 282  | 13686 | 0.908  | 0.660 |
+| Bus       | 135  | 6003  | 0.956  | 0.812 |
+| Car       | 597  | 17326 | 0.940  | 0.737 |
+| Cat       | 183  | 6754  | 0.923  | 0.463 |
+| Chair     | 466  | 15307 | 0.869  | 0.475 |
+| Cup       | 366  | 14281 | 0.926  | 0.660 |
+| Dog       | 207  | 3464  | 0.952  | 0.640 |
+| Motorbike | 233  | 5947  | 0.850  | 0.490 |
+| People    | 1562 | 28847 | 0.929  | 0.699 |
+| Table     | 333  | 11049 | 0.802  | 0.384 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.601 |
++-----------+------+-------+--------+-------+
+2024-04-04 13:25:36,279 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 13:25:36,279 - mmdet - INFO - Epoch(val) [3][367]	AP50: 0.6010, mAP: 0.6008
+2024-04-04 13:26:02,936 - mmdet - INFO - Epoch [4][50/738]	lr: 1.000e-02, eta: 1:59:40, time: 0.533, data_time: 0.054, memory: 11893, loss_cls: 0.2444, loss_bbox: 0.3359, loss_centerness: 0.5951, loss: 1.1754, grad_norm: 3.1972
+2024-04-04 13:26:26,993 - mmdet - INFO - Epoch [4][100/738]	lr: 1.000e-02, eta: 1:59:22, time: 0.481, data_time: 0.008, memory: 11893, loss_cls: 0.2335, loss_bbox: 0.3369, loss_centerness: 0.5938, loss: 1.1641, grad_norm: 3.3246
+2024-04-04 13:26:51,203 - mmdet - INFO - Epoch [4][150/738]	lr: 1.000e-02, eta: 1:59:05, time: 0.484, data_time: 0.008, memory: 11893, loss_cls: 0.2417, loss_bbox: 0.3221, loss_centerness: 0.5937, loss: 1.1575, grad_norm: 3.3369
+2024-04-04 13:27:15,682 - mmdet - INFO - Epoch [4][200/738]	lr: 1.000e-02, eta: 1:58:49, time: 0.490, data_time: 0.008, memory: 11893, loss_cls: 0.2492, loss_bbox: 0.3256, loss_centerness: 0.5945, loss: 1.1693, grad_norm: 3.3947
+2024-04-04 13:27:39,988 - mmdet - INFO - Epoch [4][250/738]	lr: 1.000e-02, eta: 1:58:32, time: 0.486, data_time: 0.008, memory: 11893, loss_cls: 0.2472, loss_bbox: 0.3195, loss_centerness: 0.5936, loss: 1.1603, grad_norm: 3.2844
+2024-04-04 13:28:04,401 - mmdet - INFO - Epoch [4][300/738]	lr: 1.000e-02, eta: 1:58:15, time: 0.488, data_time: 0.008, memory: 11893, loss_cls: 0.2370, loss_bbox: 0.3218, loss_centerness: 0.5937, loss: 1.1525, grad_norm: 3.2775
+2024-04-04 13:28:28,695 - mmdet - INFO - Epoch [4][350/738]	lr: 1.000e-02, eta: 1:57:58, time: 0.486, data_time: 0.008, memory: 11893, loss_cls: 0.2390, loss_bbox: 0.3375, loss_centerness: 0.5937, loss: 1.1702, grad_norm: 3.1743
+2024-04-04 13:28:52,873 - mmdet - INFO - Epoch [4][400/738]	lr: 1.000e-02, eta: 1:57:39, time: 0.484, data_time: 0.008, memory: 11893, loss_cls: 0.2432, loss_bbox: 0.3401, loss_centerness: 0.5956, loss: 1.1789, grad_norm: 3.3580
+2024-04-04 13:29:16,893 - mmdet - INFO - Epoch [4][450/738]	lr: 1.000e-02, eta: 1:57:19, time: 0.480, data_time: 0.008, memory: 11893, loss_cls: 0.2348, loss_bbox: 0.3380, loss_centerness: 0.5955, loss: 1.1683, grad_norm: 3.2235
+2024-04-04 13:29:40,970 - mmdet - INFO - Epoch [4][500/738]	lr: 1.000e-02, eta: 1:56:59, time: 0.482, data_time: 0.008, memory: 11893, loss_cls: 0.2479, loss_bbox: 0.3461, loss_centerness: 0.5960, loss: 1.1900, grad_norm: 3.5025
+2024-04-04 13:30:05,241 - mmdet - INFO - Epoch [4][550/738]	lr: 1.000e-02, eta: 1:56:41, time: 0.485, data_time: 0.008, memory: 11893, loss_cls: 0.2478, loss_bbox: 0.3414, loss_centerness: 0.5967, loss: 1.1859, grad_norm: 3.3682
+2024-04-04 13:30:29,558 - mmdet - INFO - Epoch [4][600/738]	lr: 1.000e-02, eta: 1:56:22, time: 0.486, data_time: 0.008, memory: 11893, loss_cls: 0.2732, loss_bbox: 0.3543, loss_centerness: 0.5986, loss: 1.2260, grad_norm: 3.4637
+2024-04-04 13:30:53,652 - mmdet - INFO - Epoch [4][650/738]	lr: 1.000e-02, eta: 1:56:02, time: 0.482, data_time: 0.008, memory: 11893, loss_cls: 0.2434, loss_bbox: 0.3492, loss_centerness: 0.5984, loss: 1.1910, grad_norm: 3.2064
+2024-04-04 13:31:17,879 - mmdet - INFO - Epoch [4][700/738]	lr: 1.000e-02, eta: 1:55:43, time: 0.485, data_time: 0.008, memory: 11893, loss_cls: 0.2663, loss_bbox: 0.3430, loss_centerness: 0.5953, loss: 1.2046, grad_norm: 3.4090
+2024-04-04 13:32:09,178 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 6042  | 0.939  | 0.673 |
+| Boat      | 289  | 8890  | 0.924  | 0.623 |
+| Bottle    | 282  | 14391 | 0.908  | 0.672 |
+| Bus       | 135  | 5699  | 0.978  | 0.827 |
+| Car       | 597  | 15163 | 0.945  | 0.752 |
+| Cat       | 183  | 7461  | 0.913  | 0.565 |
+| Chair     | 466  | 17016 | 0.888  | 0.542 |
+| Cup       | 366  | 10610 | 0.896  | 0.673 |
+| Dog       | 207  | 8502  | 0.976  | 0.613 |
+| Motorbike | 233  | 3531  | 0.794  | 0.509 |
+| People    | 1562 | 22409 | 0.923  | 0.726 |
+| Table     | 333  | 10019 | 0.817  | 0.450 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.635 |
++-----------+------+-------+--------+-------+
+2024-04-04 13:32:09,324 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 13:32:09,325 - mmdet - INFO - Epoch(val) [4][367]	AP50: 0.6350, mAP: 0.6354
+2024-04-04 13:32:36,049 - mmdet - INFO - Epoch [5][50/738]	lr: 1.000e-02, eta: 1:53:50, time: 0.534, data_time: 0.059, memory: 11893, loss_cls: 0.2141, loss_bbox: 0.2922, loss_centerness: 0.5912, loss: 1.0975, grad_norm: 3.0812
+2024-04-04 13:33:00,191 - mmdet - INFO - Epoch [5][100/738]	lr: 1.000e-02, eta: 1:53:31, time: 0.483, data_time: 0.008, memory: 11893, loss_cls: 0.2154, loss_bbox: 0.2915, loss_centerness: 0.5872, loss: 1.0941, grad_norm: 3.1295
+2024-04-04 13:33:24,545 - mmdet - INFO - Epoch [5][150/738]	lr: 1.000e-02, eta: 1:53:13, time: 0.487, data_time: 0.008, memory: 11893, loss_cls: 0.2180, loss_bbox: 0.3133, loss_centerness: 0.5892, loss: 1.1206, grad_norm: 3.5727
+2024-04-04 13:33:48,648 - mmdet - INFO - Epoch [5][200/738]	lr: 1.000e-02, eta: 1:52:54, time: 0.482, data_time: 0.008, memory: 11893, loss_cls: 0.2334, loss_bbox: 0.3320, loss_centerness: 0.5911, loss: 1.1565, grad_norm: 3.4544
+2024-04-04 13:34:12,965 - mmdet - INFO - Epoch [5][250/738]	lr: 1.000e-02, eta: 1:52:35, time: 0.486, data_time: 0.007, memory: 11893, loss_cls: 0.2377, loss_bbox: 0.3489, loss_centerness: 0.5971, loss: 1.1837, grad_norm: 3.4800
+2024-04-04 13:34:37,372 - mmdet - INFO - Epoch [5][300/738]	lr: 1.000e-02, eta: 1:52:17, time: 0.488, data_time: 0.008, memory: 11893, loss_cls: 0.2264, loss_bbox: 0.3138, loss_centerness: 0.5912, loss: 1.1314, grad_norm: 3.2684
+2024-04-04 13:35:01,632 - mmdet - INFO - Epoch [5][350/738]	lr: 1.000e-02, eta: 1:51:58, time: 0.485, data_time: 0.008, memory: 11893, loss_cls: 0.2235, loss_bbox: 0.3199, loss_centerness: 0.5931, loss: 1.1365, grad_norm: 3.1566
+2024-04-04 13:35:25,949 - mmdet - INFO - Epoch [5][400/738]	lr: 1.000e-02, eta: 1:51:39, time: 0.486, data_time: 0.008, memory: 11893, loss_cls: 0.2266, loss_bbox: 0.3285, loss_centerness: 0.5930, loss: 1.1481, grad_norm: 3.4632
+2024-04-04 13:35:50,234 - mmdet - INFO - Epoch [5][450/738]	lr: 1.000e-02, eta: 1:51:20, time: 0.486, data_time: 0.008, memory: 11893, loss_cls: 0.2259, loss_bbox: 0.3163, loss_centerness: 0.5917, loss: 1.1339, grad_norm: 3.3117
+2024-04-04 13:36:14,329 - mmdet - INFO - Epoch [5][500/738]	lr: 1.000e-02, eta: 1:50:59, time: 0.482, data_time: 0.008, memory: 11893, loss_cls: 0.2231, loss_bbox: 0.3170, loss_centerness: 0.5922, loss: 1.1322, grad_norm: 3.1912
+2024-04-04 13:36:38,647 - mmdet - INFO - Epoch [5][550/738]	lr: 1.000e-02, eta: 1:50:40, time: 0.486, data_time: 0.008, memory: 11893, loss_cls: 0.2326, loss_bbox: 0.3109, loss_centerness: 0.5922, loss: 1.1357, grad_norm: 3.2818
+2024-04-04 13:37:02,965 - mmdet - INFO - Epoch [5][600/738]	lr: 1.000e-02, eta: 1:50:20, time: 0.486, data_time: 0.007, memory: 11893, loss_cls: 0.2197, loss_bbox: 0.3179, loss_centerness: 0.5917, loss: 1.1293, grad_norm: 3.1465
+2024-04-04 13:37:27,208 - mmdet - INFO - Epoch [5][650/738]	lr: 1.000e-02, eta: 1:50:00, time: 0.485, data_time: 0.008, memory: 11893, loss_cls: 0.2171, loss_bbox: 0.3358, loss_centerness: 0.5904, loss: 1.1433, grad_norm: 3.2393
+2024-04-04 13:37:51,458 - mmdet - INFO - Epoch [5][700/738]	lr: 1.000e-02, eta: 1:49:40, time: 0.485, data_time: 0.008, memory: 11893, loss_cls: 0.2388, loss_bbox: 0.3170, loss_centerness: 0.5951, loss: 1.1509, grad_norm: 3.2752
+2024-04-04 13:38:43,077 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 4161  | 0.896  | 0.667 |
+| Boat      | 289  | 11613 | 0.945  | 0.641 |
+| Bottle    | 282  | 10518 | 0.904  | 0.685 |
+| Bus       | 135  | 4245  | 0.948  | 0.841 |
+| Car       | 597  | 11031 | 0.911  | 0.745 |
+| Cat       | 183  | 7957  | 0.951  | 0.576 |
+| Chair     | 466  | 23650 | 0.908  | 0.544 |
+| Cup       | 366  | 6676  | 0.904  | 0.683 |
+| Dog       | 207  | 10069 | 0.981  | 0.634 |
+| Motorbike | 233  | 3501  | 0.760  | 0.512 |
+| People    | 1562 | 22348 | 0.923  | 0.717 |
+| Table     | 333  | 14488 | 0.847  | 0.440 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.640 |
++-----------+------+-------+--------+-------+
+2024-04-04 13:38:43,220 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 13:38:43,220 - mmdet - INFO - Epoch(val) [5][367]	AP50: 0.6400, mAP: 0.6404
+2024-04-04 13:39:09,980 - mmdet - INFO - Epoch [6][50/738]	lr: 1.000e-02, eta: 1:48:05, time: 0.535, data_time: 0.058, memory: 11893, loss_cls: 0.1961, loss_bbox: 0.2876, loss_centerness: 0.5908, loss: 1.0746, grad_norm: 2.9869
+2024-04-04 13:39:33,978 - mmdet - INFO - Epoch [6][100/738]	lr: 1.000e-02, eta: 1:47:45, time: 0.480, data_time: 0.008, memory: 11893, loss_cls: 0.1987, loss_bbox: 0.2909, loss_centerness: 0.5894, loss: 1.0790, grad_norm: 2.9643
+2024-04-04 13:39:58,463 - mmdet - INFO - Epoch [6][150/738]	lr: 1.000e-02, eta: 1:47:26, time: 0.490, data_time: 0.008, memory: 11893, loss_cls: 0.2052, loss_bbox: 0.3086, loss_centerness: 0.5877, loss: 1.1015, grad_norm: 3.3151
+2024-04-04 13:40:22,714 - mmdet - INFO - Epoch [6][200/738]	lr: 1.000e-02, eta: 1:47:07, time: 0.485, data_time: 0.008, memory: 11893, loss_cls: 0.1962, loss_bbox: 0.2908, loss_centerness: 0.5875, loss: 1.0745, grad_norm: 3.1041
+2024-04-04 13:40:46,573 - mmdet - INFO - Epoch [6][250/738]	lr: 1.000e-02, eta: 1:46:46, time: 0.477, data_time: 0.008, memory: 11893, loss_cls: 0.2096, loss_bbox: 0.3072, loss_centerness: 0.5894, loss: 1.1062, grad_norm: 3.2857
+2024-04-04 13:41:10,581 - mmdet - INFO - Epoch [6][300/738]	lr: 1.000e-02, eta: 1:46:25, time: 0.480, data_time: 0.008, memory: 11893, loss_cls: 0.2058, loss_bbox: 0.2876, loss_centerness: 0.5859, loss: 1.0792, grad_norm: 3.2633
+2024-04-04 13:41:34,718 - mmdet - INFO - Epoch [6][350/738]	lr: 1.000e-02, eta: 1:46:05, time: 0.483, data_time: 0.008, memory: 11893, loss_cls: 0.2037, loss_bbox: 0.3004, loss_centerness: 0.5887, loss: 1.0927, grad_norm: 3.1087
+2024-04-04 13:41:59,032 - mmdet - INFO - Epoch [6][400/738]	lr: 1.000e-02, eta: 1:45:45, time: 0.486, data_time: 0.008, memory: 11893, loss_cls: 0.1945, loss_bbox: 0.2879, loss_centerness: 0.5873, loss: 1.0697, grad_norm: 3.0898
+2024-04-04 13:42:23,177 - mmdet - INFO - Epoch [6][450/738]	lr: 1.000e-02, eta: 1:45:24, time: 0.483, data_time: 0.008, memory: 11893, loss_cls: 0.2105, loss_bbox: 0.3012, loss_centerness: 0.5894, loss: 1.1012, grad_norm: 3.3071
+2024-04-04 13:42:47,687 - mmdet - INFO - Epoch [6][500/738]	lr: 1.000e-02, eta: 1:45:05, time: 0.490, data_time: 0.008, memory: 11893, loss_cls: 0.2113, loss_bbox: 0.3077, loss_centerness: 0.5886, loss: 1.1077, grad_norm: 3.3047
+2024-04-04 13:43:12,119 - mmdet - INFO - Epoch [6][550/738]	lr: 1.000e-02, eta: 1:44:45, time: 0.489, data_time: 0.008, memory: 11893, loss_cls: 0.2093, loss_bbox: 0.3028, loss_centerness: 0.5894, loss: 1.1014, grad_norm: 3.3346
+2024-04-04 13:43:36,711 - mmdet - INFO - Epoch [6][600/738]	lr: 1.000e-02, eta: 1:44:26, time: 0.492, data_time: 0.008, memory: 11893, loss_cls: 0.1985, loss_bbox: 0.2840, loss_centerness: 0.5873, loss: 1.0698, grad_norm: 3.2145
+2024-04-04 13:44:00,909 - mmdet - INFO - Epoch [6][650/738]	lr: 1.000e-02, eta: 1:44:05, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.2155, loss_bbox: 0.3004, loss_centerness: 0.5899, loss: 1.1057, grad_norm: 3.1720
+2024-04-04 13:44:25,073 - mmdet - INFO - Epoch [6][700/738]	lr: 1.000e-02, eta: 1:43:44, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.2018, loss_bbox: 0.3064, loss_centerness: 0.5889, loss: 1.0971, grad_norm: 3.4320
+2024-04-04 13:45:16,181 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 5740  | 0.929  | 0.678 |
+| Boat      | 289  | 8295  | 0.907  | 0.604 |
+| Bottle    | 282  | 4741  | 0.879  | 0.659 |
+| Bus       | 135  | 4160  | 0.970  | 0.830 |
+| Car       | 597  | 16313 | 0.961  | 0.766 |
+| Cat       | 183  | 8482  | 0.902  | 0.562 |
+| Chair     | 466  | 15307 | 0.876  | 0.523 |
+| Cup       | 366  | 5186  | 0.806  | 0.609 |
+| Dog       | 207  | 6457  | 0.966  | 0.566 |
+| Motorbike | 233  | 4961  | 0.850  | 0.573 |
+| People    | 1562 | 15134 | 0.891  | 0.699 |
+| Table     | 333  | 12461 | 0.853  | 0.423 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.624 |
++-----------+------+-------+--------+-------+
+2024-04-04 13:45:16,294 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 13:45:16,295 - mmdet - INFO - Epoch(val) [6][367]	AP50: 0.6240, mAP: 0.6244
+2024-04-04 13:45:42,903 - mmdet - INFO - Epoch [7][50/738]	lr: 1.000e-02, eta: 1:42:20, time: 0.532, data_time: 0.055, memory: 11911, loss_cls: 0.1829, loss_bbox: 0.2776, loss_centerness: 0.5860, loss: 1.0465, grad_norm: 3.1663
+2024-04-04 13:46:07,391 - mmdet - INFO - Epoch [7][100/738]	lr: 1.000e-02, eta: 1:42:01, time: 0.490, data_time: 0.008, memory: 11911, loss_cls: 0.1845, loss_bbox: 0.2873, loss_centerness: 0.5877, loss: 1.0596, grad_norm: 3.1820
+2024-04-04 13:46:31,564 - mmdet - INFO - Epoch [7][150/738]	lr: 1.000e-02, eta: 1:41:40, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1945, loss_bbox: 0.2760, loss_centerness: 0.5869, loss: 1.0573, grad_norm: 3.0920
+2024-04-04 13:46:56,114 - mmdet - INFO - Epoch [7][200/738]	lr: 1.000e-02, eta: 1:41:21, time: 0.491, data_time: 0.008, memory: 11911, loss_cls: 0.1867, loss_bbox: 0.2685, loss_centerness: 0.5847, loss: 1.0399, grad_norm: 3.2531
+2024-04-04 13:47:20,282 - mmdet - INFO - Epoch [7][250/738]	lr: 1.000e-02, eta: 1:41:00, time: 0.483, data_time: 0.007, memory: 11911, loss_cls: 0.1882, loss_bbox: 0.2771, loss_centerness: 0.5866, loss: 1.0519, grad_norm: 3.1920
+2024-04-04 13:47:44,431 - mmdet - INFO - Epoch [7][300/738]	lr: 1.000e-02, eta: 1:40:39, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1999, loss_bbox: 0.2975, loss_centerness: 0.5876, loss: 1.0849, grad_norm: 3.4357
+2024-04-04 13:48:08,633 - mmdet - INFO - Epoch [7][350/738]	lr: 1.000e-02, eta: 1:40:19, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.2029, loss_bbox: 0.2979, loss_centerness: 0.5883, loss: 1.0891, grad_norm: 3.2650
+2024-04-04 13:48:32,849 - mmdet - INFO - Epoch [7][400/738]	lr: 1.000e-02, eta: 1:39:58, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.2043, loss_bbox: 0.2819, loss_centerness: 0.5871, loss: 1.0733, grad_norm: 3.0677
+2024-04-04 13:48:57,136 - mmdet - INFO - Epoch [7][450/738]	lr: 1.000e-02, eta: 1:39:37, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1937, loss_bbox: 0.2967, loss_centerness: 0.5885, loss: 1.0789, grad_norm: 3.4115
+2024-04-04 13:49:21,509 - mmdet - INFO - Epoch [7][500/738]	lr: 1.000e-02, eta: 1:39:17, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.2063, loss_bbox: 0.3018, loss_centerness: 0.5871, loss: 1.0952, grad_norm: 3.5309
+2024-04-04 13:49:45,980 - mmdet - INFO - Epoch [7][550/738]	lr: 1.000e-02, eta: 1:38:56, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.1942, loss_bbox: 0.2879, loss_centerness: 0.5865, loss: 1.0686, grad_norm: 3.2126
+2024-04-04 13:50:10,247 - mmdet - INFO - Epoch [7][600/738]	lr: 1.000e-02, eta: 1:38:35, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.2088, loss_bbox: 0.2889, loss_centerness: 0.5876, loss: 1.0853, grad_norm: 3.4698
+2024-04-04 13:50:34,493 - mmdet - INFO - Epoch [7][650/738]	lr: 1.000e-02, eta: 1:38:14, time: 0.485, data_time: 0.007, memory: 11911, loss_cls: 0.1950, loss_bbox: 0.2900, loss_centerness: 0.5866, loss: 1.0716, grad_norm: 3.0695
+2024-04-04 13:50:58,793 - mmdet - INFO - Epoch [7][700/738]	lr: 1.000e-02, eta: 1:37:54, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1955, loss_bbox: 0.2945, loss_centerness: 0.5879, loss: 1.0779, grad_norm: 3.0657
+2024-04-04 13:51:49,987 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 7468  | 0.925  | 0.672 |
+| Boat      | 289  | 11654 | 0.945  | 0.675 |
+| Bottle    | 282  | 7334  | 0.904  | 0.686 |
+| Bus       | 135  | 3342  | 0.978  | 0.820 |
+| Car       | 597  | 14193 | 0.946  | 0.777 |
+| Cat       | 183  | 6611  | 0.934  | 0.529 |
+| Chair     | 466  | 15706 | 0.891  | 0.568 |
+| Cup       | 366  | 5049  | 0.869  | 0.720 |
+| Dog       | 207  | 6105  | 0.966  | 0.673 |
+| Motorbike | 233  | 6056  | 0.876  | 0.580 |
+| People    | 1562 | 16801 | 0.914  | 0.708 |
+| Table     | 333  | 17946 | 0.838  | 0.413 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.652 |
++-----------+------+-------+--------+-------+
+2024-04-04 13:51:50,129 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 13:51:50,129 - mmdet - INFO - Epoch(val) [7][367]	AP50: 0.6520, mAP: 0.6516
+2024-04-04 13:52:16,607 - mmdet - INFO - Epoch [8][50/738]	lr: 1.000e-02, eta: 1:36:37, time: 0.529, data_time: 0.055, memory: 11911, loss_cls: 0.1664, loss_bbox: 0.2626, loss_centerness: 0.5836, loss: 1.0126, grad_norm: 3.0147
+2024-04-04 13:52:40,886 - mmdet - INFO - Epoch [8][100/738]	lr: 1.000e-02, eta: 1:36:17, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1674, loss_bbox: 0.2645, loss_centerness: 0.5809, loss: 1.0128, grad_norm: 3.0245
+2024-04-04 13:53:05,325 - mmdet - INFO - Epoch [8][150/738]	lr: 1.000e-02, eta: 1:35:56, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.1713, loss_bbox: 0.2678, loss_centerness: 0.5855, loss: 1.0246, grad_norm: 2.9878
+2024-04-04 13:53:29,367 - mmdet - INFO - Epoch [8][200/738]	lr: 1.000e-02, eta: 1:35:35, time: 0.481, data_time: 0.008, memory: 11911, loss_cls: 0.1665, loss_bbox: 0.2650, loss_centerness: 0.5845, loss: 1.0160, grad_norm: 3.1576
+2024-04-04 13:53:53,674 - mmdet - INFO - Epoch [8][250/738]	lr: 1.000e-02, eta: 1:35:14, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1747, loss_bbox: 0.2643, loss_centerness: 0.5833, loss: 1.0223, grad_norm: 3.1925
+2024-04-04 13:54:17,829 - mmdet - INFO - Epoch [8][300/738]	lr: 1.000e-02, eta: 1:34:53, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1891, loss_bbox: 0.2720, loss_centerness: 0.5869, loss: 1.0479, grad_norm: 3.2413
+2024-04-04 13:54:42,207 - mmdet - INFO - Epoch [8][350/738]	lr: 1.000e-02, eta: 1:34:32, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.1846, loss_bbox: 0.2780, loss_centerness: 0.5846, loss: 1.0472, grad_norm: 3.3151
+2024-04-04 13:55:06,407 - mmdet - INFO - Epoch [8][400/738]	lr: 1.000e-02, eta: 1:34:11, time: 0.484, data_time: 0.007, memory: 11911, loss_cls: 0.1776, loss_bbox: 0.2749, loss_centerness: 0.5849, loss: 1.0374, grad_norm: 3.1964
+2024-04-04 13:55:30,484 - mmdet - INFO - Epoch [8][450/738]	lr: 1.000e-02, eta: 1:33:50, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.1789, loss_bbox: 0.2632, loss_centerness: 0.5841, loss: 1.0262, grad_norm: 3.2385
+2024-04-04 13:55:54,699 - mmdet - INFO - Epoch [8][500/738]	lr: 1.000e-02, eta: 1:33:28, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1765, loss_bbox: 0.2707, loss_centerness: 0.5847, loss: 1.0318, grad_norm: 3.2475
+2024-04-04 13:56:18,916 - mmdet - INFO - Epoch [8][550/738]	lr: 1.000e-02, eta: 1:33:07, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1811, loss_bbox: 0.2853, loss_centerness: 0.5863, loss: 1.0527, grad_norm: 3.4771
+2024-04-04 13:56:43,149 - mmdet - INFO - Epoch [8][600/738]	lr: 1.000e-02, eta: 1:32:46, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1883, loss_bbox: 0.2751, loss_centerness: 0.5865, loss: 1.0498, grad_norm: 3.3639
+2024-04-04 13:57:07,428 - mmdet - INFO - Epoch [8][650/738]	lr: 1.000e-02, eta: 1:32:24, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1787, loss_bbox: 0.2801, loss_centerness: 0.5844, loss: 1.0432, grad_norm: 3.1550
+2024-04-04 13:57:31,584 - mmdet - INFO - Epoch [8][700/738]	lr: 1.000e-02, eta: 1:32:03, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1784, loss_bbox: 0.2685, loss_centerness: 0.5840, loss: 1.0308, grad_norm: 3.2797
+2024-04-04 13:58:22,923 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 3630  | 0.939  | 0.720 |
+| Boat      | 289  | 10409 | 0.882  | 0.606 |
+| Bottle    | 282  | 16692 | 0.908  | 0.649 |
+| Bus       | 135  | 4378  | 0.970  | 0.821 |
+| Car       | 597  | 7322  | 0.913  | 0.776 |
+| Cat       | 183  | 7114  | 0.940  | 0.595 |
+| Chair     | 466  | 12399 | 0.863  | 0.554 |
+| Cup       | 366  | 9733  | 0.899  | 0.662 |
+| Dog       | 207  | 7632  | 0.976  | 0.698 |
+| Motorbike | 233  | 5892  | 0.867  | 0.472 |
+| People    | 1562 | 31632 | 0.931  | 0.712 |
+| Table     | 333  | 13274 | 0.829  | 0.445 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.642 |
++-----------+------+-------+--------+-------+
+2024-04-04 13:58:23,071 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 13:58:23,071 - mmdet - INFO - Epoch(val) [8][367]	AP50: 0.6420, mAP: 0.6424
+2024-04-04 13:58:49,928 - mmdet - INFO - Epoch [9][50/738]	lr: 1.000e-02, eta: 1:30:54, time: 0.537, data_time: 0.057, memory: 11911, loss_cls: 0.1651, loss_bbox: 0.2673, loss_centerness: 0.5818, loss: 1.0141, grad_norm: 3.1635
+2024-04-04 13:59:14,078 - mmdet - INFO - Epoch [9][100/738]	lr: 1.000e-02, eta: 1:30:32, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1596, loss_bbox: 0.2592, loss_centerness: 0.5831, loss: 1.0019, grad_norm: 2.9590
+2024-04-04 13:59:38,415 - mmdet - INFO - Epoch [9][150/738]	lr: 1.000e-02, eta: 1:30:11, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1574, loss_bbox: 0.2445, loss_centerness: 0.5809, loss: 0.9828, grad_norm: 2.9255
+2024-04-04 14:00:02,480 - mmdet - INFO - Epoch [9][200/738]	lr: 1.000e-02, eta: 1:29:50, time: 0.481, data_time: 0.008, memory: 11911, loss_cls: 0.1610, loss_bbox: 0.2456, loss_centerness: 0.5828, loss: 0.9894, grad_norm: 2.9072
+2024-04-04 14:00:26,678 - mmdet - INFO - Epoch [9][250/738]	lr: 1.000e-02, eta: 1:29:29, time: 0.484, data_time: 0.007, memory: 11911, loss_cls: 0.1557, loss_bbox: 0.2599, loss_centerness: 0.5804, loss: 0.9960, grad_norm: 3.1714
+2024-04-04 14:00:50,779 - mmdet - INFO - Epoch [9][300/738]	lr: 1.000e-02, eta: 1:29:07, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.1527, loss_bbox: 0.2506, loss_centerness: 0.5820, loss: 0.9852, grad_norm: 2.9562
+2024-04-04 14:01:14,857 - mmdet - INFO - Epoch [9][350/738]	lr: 1.000e-02, eta: 1:28:45, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.1682, loss_bbox: 0.2647, loss_centerness: 0.5833, loss: 1.0163, grad_norm: 3.1786
+2024-04-04 14:01:39,220 - mmdet - INFO - Epoch [9][400/738]	lr: 1.000e-02, eta: 1:28:24, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1568, loss_bbox: 0.2642, loss_centerness: 0.5826, loss: 1.0037, grad_norm: 3.0859
+2024-04-04 14:02:03,503 - mmdet - INFO - Epoch [9][450/738]	lr: 1.000e-02, eta: 1:28:03, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1680, loss_bbox: 0.2777, loss_centerness: 0.5834, loss: 1.0291, grad_norm: 3.3598
+2024-04-04 14:02:27,799 - mmdet - INFO - Epoch [9][500/738]	lr: 1.000e-02, eta: 1:27:41, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1674, loss_bbox: 0.2576, loss_centerness: 0.5836, loss: 1.0087, grad_norm: 3.1881
+2024-04-04 14:02:52,142 - mmdet - INFO - Epoch [9][550/738]	lr: 1.000e-02, eta: 1:27:20, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1676, loss_bbox: 0.2613, loss_centerness: 0.5832, loss: 1.0121, grad_norm: 3.1653
+2024-04-04 14:03:16,290 - mmdet - INFO - Epoch [9][600/738]	lr: 1.000e-02, eta: 1:26:58, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1832, loss_bbox: 0.2502, loss_centerness: 0.5840, loss: 1.0173, grad_norm: 3.2491
+2024-04-04 14:03:40,535 - mmdet - INFO - Epoch [9][650/738]	lr: 1.000e-02, eta: 1:26:36, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1681, loss_bbox: 0.2510, loss_centerness: 0.5822, loss: 1.0012, grad_norm: 3.0315
+2024-04-04 14:04:04,714 - mmdet - INFO - Epoch [9][700/738]	lr: 1.000e-02, eta: 1:26:15, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1603, loss_bbox: 0.2646, loss_centerness: 0.5817, loss: 1.0066, grad_norm: 3.1628
+2024-04-04 14:04:55,867 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 2770  | 0.873  | 0.642 |
+| Boat      | 289  | 7457  | 0.886  | 0.610 |
+| Bottle    | 282  | 3727  | 0.780  | 0.563 |
+| Bus       | 135  | 1863  | 0.970  | 0.864 |
+| Car       | 597  | 9568  | 0.930  | 0.775 |
+| Cat       | 183  | 3412  | 0.896  | 0.475 |
+| Chair     | 466  | 9800  | 0.884  | 0.519 |
+| Cup       | 366  | 8184  | 0.904  | 0.635 |
+| Dog       | 207  | 5204  | 0.957  | 0.625 |
+| Motorbike | 233  | 3559  | 0.785  | 0.523 |
+| People    | 1562 | 23385 | 0.910  | 0.703 |
+| Table     | 333  | 13848 | 0.823  | 0.404 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.611 |
++-----------+------+-------+--------+-------+
+2024-04-04 14:04:56,002 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 14:04:56,002 - mmdet - INFO - Epoch(val) [9][367]	AP50: 0.6110, mAP: 0.6115
+2024-04-04 14:05:22,756 - mmdet - INFO - Epoch [10][50/738]	lr: 1.000e-02, eta: 1:25:10, time: 0.535, data_time: 0.055, memory: 11911, loss_cls: 0.1459, loss_bbox: 0.2379, loss_centerness: 0.5784, loss: 0.9622, grad_norm: 3.0810
+2024-04-04 14:05:47,043 - mmdet - INFO - Epoch [10][100/738]	lr: 1.000e-02, eta: 1:24:49, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1498, loss_bbox: 0.2502, loss_centerness: 0.5812, loss: 0.9812, grad_norm: 3.1210
+2024-04-04 14:06:11,177 - mmdet - INFO - Epoch [10][150/738]	lr: 1.000e-02, eta: 1:24:27, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1569, loss_bbox: 0.2428, loss_centerness: 0.5803, loss: 0.9800, grad_norm: 3.1648
+2024-04-04 14:06:35,394 - mmdet - INFO - Epoch [10][200/738]	lr: 1.000e-02, eta: 1:24:05, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1613, loss_bbox: 0.2533, loss_centerness: 0.5820, loss: 0.9965, grad_norm: 3.3076
+2024-04-04 14:06:59,843 - mmdet - INFO - Epoch [10][250/738]	lr: 1.000e-02, eta: 1:23:44, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.1563, loss_bbox: 0.2405, loss_centerness: 0.5797, loss: 0.9766, grad_norm: 3.1744
+2024-04-04 14:07:24,111 - mmdet - INFO - Epoch [10][300/738]	lr: 1.000e-02, eta: 1:23:23, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1538, loss_bbox: 0.2473, loss_centerness: 0.5811, loss: 0.9822, grad_norm: 3.1866
+2024-04-04 14:07:48,501 - mmdet - INFO - Epoch [10][350/738]	lr: 1.000e-02, eta: 1:23:01, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.1612, loss_bbox: 0.2402, loss_centerness: 0.5783, loss: 0.9797, grad_norm: 3.2639
+2024-04-04 14:08:12,873 - mmdet - INFO - Epoch [10][400/738]	lr: 1.000e-02, eta: 1:22:40, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1526, loss_bbox: 0.2545, loss_centerness: 0.5819, loss: 0.9890, grad_norm: 3.1754
+2024-04-04 14:08:37,444 - mmdet - INFO - Epoch [10][450/738]	lr: 1.000e-02, eta: 1:22:18, time: 0.491, data_time: 0.008, memory: 11911, loss_cls: 0.1454, loss_bbox: 0.2534, loss_centerness: 0.5790, loss: 0.9778, grad_norm: 3.1371
+2024-04-04 14:09:01,576 - mmdet - INFO - Epoch [10][500/738]	lr: 1.000e-02, eta: 1:21:56, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1553, loss_bbox: 0.2500, loss_centerness: 0.5835, loss: 0.9888, grad_norm: 3.3212
+2024-04-04 14:09:25,857 - mmdet - INFO - Epoch [10][550/738]	lr: 1.000e-02, eta: 1:21:35, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1514, loss_bbox: 0.2521, loss_centerness: 0.5814, loss: 0.9849, grad_norm: 3.1929
+2024-04-04 14:09:49,925 - mmdet - INFO - Epoch [10][600/738]	lr: 1.000e-02, eta: 1:21:13, time: 0.481, data_time: 0.008, memory: 11911, loss_cls: 0.1539, loss_bbox: 0.2641, loss_centerness: 0.5820, loss: 1.0000, grad_norm: 3.3785
+2024-04-04 14:10:14,160 - mmdet - INFO - Epoch [10][650/738]	lr: 1.000e-02, eta: 1:20:51, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1466, loss_bbox: 0.2647, loss_centerness: 0.5821, loss: 0.9935, grad_norm: 3.0115
+2024-04-04 14:10:38,549 - mmdet - INFO - Epoch [10][700/738]	lr: 1.000e-02, eta: 1:20:29, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.1482, loss_bbox: 0.2546, loss_centerness: 0.5808, loss: 0.9837, grad_norm: 3.1413
+2024-04-04 14:11:29,966 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 6573  | 0.934  | 0.698 |
+| Boat      | 289  | 8523  | 0.910  | 0.653 |
+| Bottle    | 282  | 3264  | 0.773  | 0.619 |
+| Bus       | 135  | 6578  | 0.993  | 0.859 |
+| Car       | 597  | 16202 | 0.926  | 0.783 |
+| Cat       | 183  | 4706  | 0.913  | 0.612 |
+| Chair     | 466  | 18443 | 0.899  | 0.536 |
+| Cup       | 366  | 11092 | 0.855  | 0.592 |
+| Dog       | 207  | 5240  | 0.961  | 0.636 |
+| Motorbike | 233  | 3292  | 0.833  | 0.553 |
+| People    | 1562 | 15738 | 0.875  | 0.699 |
+| Table     | 333  | 10917 | 0.790  | 0.368 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.634 |
++-----------+------+-------+--------+-------+
+2024-04-04 14:11:30,076 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 14:11:30,076 - mmdet - INFO - Epoch(val) [10][367]	AP50: 0.6340, mAP: 0.6339
+2024-04-04 14:11:56,691 - mmdet - INFO - Epoch [11][50/738]	lr: 1.000e-02, eta: 1:19:28, time: 0.532, data_time: 0.057, memory: 11911, loss_cls: 0.1585, loss_bbox: 0.2428, loss_centerness: 0.5797, loss: 0.9810, grad_norm: 3.2558
+2024-04-04 14:12:20,758 - mmdet - INFO - Epoch [11][100/738]	lr: 1.000e-02, eta: 1:19:06, time: 0.481, data_time: 0.008, memory: 11911, loss_cls: 0.1417, loss_bbox: 0.2459, loss_centerness: 0.5778, loss: 0.9654, grad_norm: 3.1840
+2024-04-04 14:12:45,132 - mmdet - INFO - Epoch [11][150/738]	lr: 1.000e-02, eta: 1:18:44, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1304, loss_bbox: 0.2267, loss_centerness: 0.5761, loss: 0.9332, grad_norm: 2.8926
+2024-04-04 14:13:09,401 - mmdet - INFO - Epoch [11][200/738]	lr: 1.000e-02, eta: 1:18:23, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1399, loss_bbox: 0.2368, loss_centerness: 0.5794, loss: 0.9560, grad_norm: 2.9794
+2024-04-04 14:13:33,628 - mmdet - INFO - Epoch [11][250/738]	lr: 1.000e-02, eta: 1:18:01, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1336, loss_bbox: 0.2376, loss_centerness: 0.5786, loss: 0.9498, grad_norm: 3.1643
+2024-04-04 14:13:57,982 - mmdet - INFO - Epoch [11][300/738]	lr: 1.000e-02, eta: 1:17:39, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1614, loss_bbox: 0.2371, loss_centerness: 0.5780, loss: 0.9765, grad_norm: 3.4869
+2024-04-04 14:14:22,268 - mmdet - INFO - Epoch [11][350/738]	lr: 1.000e-02, eta: 1:17:17, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1613, loss_bbox: 0.2394, loss_centerness: 0.5809, loss: 0.9816, grad_norm: 3.3353
+2024-04-04 14:14:46,525 - mmdet - INFO - Epoch [11][400/738]	lr: 1.000e-02, eta: 1:16:55, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1424, loss_bbox: 0.2283, loss_centerness: 0.5795, loss: 0.9502, grad_norm: 3.0136
+2024-04-04 14:15:10,953 - mmdet - INFO - Epoch [11][450/738]	lr: 1.000e-02, eta: 1:16:34, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.1399, loss_bbox: 0.2311, loss_centerness: 0.5807, loss: 0.9517, grad_norm: 3.1224
+2024-04-04 14:15:35,132 - mmdet - INFO - Epoch [11][500/738]	lr: 1.000e-02, eta: 1:16:12, time: 0.484, data_time: 0.007, memory: 11911, loss_cls: 0.1437, loss_bbox: 0.2422, loss_centerness: 0.5793, loss: 0.9652, grad_norm: 3.2192
+2024-04-04 14:15:59,308 - mmdet - INFO - Epoch [11][550/738]	lr: 1.000e-02, eta: 1:15:49, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1484, loss_bbox: 0.2396, loss_centerness: 0.5801, loss: 0.9681, grad_norm: 3.2107
+2024-04-04 14:16:23,467 - mmdet - INFO - Epoch [11][600/738]	lr: 1.000e-02, eta: 1:15:27, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1543, loss_bbox: 0.2421, loss_centerness: 0.5812, loss: 0.9775, grad_norm: 3.2414
+2024-04-04 14:16:47,812 - mmdet - INFO - Epoch [11][650/738]	lr: 1.000e-02, eta: 1:15:05, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1443, loss_bbox: 0.2482, loss_centerness: 0.5791, loss: 0.9717, grad_norm: 3.3204
+2024-04-04 14:17:12,298 - mmdet - INFO - Epoch [11][700/738]	lr: 1.000e-02, eta: 1:14:43, time: 0.490, data_time: 0.008, memory: 11911, loss_cls: 0.1445, loss_bbox: 0.2519, loss_centerness: 0.5809, loss: 0.9772, grad_norm: 3.1992
+2024-04-04 14:18:03,983 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 7350  | 0.934  | 0.716 |
+| Boat      | 289  | 6234  | 0.917  | 0.636 |
+| Bottle    | 282  | 9289  | 0.908  | 0.697 |
+| Bus       | 135  | 2232  | 0.956  | 0.842 |
+| Car       | 597  | 10077 | 0.925  | 0.784 |
+| Cat       | 183  | 3090  | 0.907  | 0.654 |
+| Chair     | 466  | 12903 | 0.884  | 0.536 |
+| Cup       | 366  | 6962  | 0.891  | 0.692 |
+| Dog       | 207  | 4292  | 0.966  | 0.676 |
+| Motorbike | 233  | 4492  | 0.854  | 0.574 |
+| People    | 1562 | 16728 | 0.924  | 0.723 |
+| Table     | 333  | 12077 | 0.883  | 0.448 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.665 |
++-----------+------+-------+--------+-------+
+2024-04-04 14:18:04,124 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 14:18:04,124 - mmdet - INFO - Epoch(val) [11][367]	AP50: 0.6650, mAP: 0.6650
+2024-04-04 14:18:30,697 - mmdet - INFO - Epoch [12][50/738]	lr: 1.000e-02, eta: 1:13:46, time: 0.531, data_time: 0.055, memory: 11911, loss_cls: 0.1209, loss_bbox: 0.2225, loss_centerness: 0.5765, loss: 0.9199, grad_norm: 2.8442
+2024-04-04 14:18:54,587 - mmdet - INFO - Epoch [12][100/738]	lr: 1.000e-02, eta: 1:13:23, time: 0.478, data_time: 0.008, memory: 11911, loss_cls: 0.1305, loss_bbox: 0.2179, loss_centerness: 0.5767, loss: 0.9251, grad_norm: 3.1077
+2024-04-04 14:19:18,720 - mmdet - INFO - Epoch [12][150/738]	lr: 1.000e-02, eta: 1:13:01, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1222, loss_bbox: 0.2287, loss_centerness: 0.5748, loss: 0.9257, grad_norm: 3.1286
+2024-04-04 14:19:43,037 - mmdet - INFO - Epoch [12][200/738]	lr: 1.000e-02, eta: 1:12:39, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1333, loss_bbox: 0.2217, loss_centerness: 0.5764, loss: 0.9314, grad_norm: 3.1480
+2024-04-04 14:20:07,195 - mmdet - INFO - Epoch [12][250/738]	lr: 1.000e-02, eta: 1:12:17, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1315, loss_bbox: 0.2223, loss_centerness: 0.5768, loss: 0.9306, grad_norm: 3.0546
+2024-04-04 14:20:31,722 - mmdet - INFO - Epoch [12][300/738]	lr: 1.000e-02, eta: 1:11:55, time: 0.491, data_time: 0.008, memory: 11911, loss_cls: 0.1327, loss_bbox: 0.2271, loss_centerness: 0.5775, loss: 0.9372, grad_norm: 2.9751
+2024-04-04 14:20:56,005 - mmdet - INFO - Epoch [12][350/738]	lr: 1.000e-02, eta: 1:11:33, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1264, loss_bbox: 0.2304, loss_centerness: 0.5780, loss: 0.9348, grad_norm: 2.9638
+2024-04-04 14:21:20,436 - mmdet - INFO - Epoch [12][400/738]	lr: 1.000e-02, eta: 1:11:11, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.1386, loss_bbox: 0.2184, loss_centerness: 0.5765, loss: 0.9335, grad_norm: 3.1564
+2024-04-04 14:21:44,603 - mmdet - INFO - Epoch [12][450/738]	lr: 1.000e-02, eta: 1:10:49, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1398, loss_bbox: 0.2154, loss_centerness: 0.5742, loss: 0.9294, grad_norm: 3.0641
+2024-04-04 14:22:08,777 - mmdet - INFO - Epoch [12][500/738]	lr: 1.000e-02, eta: 1:10:27, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1407, loss_bbox: 0.2366, loss_centerness: 0.5809, loss: 0.9583, grad_norm: 3.3042
+2024-04-04 14:22:33,044 - mmdet - INFO - Epoch [12][550/738]	lr: 1.000e-02, eta: 1:10:05, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1345, loss_bbox: 0.2327, loss_centerness: 0.5791, loss: 0.9463, grad_norm: 3.1411
+2024-04-04 14:22:57,597 - mmdet - INFO - Epoch [12][600/738]	lr: 1.000e-02, eta: 1:09:43, time: 0.491, data_time: 0.008, memory: 11911, loss_cls: 0.1311, loss_bbox: 0.2358, loss_centerness: 0.5785, loss: 0.9455, grad_norm: 3.1623
+2024-04-04 14:23:21,937 - mmdet - INFO - Epoch [12][650/738]	lr: 1.000e-02, eta: 1:09:21, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1259, loss_bbox: 0.2271, loss_centerness: 0.5786, loss: 0.9316, grad_norm: 2.9239
+2024-04-04 14:23:46,206 - mmdet - INFO - Epoch [12][700/738]	lr: 1.000e-02, eta: 1:08:58, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1394, loss_bbox: 0.2409, loss_centerness: 0.5788, loss: 0.9591, grad_norm: 3.2884
+2024-04-04 14:24:37,772 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 3771  | 0.887  | 0.698 |
+| Boat      | 289  | 4688  | 0.903  | 0.642 |
+| Bottle    | 282  | 9190  | 0.908  | 0.675 |
+| Bus       | 135  | 2915  | 0.963  | 0.864 |
+| Car       | 597  | 6361  | 0.908  | 0.769 |
+| Cat       | 183  | 8381  | 0.945  | 0.500 |
+| Chair     | 466  | 10502 | 0.809  | 0.481 |
+| Cup       | 366  | 12326 | 0.904  | 0.661 |
+| Dog       | 207  | 3033  | 0.952  | 0.650 |
+| Motorbike | 233  | 2431  | 0.815  | 0.601 |
+| People    | 1562 | 22774 | 0.913  | 0.692 |
+| Table     | 333  | 12672 | 0.814  | 0.372 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.634 |
++-----------+------+-------+--------+-------+
+2024-04-04 14:24:37,900 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 14:24:37,901 - mmdet - INFO - Epoch(val) [12][367]	AP50: 0.6340, mAP: 0.6337
+2024-04-04 14:25:04,172 - mmdet - INFO - Epoch [13][50/738]	lr: 1.000e-02, eta: 1:08:03, time: 0.525, data_time: 0.054, memory: 11911, loss_cls: 0.1231, loss_bbox: 0.2117, loss_centerness: 0.5768, loss: 0.9116, grad_norm: 2.9578
+2024-04-04 14:25:28,488 - mmdet - INFO - Epoch [13][100/738]	lr: 1.000e-02, eta: 1:07:41, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1273, loss_bbox: 0.2225, loss_centerness: 0.5757, loss: 0.9255, grad_norm: 3.1217
+2024-04-04 14:25:52,941 - mmdet - INFO - Epoch [13][150/738]	lr: 1.000e-02, eta: 1:07:19, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.1254, loss_bbox: 0.2231, loss_centerness: 0.5758, loss: 0.9243, grad_norm: 3.0658
+2024-04-04 14:26:17,258 - mmdet - INFO - Epoch [13][200/738]	lr: 1.000e-02, eta: 1:06:57, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1256, loss_bbox: 0.2100, loss_centerness: 0.5778, loss: 0.9134, grad_norm: 3.0095
+2024-04-04 14:26:41,295 - mmdet - INFO - Epoch [13][250/738]	lr: 1.000e-02, eta: 1:06:34, time: 0.481, data_time: 0.008, memory: 11911, loss_cls: 0.1242, loss_bbox: 0.2383, loss_centerness: 0.5766, loss: 0.9390, grad_norm: 3.2654
+2024-04-04 14:27:05,605 - mmdet - INFO - Epoch [13][300/738]	lr: 1.000e-02, eta: 1:06:12, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1416, loss_bbox: 0.2277, loss_centerness: 0.5771, loss: 0.9464, grad_norm: 3.6757
+2024-04-04 14:27:29,805 - mmdet - INFO - Epoch [13][350/738]	lr: 1.000e-02, eta: 1:05:50, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1537, loss_bbox: 0.2406, loss_centerness: 0.5782, loss: 0.9725, grad_norm: 3.5324
+2024-04-04 14:27:54,062 - mmdet - INFO - Epoch [13][400/738]	lr: 1.000e-02, eta: 1:05:28, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1349, loss_bbox: 0.2282, loss_centerness: 0.5794, loss: 0.9424, grad_norm: 2.9931
+2024-04-04 14:28:18,512 - mmdet - INFO - Epoch [13][450/738]	lr: 1.000e-02, eta: 1:05:05, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.1299, loss_bbox: 0.2231, loss_centerness: 0.5738, loss: 0.9268, grad_norm: 3.1223
+2024-04-04 14:28:42,798 - mmdet - INFO - Epoch [13][500/738]	lr: 1.000e-02, eta: 1:04:43, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1265, loss_bbox: 0.2236, loss_centerness: 0.5787, loss: 0.9287, grad_norm: 3.1328
+2024-04-04 14:29:07,112 - mmdet - INFO - Epoch [13][550/738]	lr: 1.000e-02, eta: 1:04:21, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1267, loss_bbox: 0.2357, loss_centerness: 0.5779, loss: 0.9403, grad_norm: 3.1653
+2024-04-04 14:29:31,574 - mmdet - INFO - Epoch [13][600/738]	lr: 1.000e-02, eta: 1:03:59, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.1265, loss_bbox: 0.2179, loss_centerness: 0.5767, loss: 0.9211, grad_norm: 3.1379
+2024-04-04 14:29:55,809 - mmdet - INFO - Epoch [13][650/738]	lr: 1.000e-02, eta: 1:03:36, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1300, loss_bbox: 0.2303, loss_centerness: 0.5754, loss: 0.9356, grad_norm: 3.1779
+2024-04-04 14:30:20,298 - mmdet - INFO - Epoch [13][700/738]	lr: 1.000e-02, eta: 1:03:14, time: 0.490, data_time: 0.008, memory: 11911, loss_cls: 0.1293, loss_bbox: 0.2357, loss_centerness: 0.5768, loss: 0.9418, grad_norm: 3.1472
+2024-04-04 14:31:11,609 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 11811 | 0.948  | 0.723 |
+| Boat      | 289  | 5954  | 0.869  | 0.620 |
+| Bottle    | 282  | 4481  | 0.826  | 0.642 |
+| Bus       | 135  | 3817  | 0.978  | 0.868 |
+| Car       | 597  | 13145 | 0.933  | 0.770 |
+| Cat       | 183  | 3957  | 0.923  | 0.581 |
+| Chair     | 466  | 19246 | 0.888  | 0.523 |
+| Cup       | 366  | 5443  | 0.852  | 0.671 |
+| Dog       | 207  | 3065  | 0.952  | 0.712 |
+| Motorbike | 233  | 4330  | 0.871  | 0.626 |
+| People    | 1562 | 17936 | 0.887  | 0.684 |
+| Table     | 333  | 12156 | 0.829  | 0.427 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.654 |
++-----------+------+-------+--------+-------+
+2024-04-04 14:31:11,741 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 14:31:11,742 - mmdet - INFO - Epoch(val) [13][367]	AP50: 0.6540, mAP: 0.6541
+2024-04-04 14:31:38,590 - mmdet - INFO - Epoch [14][50/738]	lr: 1.000e-02, eta: 1:02:21, time: 0.537, data_time: 0.057, memory: 11911, loss_cls: 0.1067, loss_bbox: 0.1999, loss_centerness: 0.5721, loss: 0.8786, grad_norm: 2.6584
+2024-04-04 14:32:02,706 - mmdet - INFO - Epoch [14][100/738]	lr: 1.000e-02, eta: 1:01:59, time: 0.482, data_time: 0.007, memory: 11911, loss_cls: 0.1048, loss_bbox: 0.2079, loss_centerness: 0.5753, loss: 0.8880, grad_norm: 2.9071
+2024-04-04 14:32:27,007 - mmdet - INFO - Epoch [14][150/738]	lr: 1.000e-02, eta: 1:01:37, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1091, loss_bbox: 0.2038, loss_centerness: 0.5758, loss: 0.8888, grad_norm: 2.7862
+2024-04-04 14:32:51,199 - mmdet - INFO - Epoch [14][200/738]	lr: 1.000e-02, eta: 1:01:14, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1179, loss_bbox: 0.2011, loss_centerness: 0.5758, loss: 0.8948, grad_norm: 3.0266
+2024-04-04 14:33:15,820 - mmdet - INFO - Epoch [14][250/738]	lr: 1.000e-02, eta: 1:00:52, time: 0.492, data_time: 0.008, memory: 11911, loss_cls: 0.1164, loss_bbox: 0.2135, loss_centerness: 0.5754, loss: 0.9053, grad_norm: 3.0731
+2024-04-04 14:33:40,094 - mmdet - INFO - Epoch [14][300/738]	lr: 1.000e-02, eta: 1:00:30, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1222, loss_bbox: 0.2015, loss_centerness: 0.5736, loss: 0.8973, grad_norm: 3.4008
+2024-04-04 14:34:04,281 - mmdet - INFO - Epoch [14][350/738]	lr: 1.000e-02, eta: 1:00:07, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1220, loss_bbox: 0.2277, loss_centerness: 0.5741, loss: 0.9237, grad_norm: 3.1065
+2024-04-04 14:34:28,642 - mmdet - INFO - Epoch [14][400/738]	lr: 1.000e-02, eta: 0:59:45, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1150, loss_bbox: 0.2166, loss_centerness: 0.5741, loss: 0.9056, grad_norm: 3.1376
+2024-04-04 14:34:53,032 - mmdet - INFO - Epoch [14][450/738]	lr: 1.000e-02, eta: 0:59:23, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.1170, loss_bbox: 0.2092, loss_centerness: 0.5754, loss: 0.9015, grad_norm: 2.9274
+2024-04-04 14:35:17,288 - mmdet - INFO - Epoch [14][500/738]	lr: 1.000e-02, eta: 0:59:00, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1121, loss_bbox: 0.2030, loss_centerness: 0.5731, loss: 0.8882, grad_norm: 2.9395
+2024-04-04 14:35:41,597 - mmdet - INFO - Epoch [14][550/738]	lr: 1.000e-02, eta: 0:58:38, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1127, loss_bbox: 0.2015, loss_centerness: 0.5735, loss: 0.8878, grad_norm: 2.9425
+2024-04-04 14:36:05,953 - mmdet - INFO - Epoch [14][600/738]	lr: 1.000e-02, eta: 0:58:15, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1171, loss_bbox: 0.2161, loss_centerness: 0.5767, loss: 0.9099, grad_norm: 2.9919
+2024-04-04 14:36:30,030 - mmdet - INFO - Epoch [14][650/738]	lr: 1.000e-02, eta: 0:57:53, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.1198, loss_bbox: 0.2164, loss_centerness: 0.5756, loss: 0.9119, grad_norm: 2.8933
+2024-04-04 14:36:54,350 - mmdet - INFO - Epoch [14][700/738]	lr: 1.000e-02, eta: 0:57:30, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1167, loss_bbox: 0.2263, loss_centerness: 0.5743, loss: 0.9173, grad_norm: 3.1642
+2024-04-04 14:37:45,405 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 5939  | 0.925  | 0.682 |
+| Boat      | 289  | 4337  | 0.865  | 0.622 |
+| Bottle    | 282  | 5940  | 0.833  | 0.612 |
+| Bus       | 135  | 3207  | 0.970  | 0.877 |
+| Car       | 597  | 11110 | 0.920  | 0.742 |
+| Cat       | 183  | 3971  | 0.847  | 0.570 |
+| Chair     | 466  | 6053  | 0.792  | 0.519 |
+| Cup       | 366  | 4724  | 0.836  | 0.638 |
+| Dog       | 207  | 4533  | 0.932  | 0.641 |
+| Motorbike | 233  | 5593  | 0.871  | 0.536 |
+| People    | 1562 | 18061 | 0.873  | 0.681 |
+| Table     | 333  | 4632  | 0.703  | 0.400 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.627 |
++-----------+------+-------+--------+-------+
+2024-04-04 14:37:45,549 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 14:37:45,549 - mmdet - INFO - Epoch(val) [14][367]	AP50: 0.6270, mAP: 0.6266
+2024-04-04 14:38:12,158 - mmdet - INFO - Epoch [15][50/738]	lr: 1.000e-02, eta: 0:56:39, time: 0.532, data_time: 0.054, memory: 11911, loss_cls: 0.1098, loss_bbox: 0.2112, loss_centerness: 0.5725, loss: 0.8935, grad_norm: 3.0203
+2024-04-04 14:38:36,573 - mmdet - INFO - Epoch [15][100/738]	lr: 1.000e-02, eta: 0:56:17, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.1028, loss_bbox: 0.1955, loss_centerness: 0.5713, loss: 0.8695, grad_norm: 2.9572
+2024-04-04 14:39:00,833 - mmdet - INFO - Epoch [15][150/738]	lr: 1.000e-02, eta: 0:55:54, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1063, loss_bbox: 0.1957, loss_centerness: 0.5746, loss: 0.8766, grad_norm: 2.8334
+2024-04-04 14:39:25,158 - mmdet - INFO - Epoch [15][200/738]	lr: 1.000e-02, eta: 0:55:32, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1194, loss_bbox: 0.1936, loss_centerness: 0.5723, loss: 0.8853, grad_norm: 2.9580
+2024-04-04 14:39:49,385 - mmdet - INFO - Epoch [15][250/738]	lr: 1.000e-02, eta: 0:55:09, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1060, loss_bbox: 0.1989, loss_centerness: 0.5748, loss: 0.8796, grad_norm: 2.7673
+2024-04-04 14:40:13,510 - mmdet - INFO - Epoch [15][300/738]	lr: 1.000e-02, eta: 0:54:47, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1069, loss_bbox: 0.1937, loss_centerness: 0.5738, loss: 0.8744, grad_norm: 2.6377
+2024-04-04 14:40:37,787 - mmdet - INFO - Epoch [15][350/738]	lr: 1.000e-02, eta: 0:54:24, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1025, loss_bbox: 0.2026, loss_centerness: 0.5732, loss: 0.8783, grad_norm: 3.0621
+2024-04-04 14:41:02,036 - mmdet - INFO - Epoch [15][400/738]	lr: 1.000e-02, eta: 0:54:02, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1156, loss_bbox: 0.2060, loss_centerness: 0.5740, loss: 0.8956, grad_norm: 3.0408
+2024-04-04 14:41:26,527 - mmdet - INFO - Epoch [15][450/738]	lr: 1.000e-02, eta: 0:53:39, time: 0.490, data_time: 0.008, memory: 11911, loss_cls: 0.1083, loss_bbox: 0.2078, loss_centerness: 0.5742, loss: 0.8902, grad_norm: 3.2876
+2024-04-04 14:41:50,762 - mmdet - INFO - Epoch [15][500/738]	lr: 1.000e-02, eta: 0:53:17, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1146, loss_bbox: 0.2031, loss_centerness: 0.5751, loss: 0.8928, grad_norm: 2.9661
+2024-04-04 14:42:15,108 - mmdet - INFO - Epoch [15][550/738]	lr: 1.000e-02, eta: 0:52:54, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1135, loss_bbox: 0.2109, loss_centerness: 0.5755, loss: 0.8999, grad_norm: 3.0752
+2024-04-04 14:42:39,609 - mmdet - INFO - Epoch [15][600/738]	lr: 1.000e-02, eta: 0:52:32, time: 0.490, data_time: 0.008, memory: 11911, loss_cls: 0.1168, loss_bbox: 0.2129, loss_centerness: 0.5744, loss: 0.9040, grad_norm: 3.1737
+2024-04-04 14:43:03,917 - mmdet - INFO - Epoch [15][650/738]	lr: 1.000e-02, eta: 0:52:09, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1170, loss_bbox: 0.2003, loss_centerness: 0.5745, loss: 0.8918, grad_norm: 3.3162
+2024-04-04 14:43:28,062 - mmdet - INFO - Epoch [15][700/738]	lr: 1.000e-02, eta: 0:51:46, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1217, loss_bbox: 0.2151, loss_centerness: 0.5743, loss: 0.9111, grad_norm: 3.4350
+2024-04-04 14:44:19,132 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 6048  | 0.915  | 0.720 |
+| Boat      | 289  | 4569  | 0.875  | 0.639 |
+| Bottle    | 282  | 7505  | 0.894  | 0.653 |
+| Bus       | 135  | 1935  | 0.963  | 0.858 |
+| Car       | 597  | 7816  | 0.935  | 0.785 |
+| Cat       | 183  | 5936  | 0.934  | 0.653 |
+| Chair     | 466  | 12740 | 0.878  | 0.544 |
+| Cup       | 366  | 5536  | 0.852  | 0.658 |
+| Dog       | 207  | 5399  | 0.952  | 0.688 |
+| Motorbike | 233  | 4506  | 0.837  | 0.572 |
+| People    | 1562 | 22738 | 0.902  | 0.692 |
+| Table     | 333  | 11446 | 0.835  | 0.423 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.657 |
++-----------+------+-------+--------+-------+
+2024-04-04 14:44:19,266 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 14:44:19,266 - mmdet - INFO - Epoch(val) [15][367]	AP50: 0.6570, mAP: 0.6571
+2024-04-04 14:44:45,888 - mmdet - INFO - Epoch [16][50/738]	lr: 1.000e-02, eta: 0:50:57, time: 0.532, data_time: 0.054, memory: 11911, loss_cls: 0.0919, loss_bbox: 0.1875, loss_centerness: 0.5713, loss: 0.8507, grad_norm: 2.7247
+2024-04-04 14:45:10,189 - mmdet - INFO - Epoch [16][100/738]	lr: 1.000e-02, eta: 0:50:34, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.0989, loss_bbox: 0.2054, loss_centerness: 0.5723, loss: 0.8766, grad_norm: 2.7988
+2024-04-04 14:45:34,515 - mmdet - INFO - Epoch [16][150/738]	lr: 1.000e-02, eta: 0:50:12, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0929, loss_bbox: 0.1798, loss_centerness: 0.5717, loss: 0.8444, grad_norm: 2.6811
+2024-04-04 14:45:58,701 - mmdet - INFO - Epoch [16][200/738]	lr: 1.000e-02, eta: 0:49:49, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1083, loss_bbox: 0.1962, loss_centerness: 0.5739, loss: 0.8784, grad_norm: 3.0783
+2024-04-04 14:46:23,169 - mmdet - INFO - Epoch [16][250/738]	lr: 1.000e-02, eta: 0:49:27, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.1068, loss_bbox: 0.2161, loss_centerness: 0.5733, loss: 0.8961, grad_norm: 3.1537
+2024-04-04 14:46:47,488 - mmdet - INFO - Epoch [16][300/738]	lr: 1.000e-02, eta: 0:49:04, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.1018, loss_bbox: 0.1992, loss_centerness: 0.5743, loss: 0.8753, grad_norm: 2.9716
+2024-04-04 14:47:11,939 - mmdet - INFO - Epoch [16][350/738]	lr: 1.000e-02, eta: 0:48:42, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.0951, loss_bbox: 0.2004, loss_centerness: 0.5702, loss: 0.8656, grad_norm: 2.9026
+2024-04-04 14:47:36,274 - mmdet - INFO - Epoch [16][400/738]	lr: 1.000e-02, eta: 0:48:19, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1007, loss_bbox: 0.1953, loss_centerness: 0.5723, loss: 0.8683, grad_norm: 2.9040
+2024-04-04 14:48:00,500 - mmdet - INFO - Epoch [16][450/738]	lr: 1.000e-02, eta: 0:47:56, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0959, loss_bbox: 0.1908, loss_centerness: 0.5723, loss: 0.8590, grad_norm: 2.8106
+2024-04-04 14:48:24,960 - mmdet - INFO - Epoch [16][500/738]	lr: 1.000e-02, eta: 0:47:34, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.0991, loss_bbox: 0.1866, loss_centerness: 0.5708, loss: 0.8565, grad_norm: 3.0478
+2024-04-04 14:48:49,107 - mmdet - INFO - Epoch [16][550/738]	lr: 1.000e-02, eta: 0:47:11, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.1177, loss_bbox: 0.2103, loss_centerness: 0.5739, loss: 0.9020, grad_norm: 3.4173
+2024-04-04 14:49:13,314 - mmdet - INFO - Epoch [16][600/738]	lr: 1.000e-02, eta: 0:46:48, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1175, loss_bbox: 0.1980, loss_centerness: 0.5737, loss: 0.8892, grad_norm: 3.3817
+2024-04-04 14:49:37,547 - mmdet - INFO - Epoch [16][650/738]	lr: 1.000e-02, eta: 0:46:26, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1482, loss_bbox: 0.2280, loss_centerness: 0.5777, loss: 0.9539, grad_norm: 3.8396
+2024-04-04 14:50:01,619 - mmdet - INFO - Epoch [16][700/738]	lr: 1.000e-02, eta: 0:46:03, time: 0.481, data_time: 0.008, memory: 11911, loss_cls: 0.1210, loss_bbox: 0.2100, loss_centerness: 0.5742, loss: 0.9051, grad_norm: 3.3115
+2024-04-04 14:50:52,759 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 2842  | 0.877  | 0.697 |
+| Boat      | 289  | 3132  | 0.872  | 0.627 |
+| Bottle    | 282  | 8062  | 0.855  | 0.625 |
+| Bus       | 135  | 1426  | 0.970  | 0.853 |
+| Car       | 597  | 7785  | 0.916  | 0.768 |
+| Cat       | 183  | 2685  | 0.918  | 0.652 |
+| Chair     | 466  | 8654  | 0.833  | 0.515 |
+| Cup       | 366  | 10978 | 0.880  | 0.604 |
+| Dog       | 207  | 2974  | 0.928  | 0.664 |
+| Motorbike | 233  | 5235  | 0.867  | 0.530 |
+| People    | 1562 | 12668 | 0.880  | 0.688 |
+| Table     | 333  | 8182  | 0.793  | 0.407 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.636 |
++-----------+------+-------+--------+-------+
+2024-04-04 14:50:52,871 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 14:50:52,871 - mmdet - INFO - Epoch(val) [16][367]	AP50: 0.6360, mAP: 0.6358
+2024-04-04 14:51:19,601 - mmdet - INFO - Epoch [17][50/738]	lr: 1.000e-02, eta: 0:45:15, time: 0.534, data_time: 0.055, memory: 11911, loss_cls: 0.1042, loss_bbox: 0.2067, loss_centerness: 0.5739, loss: 0.8848, grad_norm: 2.9979
+2024-04-04 14:51:43,681 - mmdet - INFO - Epoch [17][100/738]	lr: 1.000e-02, eta: 0:44:52, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.1055, loss_bbox: 0.2032, loss_centerness: 0.5722, loss: 0.8809, grad_norm: 3.1867
+2024-04-04 14:52:07,955 - mmdet - INFO - Epoch [17][150/738]	lr: 1.000e-02, eta: 0:44:29, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1004, loss_bbox: 0.1977, loss_centerness: 0.5720, loss: 0.8700, grad_norm: 3.0253
+2024-04-04 14:52:32,282 - mmdet - INFO - Epoch [17][200/738]	lr: 1.000e-02, eta: 0:44:07, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1030, loss_bbox: 0.1982, loss_centerness: 0.5709, loss: 0.8720, grad_norm: 2.9630
+2024-04-04 14:52:56,641 - mmdet - INFO - Epoch [17][250/738]	lr: 1.000e-02, eta: 0:43:44, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0945, loss_bbox: 0.1882, loss_centerness: 0.5721, loss: 0.8547, grad_norm: 2.8581
+2024-04-04 14:53:20,912 - mmdet - INFO - Epoch [17][300/738]	lr: 1.000e-02, eta: 0:43:21, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0985, loss_bbox: 0.2001, loss_centerness: 0.5717, loss: 0.8702, grad_norm: 2.8593
+2024-04-04 14:53:45,114 - mmdet - INFO - Epoch [17][350/738]	lr: 1.000e-02, eta: 0:42:59, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0944, loss_bbox: 0.2211, loss_centerness: 0.5714, loss: 0.8869, grad_norm: 3.0272
+2024-04-04 14:54:09,368 - mmdet - INFO - Epoch [17][400/738]	lr: 1.000e-02, eta: 0:42:36, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.1093, loss_bbox: 0.2000, loss_centerness: 0.5723, loss: 0.8815, grad_norm: 3.1182
+2024-04-04 14:54:33,852 - mmdet - INFO - Epoch [17][450/738]	lr: 1.000e-02, eta: 0:42:13, time: 0.490, data_time: 0.008, memory: 11911, loss_cls: 0.1009, loss_bbox: 0.1866, loss_centerness: 0.5726, loss: 0.8602, grad_norm: 2.9248
+2024-04-04 14:54:58,028 - mmdet - INFO - Epoch [17][500/738]	lr: 1.000e-02, eta: 0:41:50, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.1022, loss_bbox: 0.1936, loss_centerness: 0.5733, loss: 0.8690, grad_norm: 3.1098
+2024-04-04 14:55:22,288 - mmdet - INFO - Epoch [17][550/738]	lr: 1.000e-02, eta: 0:41:27, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0997, loss_bbox: 0.2060, loss_centerness: 0.5725, loss: 0.8781, grad_norm: 2.8631
+2024-04-04 14:55:46,617 - mmdet - INFO - Epoch [17][600/738]	lr: 1.000e-02, eta: 0:41:05, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1209, loss_bbox: 0.1971, loss_centerness: 0.5724, loss: 0.8904, grad_norm: 3.4692
+2024-04-04 14:56:10,702 - mmdet - INFO - Epoch [17][650/738]	lr: 1.000e-02, eta: 0:40:42, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.1270, loss_bbox: 0.2139, loss_centerness: 0.5741, loss: 0.9149, grad_norm: 3.3900
+2024-04-04 14:56:35,101 - mmdet - INFO - Epoch [17][700/738]	lr: 1.000e-02, eta: 0:40:19, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.1144, loss_bbox: 0.2102, loss_centerness: 0.5730, loss: 0.8975, grad_norm: 3.5593
+2024-04-04 14:57:26,547 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 4673  | 0.920  | 0.677 |
+| Boat      | 289  | 7876  | 0.879  | 0.587 |
+| Bottle    | 282  | 4254  | 0.862  | 0.636 |
+| Bus       | 135  | 2855  | 0.963  | 0.877 |
+| Car       | 597  | 14386 | 0.916  | 0.749 |
+| Cat       | 183  | 1823  | 0.836  | 0.584 |
+| Chair     | 466  | 14472 | 0.873  | 0.535 |
+| Cup       | 366  | 7085  | 0.852  | 0.652 |
+| Dog       | 207  | 5555  | 0.947  | 0.658 |
+| Motorbike | 233  | 6673  | 0.880  | 0.594 |
+| People    | 1562 | 20300 | 0.876  | 0.686 |
+| Table     | 333  | 7860  | 0.769  | 0.415 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.637 |
++-----------+------+-------+--------+-------+
+2024-04-04 14:57:26,763 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 14:57:26,764 - mmdet - INFO - Epoch(val) [17][367]	AP50: 0.6370, mAP: 0.6375
+2024-04-04 14:57:53,546 - mmdet - INFO - Epoch [18][50/738]	lr: 1.000e-02, eta: 0:39:32, time: 0.535, data_time: 0.055, memory: 11911, loss_cls: 0.0999, loss_bbox: 0.1912, loss_centerness: 0.5703, loss: 0.8614, grad_norm: 2.9480
+2024-04-04 14:58:17,766 - mmdet - INFO - Epoch [18][100/738]	lr: 1.000e-02, eta: 0:39:10, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0858, loss_bbox: 0.1763, loss_centerness: 0.5697, loss: 0.8319, grad_norm: 2.7139
+2024-04-04 14:58:42,023 - mmdet - INFO - Epoch [18][150/738]	lr: 1.000e-02, eta: 0:38:47, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0890, loss_bbox: 0.1898, loss_centerness: 0.5701, loss: 0.8488, grad_norm: 2.8231
+2024-04-04 14:59:06,489 - mmdet - INFO - Epoch [18][200/738]	lr: 1.000e-02, eta: 0:38:24, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.0900, loss_bbox: 0.1790, loss_centerness: 0.5717, loss: 0.8406, grad_norm: 2.7024
+2024-04-04 14:59:30,768 - mmdet - INFO - Epoch [18][250/738]	lr: 1.000e-02, eta: 0:38:01, time: 0.486, data_time: 0.007, memory: 11911, loss_cls: 0.0899, loss_bbox: 0.1789, loss_centerness: 0.5698, loss: 0.8386, grad_norm: 2.7584
+2024-04-04 14:59:54,764 - mmdet - INFO - Epoch [18][300/738]	lr: 1.000e-02, eta: 0:37:38, time: 0.480, data_time: 0.007, memory: 11911, loss_cls: 0.0881, loss_bbox: 0.1931, loss_centerness: 0.5712, loss: 0.8524, grad_norm: 2.9165
+2024-04-04 15:00:19,121 - mmdet - INFO - Epoch [18][350/738]	lr: 1.000e-02, eta: 0:37:16, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0864, loss_bbox: 0.1822, loss_centerness: 0.5707, loss: 0.8392, grad_norm: 2.8678
+2024-04-04 15:00:43,488 - mmdet - INFO - Epoch [18][400/738]	lr: 1.000e-02, eta: 0:36:53, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0965, loss_bbox: 0.1947, loss_centerness: 0.5707, loss: 0.8619, grad_norm: 2.8762
+2024-04-04 15:01:07,838 - mmdet - INFO - Epoch [18][450/738]	lr: 1.000e-02, eta: 0:36:30, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0861, loss_bbox: 0.1768, loss_centerness: 0.5702, loss: 0.8331, grad_norm: 2.6359
+2024-04-04 15:01:32,206 - mmdet - INFO - Epoch [18][500/738]	lr: 1.000e-02, eta: 0:36:07, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.1013, loss_bbox: 0.1843, loss_centerness: 0.5706, loss: 0.8562, grad_norm: 2.9893
+2024-04-04 15:01:56,411 - mmdet - INFO - Epoch [18][550/738]	lr: 1.000e-02, eta: 0:35:44, time: 0.484, data_time: 0.009, memory: 11911, loss_cls: 0.0960, loss_bbox: 0.1775, loss_centerness: 0.5715, loss: 0.8450, grad_norm: 2.6853
+2024-04-04 15:02:20,502 - mmdet - INFO - Epoch [18][600/738]	lr: 1.000e-02, eta: 0:35:21, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.0882, loss_bbox: 0.1745, loss_centerness: 0.5697, loss: 0.8323, grad_norm: 2.7416
+2024-04-04 15:02:44,787 - mmdet - INFO - Epoch [18][650/738]	lr: 1.000e-02, eta: 0:34:59, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.0925, loss_bbox: 0.1861, loss_centerness: 0.5727, loss: 0.8513, grad_norm: 2.8785
+2024-04-04 15:03:08,926 - mmdet - INFO - Epoch [18][700/738]	lr: 1.000e-02, eta: 0:34:36, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.0962, loss_bbox: 0.1980, loss_centerness: 0.5718, loss: 0.8661, grad_norm: 3.1906
+2024-04-04 15:04:00,595 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 5311  | 0.934  | 0.683 |
+| Boat      | 289  | 5440  | 0.872  | 0.628 |
+| Bottle    | 282  | 6728  | 0.897  | 0.704 |
+| Bus       | 135  | 1681  | 0.956  | 0.870 |
+| Car       | 597  | 6379  | 0.905  | 0.763 |
+| Cat       | 183  | 4781  | 0.902  | 0.628 |
+| Chair     | 466  | 8361  | 0.843  | 0.526 |
+| Cup       | 366  | 6985  | 0.869  | 0.660 |
+| Dog       | 207  | 3696  | 0.937  | 0.631 |
+| Motorbike | 233  | 4216  | 0.854  | 0.588 |
+| People    | 1562 | 17321 | 0.887  | 0.692 |
+| Table     | 333  | 4374  | 0.730  | 0.386 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.647 |
++-----------+------+-------+--------+-------+
+2024-04-04 15:04:00,734 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 15:04:00,735 - mmdet - INFO - Epoch(val) [18][367]	AP50: 0.6470, mAP: 0.6466
+2024-04-04 15:04:27,501 - mmdet - INFO - Epoch [19][50/738]	lr: 1.000e-03, eta: 0:33:50, time: 0.535, data_time: 0.056, memory: 11911, loss_cls: 0.0827, loss_bbox: 0.1640, loss_centerness: 0.5692, loss: 0.8159, grad_norm: 2.5331
+2024-04-04 15:04:51,646 - mmdet - INFO - Epoch [19][100/738]	lr: 1.000e-03, eta: 0:33:27, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.0721, loss_bbox: 0.1438, loss_centerness: 0.5681, loss: 0.7839, grad_norm: 2.1245
+2024-04-04 15:05:15,898 - mmdet - INFO - Epoch [19][150/738]	lr: 1.000e-03, eta: 0:33:04, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0667, loss_bbox: 0.1348, loss_centerness: 0.5663, loss: 0.7678, grad_norm: 2.0510
+2024-04-04 15:05:40,353 - mmdet - INFO - Epoch [19][200/738]	lr: 1.000e-03, eta: 0:32:42, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.0652, loss_bbox: 0.1387, loss_centerness: 0.5685, loss: 0.7725, grad_norm: 2.0353
+2024-04-04 15:06:04,669 - mmdet - INFO - Epoch [19][250/738]	lr: 1.000e-03, eta: 0:32:19, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.0664, loss_bbox: 0.1392, loss_centerness: 0.5667, loss: 0.7722, grad_norm: 2.0233
+2024-04-04 15:06:29,047 - mmdet - INFO - Epoch [19][300/738]	lr: 1.000e-03, eta: 0:31:56, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.0667, loss_bbox: 0.1395, loss_centerness: 0.5683, loss: 0.7746, grad_norm: 2.0915
+2024-04-04 15:06:53,156 - mmdet - INFO - Epoch [19][350/738]	lr: 1.000e-03, eta: 0:31:33, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.0671, loss_bbox: 0.1428, loss_centerness: 0.5678, loss: 0.7777, grad_norm: 2.1602
+2024-04-04 15:07:17,344 - mmdet - INFO - Epoch [19][400/738]	lr: 1.000e-03, eta: 0:31:10, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0619, loss_bbox: 0.1368, loss_centerness: 0.5685, loss: 0.7672, grad_norm: 2.0113
+2024-04-04 15:07:41,620 - mmdet - INFO - Epoch [19][450/738]	lr: 1.000e-03, eta: 0:30:47, time: 0.485, data_time: 0.007, memory: 11911, loss_cls: 0.0630, loss_bbox: 0.1360, loss_centerness: 0.5661, loss: 0.7651, grad_norm: 1.8568
+2024-04-04 15:08:06,036 - mmdet - INFO - Epoch [19][500/738]	lr: 1.000e-03, eta: 0:30:24, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.0619, loss_bbox: 0.1342, loss_centerness: 0.5686, loss: 0.7646, grad_norm: 1.9398
+2024-04-04 15:08:30,370 - mmdet - INFO - Epoch [19][550/738]	lr: 1.000e-03, eta: 0:30:01, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0596, loss_bbox: 0.1347, loss_centerness: 0.5669, loss: 0.7612, grad_norm: 2.0114
+2024-04-04 15:08:54,632 - mmdet - INFO - Epoch [19][600/738]	lr: 1.000e-03, eta: 0:29:38, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0632, loss_bbox: 0.1370, loss_centerness: 0.5669, loss: 0.7671, grad_norm: 1.9379
+2024-04-04 15:09:18,748 - mmdet - INFO - Epoch [19][650/738]	lr: 1.000e-03, eta: 0:29:15, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.0622, loss_bbox: 0.1354, loss_centerness: 0.5684, loss: 0.7659, grad_norm: 1.9694
+2024-04-04 15:09:43,080 - mmdet - INFO - Epoch [19][700/738]	lr: 1.000e-03, eta: 0:28:52, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0606, loss_bbox: 0.1309, loss_centerness: 0.5650, loss: 0.7565, grad_norm: 1.9136
+2024-04-04 15:10:34,439 - mmdet - INFO - 
++-----------+------+-------+--------+-------+
+| class     | gts  | dets  | recall | ap    |
++-----------+------+-------+--------+-------+
+| Bicycle   | 212  | 2869  | 0.925  | 0.751 |
+| Boat      | 289  | 3285  | 0.882  | 0.666 |
+| Bottle    | 282  | 3447  | 0.879  | 0.735 |
+| Bus       | 135  | 1872  | 0.978  | 0.899 |
+| Car       | 597  | 4660  | 0.893  | 0.789 |
+| Cat       | 183  | 2728  | 0.907  | 0.670 |
+| Chair     | 466  | 7036  | 0.861  | 0.572 |
+| Cup       | 366  | 3407  | 0.863  | 0.728 |
+| Dog       | 207  | 2171  | 0.937  | 0.742 |
+| Motorbike | 233  | 2894  | 0.871  | 0.673 |
+| People    | 1562 | 10826 | 0.878  | 0.720 |
+| Table     | 333  | 6484  | 0.829  | 0.459 |
++-----------+------+-------+--------+-------+
+| mAP       |      |       |        | 0.700 |
++-----------+------+-------+--------+-------+
+2024-04-04 15:10:34,575 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 15:10:34,575 - mmdet - INFO - Epoch(val) [19][367]	AP50: 0.7000, mAP: 0.7003
+2024-04-04 15:11:01,371 - mmdet - INFO - Epoch [20][50/738]	lr: 1.000e-03, eta: 0:28:08, time: 0.536, data_time: 0.055, memory: 11911, loss_cls: 0.0572, loss_bbox: 0.1318, loss_centerness: 0.5657, loss: 0.7547, grad_norm: 1.8051
+2024-04-04 15:11:25,635 - mmdet - INFO - Epoch [20][100/738]	lr: 1.000e-03, eta: 0:27:45, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0644, loss_bbox: 0.1335, loss_centerness: 0.5674, loss: 0.7653, grad_norm: 1.9343
+2024-04-04 15:11:50,103 - mmdet - INFO - Epoch [20][150/738]	lr: 1.000e-03, eta: 0:27:22, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.0578, loss_bbox: 0.1296, loss_centerness: 0.5665, loss: 0.7539, grad_norm: 1.8799
+2024-04-04 15:12:14,165 - mmdet - INFO - Epoch [20][200/738]	lr: 1.000e-03, eta: 0:26:59, time: 0.481, data_time: 0.008, memory: 11911, loss_cls: 0.0571, loss_bbox: 0.1225, loss_centerness: 0.5648, loss: 0.7444, grad_norm: 1.8438
+2024-04-04 15:12:38,368 - mmdet - INFO - Epoch [20][250/738]	lr: 1.000e-03, eta: 0:26:36, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0589, loss_bbox: 0.1301, loss_centerness: 0.5673, loss: 0.7562, grad_norm: 1.8923
+2024-04-04 15:13:02,646 - mmdet - INFO - Epoch [20][300/738]	lr: 1.000e-03, eta: 0:26:13, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.0573, loss_bbox: 0.1262, loss_centerness: 0.5656, loss: 0.7492, grad_norm: 1.8788
+2024-04-04 15:13:27,065 - mmdet - INFO - Epoch [20][350/738]	lr: 1.000e-03, eta: 0:25:50, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.0564, loss_bbox: 0.1285, loss_centerness: 0.5661, loss: 0.7510, grad_norm: 1.8723
+2024-04-04 15:13:51,396 - mmdet - INFO - Epoch [20][400/738]	lr: 1.000e-03, eta: 0:25:27, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0543, loss_bbox: 0.1255, loss_centerness: 0.5670, loss: 0.7469, grad_norm: 1.7577
+2024-04-04 15:14:15,611 - mmdet - INFO - Epoch [20][450/738]	lr: 1.000e-03, eta: 0:25:04, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0554, loss_bbox: 0.1236, loss_centerness: 0.5649, loss: 0.7439, grad_norm: 1.8326
+2024-04-04 15:14:39,792 - mmdet - INFO - Epoch [20][500/738]	lr: 1.000e-03, eta: 0:24:41, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0586, loss_bbox: 0.1281, loss_centerness: 0.5665, loss: 0.7532, grad_norm: 1.8333
+2024-04-04 15:15:04,051 - mmdet - INFO - Epoch [20][550/738]	lr: 1.000e-03, eta: 0:24:18, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0561, loss_bbox: 0.1272, loss_centerness: 0.5661, loss: 0.7494, grad_norm: 1.8710
+2024-04-04 15:15:28,210 - mmdet - INFO - Epoch [20][600/738]	lr: 1.000e-03, eta: 0:23:55, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.0551, loss_bbox: 0.1252, loss_centerness: 0.5665, loss: 0.7468, grad_norm: 1.8164
+2024-04-04 15:15:52,464 - mmdet - INFO - Epoch [20][650/738]	lr: 1.000e-03, eta: 0:23:32, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0541, loss_bbox: 0.1230, loss_centerness: 0.5650, loss: 0.7421, grad_norm: 1.8316
+2024-04-04 15:16:16,700 - mmdet - INFO - Epoch [20][700/738]	lr: 1.000e-03, eta: 0:23:09, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0572, loss_bbox: 0.1271, loss_centerness: 0.5671, loss: 0.7514, grad_norm: 1.8353
+2024-04-04 15:17:07,791 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 3079 | 0.906  | 0.744 |
+| Boat      | 289  | 2924 | 0.893  | 0.680 |
+| Bottle    | 282  | 2989 | 0.869  | 0.724 |
+| Bus       | 135  | 1693 | 0.978  | 0.902 |
+| Car       | 597  | 4255 | 0.898  | 0.796 |
+| Cat       | 183  | 2673 | 0.880  | 0.662 |
+| Chair     | 466  | 5833 | 0.843  | 0.565 |
+| Cup       | 366  | 3213 | 0.847  | 0.715 |
+| Dog       | 207  | 2241 | 0.942  | 0.739 |
+| Motorbike | 233  | 2610 | 0.854  | 0.666 |
+| People    | 1562 | 9846 | 0.878  | 0.721 |
+| Table     | 333  | 5382 | 0.814  | 0.477 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.699 |
++-----------+------+------+--------+-------+
+2024-04-04 15:17:07,926 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 15:17:07,926 - mmdet - INFO - Epoch(val) [20][367]	AP50: 0.6990, mAP: 0.6993
+2024-04-04 15:17:34,565 - mmdet - INFO - Epoch [21][50/738]	lr: 1.000e-03, eta: 0:22:25, time: 0.533, data_time: 0.059, memory: 11911, loss_cls: 0.0501, loss_bbox: 0.1158, loss_centerness: 0.5646, loss: 0.7305, grad_norm: 1.8054
+2024-04-04 15:17:58,696 - mmdet - INFO - Epoch [21][100/738]	lr: 1.000e-03, eta: 0:22:02, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.0525, loss_bbox: 0.1203, loss_centerness: 0.5656, loss: 0.7384, grad_norm: 1.8228
+2024-04-04 15:18:23,073 - mmdet - INFO - Epoch [21][150/738]	lr: 1.000e-03, eta: 0:21:39, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.0542, loss_bbox: 0.1247, loss_centerness: 0.5659, loss: 0.7447, grad_norm: 1.7844
+2024-04-04 15:18:47,266 - mmdet - INFO - Epoch [21][200/738]	lr: 1.000e-03, eta: 0:21:16, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0532, loss_bbox: 0.1242, loss_centerness: 0.5663, loss: 0.7437, grad_norm: 1.8277
+2024-04-04 15:19:11,379 - mmdet - INFO - Epoch [21][250/738]	lr: 1.000e-03, eta: 0:20:53, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.0534, loss_bbox: 0.1200, loss_centerness: 0.5647, loss: 0.7381, grad_norm: 1.8581
+2024-04-04 15:19:35,662 - mmdet - INFO - Epoch [21][300/738]	lr: 1.000e-03, eta: 0:20:30, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.0534, loss_bbox: 0.1201, loss_centerness: 0.5664, loss: 0.7400, grad_norm: 1.7912
+2024-04-04 15:20:00,103 - mmdet - INFO - Epoch [21][350/738]	lr: 1.000e-03, eta: 0:20:07, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.0502, loss_bbox: 0.1156, loss_centerness: 0.5658, loss: 0.7317, grad_norm: 1.7407
+2024-04-04 15:20:24,513 - mmdet - INFO - Epoch [21][400/738]	lr: 1.000e-03, eta: 0:19:44, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.0559, loss_bbox: 0.1211, loss_centerness: 0.5657, loss: 0.7427, grad_norm: 1.7859
+2024-04-04 15:20:48,975 - mmdet - INFO - Epoch [21][450/738]	lr: 1.000e-03, eta: 0:19:21, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.0554, loss_bbox: 0.1240, loss_centerness: 0.5653, loss: 0.7446, grad_norm: 1.7951
+2024-04-04 15:21:13,111 - mmdet - INFO - Epoch [21][500/738]	lr: 1.000e-03, eta: 0:18:58, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.0497, loss_bbox: 0.1152, loss_centerness: 0.5652, loss: 0.7301, grad_norm: 1.7224
+2024-04-04 15:21:37,332 - mmdet - INFO - Epoch [21][550/738]	lr: 1.000e-03, eta: 0:18:35, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0527, loss_bbox: 0.1223, loss_centerness: 0.5667, loss: 0.7417, grad_norm: 1.7733
+2024-04-04 15:22:01,605 - mmdet - INFO - Epoch [21][600/738]	lr: 1.000e-03, eta: 0:18:12, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0533, loss_bbox: 0.1211, loss_centerness: 0.5646, loss: 0.7390, grad_norm: 1.7636
+2024-04-04 15:22:25,969 - mmdet - INFO - Epoch [21][650/738]	lr: 1.000e-03, eta: 0:17:49, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0509, loss_bbox: 0.1181, loss_centerness: 0.5628, loss: 0.7318, grad_norm: 1.7969
+2024-04-04 15:22:50,208 - mmdet - INFO - Epoch [21][700/738]	lr: 1.000e-03, eta: 0:17:26, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0550, loss_bbox: 0.1265, loss_centerness: 0.5673, loss: 0.7487, grad_norm: 1.8277
+2024-04-04 15:23:41,258 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 2886 | 0.910  | 0.744 |
+| Boat      | 289  | 2814 | 0.865  | 0.665 |
+| Bottle    | 282  | 3134 | 0.872  | 0.722 |
+| Bus       | 135  | 1901 | 0.978  | 0.905 |
+| Car       | 597  | 4066 | 0.893  | 0.793 |
+| Cat       | 183  | 2447 | 0.869  | 0.662 |
+| Chair     | 466  | 5478 | 0.828  | 0.565 |
+| Cup       | 366  | 2907 | 0.825  | 0.702 |
+| Dog       | 207  | 2179 | 0.932  | 0.738 |
+| Motorbike | 233  | 2571 | 0.854  | 0.656 |
+| People    | 1562 | 9620 | 0.865  | 0.717 |
+| Table     | 333  | 5576 | 0.811  | 0.457 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.694 |
++-----------+------+------+--------+-------+
+2024-04-04 15:23:41,374 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 15:23:41,374 - mmdet - INFO - Epoch(val) [21][367]	AP50: 0.6940, mAP: 0.6939
+2024-04-04 15:24:08,053 - mmdet - INFO - Epoch [22][50/738]	lr: 1.000e-03, eta: 0:16:43, time: 0.533, data_time: 0.055, memory: 11911, loss_cls: 0.0525, loss_bbox: 0.1195, loss_centerness: 0.5644, loss: 0.7364, grad_norm: 1.8824
+2024-04-04 15:24:32,342 - mmdet - INFO - Epoch [22][100/738]	lr: 1.000e-03, eta: 0:16:20, time: 0.486, data_time: 0.007, memory: 11911, loss_cls: 0.0498, loss_bbox: 0.1148, loss_centerness: 0.5648, loss: 0.7294, grad_norm: 1.7451
+2024-04-04 15:24:56,673 - mmdet - INFO - Epoch [22][150/738]	lr: 1.000e-03, eta: 0:15:57, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0487, loss_bbox: 0.1161, loss_centerness: 0.5641, loss: 0.7289, grad_norm: 1.7063
+2024-04-04 15:25:20,618 - mmdet - INFO - Epoch [22][200/738]	lr: 1.000e-03, eta: 0:15:34, time: 0.479, data_time: 0.007, memory: 11911, loss_cls: 0.0470, loss_bbox: 0.1108, loss_centerness: 0.5647, loss: 0.7225, grad_norm: 1.6940
+2024-04-04 15:25:44,804 - mmdet - INFO - Epoch [22][250/738]	lr: 1.000e-03, eta: 0:15:11, time: 0.484, data_time: 0.007, memory: 11911, loss_cls: 0.0508, loss_bbox: 0.1149, loss_centerness: 0.5638, loss: 0.7295, grad_norm: 1.7404
+2024-04-04 15:26:09,051 - mmdet - INFO - Epoch [22][300/738]	lr: 1.000e-03, eta: 0:14:48, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0498, loss_bbox: 0.1163, loss_centerness: 0.5641, loss: 0.7302, grad_norm: 1.8029
+2024-04-04 15:26:33,344 - mmdet - INFO - Epoch [22][350/738]	lr: 1.000e-03, eta: 0:14:25, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.0518, loss_bbox: 0.1136, loss_centerness: 0.5652, loss: 0.7307, grad_norm: 1.7515
+2024-04-04 15:26:57,461 - mmdet - INFO - Epoch [22][400/738]	lr: 1.000e-03, eta: 0:14:02, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.0524, loss_bbox: 0.1202, loss_centerness: 0.5648, loss: 0.7374, grad_norm: 1.7251
+2024-04-04 15:27:21,600 - mmdet - INFO - Epoch [22][450/738]	lr: 1.000e-03, eta: 0:13:39, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.0485, loss_bbox: 0.1146, loss_centerness: 0.5667, loss: 0.7298, grad_norm: 1.6946
+2024-04-04 15:27:46,036 - mmdet - INFO - Epoch [22][500/738]	lr: 1.000e-03, eta: 0:13:15, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.0484, loss_bbox: 0.1132, loss_centerness: 0.5644, loss: 0.7260, grad_norm: 1.7277
+2024-04-04 15:28:10,169 - mmdet - INFO - Epoch [22][550/738]	lr: 1.000e-03, eta: 0:12:52, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.0535, loss_bbox: 0.1185, loss_centerness: 0.5648, loss: 0.7368, grad_norm: 1.8600
+2024-04-04 15:28:34,582 - mmdet - INFO - Epoch [22][600/738]	lr: 1.000e-03, eta: 0:12:29, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.0501, loss_bbox: 0.1172, loss_centerness: 0.5674, loss: 0.7347, grad_norm: 1.8503
+2024-04-04 15:28:58,793 - mmdet - INFO - Epoch [22][650/738]	lr: 1.000e-03, eta: 0:12:06, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0530, loss_bbox: 0.1171, loss_centerness: 0.5668, loss: 0.7369, grad_norm: 1.7834
+2024-04-04 15:29:23,021 - mmdet - INFO - Epoch [22][700/738]	lr: 1.000e-03, eta: 0:11:43, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0506, loss_bbox: 0.1177, loss_centerness: 0.5647, loss: 0.7330, grad_norm: 1.8029
+2024-04-04 15:30:14,285 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 2671 | 0.896  | 0.739 |
+| Boat      | 289  | 2563 | 0.872  | 0.672 |
+| Bottle    | 282  | 2889 | 0.862  | 0.713 |
+| Bus       | 135  | 1953 | 0.978  | 0.908 |
+| Car       | 597  | 4356 | 0.893  | 0.792 |
+| Cat       | 183  | 2517 | 0.869  | 0.644 |
+| Chair     | 466  | 5969 | 0.835  | 0.566 |
+| Cup       | 366  | 3174 | 0.831  | 0.700 |
+| Dog       | 207  | 2020 | 0.937  | 0.740 |
+| Motorbike | 233  | 2297 | 0.841  | 0.667 |
+| People    | 1562 | 9563 | 0.864  | 0.710 |
+| Table     | 333  | 5938 | 0.814  | 0.459 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.692 |
++-----------+------+------+--------+-------+
+2024-04-04 15:30:14,424 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 15:30:14,425 - mmdet - INFO - Epoch(val) [22][367]	AP50: 0.6920, mAP: 0.6924
+2024-04-04 15:30:40,940 - mmdet - INFO - Epoch [23][50/738]	lr: 1.000e-03, eta: 0:11:01, time: 0.530, data_time: 0.055, memory: 11911, loss_cls: 0.0453, loss_bbox: 0.1031, loss_centerness: 0.5637, loss: 0.7121, grad_norm: 1.6473
+2024-04-04 15:31:04,938 - mmdet - INFO - Epoch [23][100/738]	lr: 1.000e-03, eta: 0:10:38, time: 0.480, data_time: 0.007, memory: 11911, loss_cls: 0.0521, loss_bbox: 0.1172, loss_centerness: 0.5661, loss: 0.7354, grad_norm: 1.7005
+2024-04-04 15:31:28,950 - mmdet - INFO - Epoch [23][150/738]	lr: 1.000e-03, eta: 0:10:15, time: 0.480, data_time: 0.008, memory: 11911, loss_cls: 0.0485, loss_bbox: 0.1113, loss_centerness: 0.5642, loss: 0.7241, grad_norm: 1.6670
+2024-04-04 15:31:53,365 - mmdet - INFO - Epoch [23][200/738]	lr: 1.000e-03, eta: 0:09:51, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.0450, loss_bbox: 0.1095, loss_centerness: 0.5654, loss: 0.7199, grad_norm: 1.6268
+2024-04-04 15:32:17,808 - mmdet - INFO - Epoch [23][250/738]	lr: 1.000e-03, eta: 0:09:28, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.0496, loss_bbox: 0.1104, loss_centerness: 0.5623, loss: 0.7223, grad_norm: 1.7683
+2024-04-04 15:32:42,109 - mmdet - INFO - Epoch [23][300/738]	lr: 1.000e-03, eta: 0:09:05, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.0492, loss_bbox: 0.1094, loss_centerness: 0.5665, loss: 0.7250, grad_norm: 1.8917
+2024-04-04 15:33:06,379 - mmdet - INFO - Epoch [23][350/738]	lr: 1.000e-03, eta: 0:08:42, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0474, loss_bbox: 0.1120, loss_centerness: 0.5650, loss: 0.7244, grad_norm: 1.7037
+2024-04-04 15:33:30,654 - mmdet - INFO - Epoch [23][400/738]	lr: 1.000e-03, eta: 0:08:19, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0464, loss_bbox: 0.1090, loss_centerness: 0.5648, loss: 0.7202, grad_norm: 1.7895
+2024-04-04 15:33:54,864 - mmdet - INFO - Epoch [23][450/738]	lr: 1.000e-03, eta: 0:07:56, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0489, loss_bbox: 0.1137, loss_centerness: 0.5632, loss: 0.7258, grad_norm: 1.7153
+2024-04-04 15:34:19,338 - mmdet - INFO - Epoch [23][500/738]	lr: 1.000e-03, eta: 0:07:33, time: 0.489, data_time: 0.008, memory: 11911, loss_cls: 0.0507, loss_bbox: 0.1113, loss_centerness: 0.5660, loss: 0.7280, grad_norm: 1.7563
+2024-04-04 15:34:43,550 - mmdet - INFO - Epoch [23][550/738]	lr: 1.000e-03, eta: 0:07:10, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0475, loss_bbox: 0.1126, loss_centerness: 0.5629, loss: 0.7230, grad_norm: 1.7146
+2024-04-04 15:35:07,719 - mmdet - INFO - Epoch [23][600/738]	lr: 1.000e-03, eta: 0:06:46, time: 0.483, data_time: 0.008, memory: 11911, loss_cls: 0.0461, loss_bbox: 0.1129, loss_centerness: 0.5643, loss: 0.7234, grad_norm: 1.7497
+2024-04-04 15:35:32,013 - mmdet - INFO - Epoch [23][650/738]	lr: 1.000e-03, eta: 0:06:23, time: 0.486, data_time: 0.008, memory: 11911, loss_cls: 0.0483, loss_bbox: 0.1128, loss_centerness: 0.5655, loss: 0.7267, grad_norm: 1.6717
+2024-04-04 15:35:56,368 - mmdet - INFO - Epoch [23][700/738]	lr: 1.000e-03, eta: 0:06:00, time: 0.487, data_time: 0.007, memory: 11911, loss_cls: 0.0463, loss_bbox: 0.1113, loss_centerness: 0.5645, loss: 0.7222, grad_norm: 1.7842
+2024-04-04 15:36:47,394 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 2520 | 0.901  | 0.743 |
+| Boat      | 289  | 2535 | 0.869  | 0.662 |
+| Bottle    | 282  | 2700 | 0.858  | 0.714 |
+| Bus       | 135  | 1627 | 0.963  | 0.893 |
+| Car       | 597  | 3792 | 0.889  | 0.788 |
+| Cat       | 183  | 2047 | 0.863  | 0.668 |
+| Chair     | 466  | 4977 | 0.824  | 0.566 |
+| Cup       | 366  | 2903 | 0.825  | 0.706 |
+| Dog       | 207  | 1939 | 0.932  | 0.734 |
+| Motorbike | 233  | 2357 | 0.837  | 0.658 |
+| People    | 1562 | 7864 | 0.844  | 0.712 |
+| Table     | 333  | 5185 | 0.799  | 0.459 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.692 |
++-----------+------+------+--------+-------+
+2024-04-04 15:36:47,506 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 15:36:47,506 - mmdet - INFO - Epoch(val) [23][367]	AP50: 0.6920, mAP: 0.6919
+2024-04-04 15:37:14,095 - mmdet - INFO - Epoch [24][50/738]	lr: 1.000e-04, eta: 0:05:19, time: 0.532, data_time: 0.059, memory: 11911, loss_cls: 0.0435, loss_bbox: 0.1015, loss_centerness: 0.5639, loss: 0.7090, grad_norm: 1.6040
+2024-04-04 15:37:38,283 - mmdet - INFO - Epoch [24][100/738]	lr: 1.000e-04, eta: 0:04:55, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0455, loss_bbox: 0.1058, loss_centerness: 0.5654, loss: 0.7166, grad_norm: 1.6310
+2024-04-04 15:38:02,405 - mmdet - INFO - Epoch [24][150/738]	lr: 1.000e-04, eta: 0:04:32, time: 0.482, data_time: 0.008, memory: 11911, loss_cls: 0.0479, loss_bbox: 0.1042, loss_centerness: 0.5644, loss: 0.7165, grad_norm: 1.7342
+2024-04-04 15:38:26,738 - mmdet - INFO - Epoch [24][200/738]	lr: 1.000e-04, eta: 0:04:09, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0442, loss_bbox: 0.1017, loss_centerness: 0.5648, loss: 0.7106, grad_norm: 1.5564
+2024-04-04 15:38:50,922 - mmdet - INFO - Epoch [24][250/738]	lr: 1.000e-04, eta: 0:03:46, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0457, loss_bbox: 0.1038, loss_centerness: 0.5646, loss: 0.7141, grad_norm: 1.5900
+2024-04-04 15:39:15,451 - mmdet - INFO - Epoch [24][300/738]	lr: 1.000e-04, eta: 0:03:23, time: 0.491, data_time: 0.008, memory: 11911, loss_cls: 0.0472, loss_bbox: 0.1076, loss_centerness: 0.5626, loss: 0.7175, grad_norm: 1.6025
+2024-04-04 15:39:39,987 - mmdet - INFO - Epoch [24][350/738]	lr: 1.000e-04, eta: 0:03:00, time: 0.491, data_time: 0.008, memory: 11911, loss_cls: 0.0448, loss_bbox: 0.1077, loss_centerness: 0.5641, loss: 0.7166, grad_norm: 1.6029
+2024-04-04 15:40:04,190 - mmdet - INFO - Epoch [24][400/738]	lr: 1.000e-04, eta: 0:02:36, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0460, loss_bbox: 0.1087, loss_centerness: 0.5641, loss: 0.7188, grad_norm: 1.5503
+2024-04-04 15:40:28,441 - mmdet - INFO - Epoch [24][450/738]	lr: 1.000e-04, eta: 0:02:13, time: 0.485, data_time: 0.008, memory: 11911, loss_cls: 0.0454, loss_bbox: 0.1071, loss_centerness: 0.5646, loss: 0.7172, grad_norm: 1.5533
+2024-04-04 15:40:52,769 - mmdet - INFO - Epoch [24][500/738]	lr: 1.000e-04, eta: 0:01:50, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0435, loss_bbox: 0.1015, loss_centerness: 0.5652, loss: 0.7102, grad_norm: 1.6364
+2024-04-04 15:41:17,114 - mmdet - INFO - Epoch [24][550/738]	lr: 1.000e-04, eta: 0:01:27, time: 0.487, data_time: 0.008, memory: 11911, loss_cls: 0.0458, loss_bbox: 0.1084, loss_centerness: 0.5661, loss: 0.7203, grad_norm: 1.6032
+2024-04-04 15:41:41,158 - mmdet - INFO - Epoch [24][600/738]	lr: 1.000e-04, eta: 0:01:04, time: 0.481, data_time: 0.008, memory: 11911, loss_cls: 0.0452, loss_bbox: 0.1015, loss_centerness: 0.5639, loss: 0.7106, grad_norm: 1.5823
+2024-04-04 15:42:05,336 - mmdet - INFO - Epoch [24][650/738]	lr: 1.000e-04, eta: 0:00:40, time: 0.484, data_time: 0.008, memory: 11911, loss_cls: 0.0459, loss_bbox: 0.1090, loss_centerness: 0.5643, loss: 0.7193, grad_norm: 1.6288
+2024-04-04 15:42:29,726 - mmdet - INFO - Epoch [24][700/738]	lr: 1.000e-04, eta: 0:00:17, time: 0.488, data_time: 0.008, memory: 11911, loss_cls: 0.0462, loss_bbox: 0.1077, loss_centerness: 0.5638, loss: 0.7177, grad_norm: 1.5581
+2024-04-04 15:42:48,302 - mmdet - INFO - Saving checkpoint at 24 epochs
+2024-04-04 15:43:21,344 - mmdet - INFO - 
++-----------+------+------+--------+-------+
+| class     | gts  | dets | recall | ap    |
++-----------+------+------+--------+-------+
+| Bicycle   | 212  | 2574 | 0.906  | 0.739 |
+| Boat      | 289  | 2502 | 0.879  | 0.668 |
+| Bottle    | 282  | 2643 | 0.862  | 0.714 |
+| Bus       | 135  | 1610 | 0.963  | 0.895 |
+| Car       | 597  | 3707 | 0.884  | 0.787 |
+| Cat       | 183  | 2152 | 0.858  | 0.647 |
+| Chair     | 466  | 4952 | 0.818  | 0.568 |
+| Cup       | 366  | 2743 | 0.817  | 0.698 |
+| Dog       | 207  | 2009 | 0.932  | 0.733 |
+| Motorbike | 233  | 2289 | 0.854  | 0.669 |
+| People    | 1562 | 8230 | 0.848  | 0.712 |
+| Table     | 333  | 4961 | 0.802  | 0.458 |
++-----------+------+------+--------+-------+
+| mAP       |      |      |        | 0.691 |
++-----------+------+------+--------+-------+
+2024-04-04 15:43:21,458 - mmdet - INFO - Exp name: fcos_r50_1x_exdark.py
+2024-04-04 15:43:21,458 - mmdet - INFO - Epoch(val) [24][367]	AP50: 0.6910, mAP: 0.6906

@@ -1,0 +1,7 @@
+person
+helmet
+self_clothes
+safety_clothes
+head
+blur_head
+blur_clothes

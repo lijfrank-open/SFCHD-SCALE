@@ -1,0 +1,1630 @@
+2024-03-17 17:52:37,155 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.13 (default, Mar 28 2022, 11:38:47) [GCC 7.5.0]
+CUDA available: True
+GPU 0,1,2,3: NVIDIA GeForce RTX 3090
+CUDA_HOME: /home/yfs/anaconda3/envs/mmdet
+NVCC: Not Available
+GCC: gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
+PyTorch: 1.11.0+cu113
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.5.2 (Git Hash a9302535553c73243c632ad3c4c80beec3d19a1e)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.3
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.2
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.3, CUDNN_VERSION=8.2.0, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.11.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=OFF, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.12.0+cu113
+OpenCV: 4.6.0
+MMCV: 1.5.3
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.3
+MMDetection: 2.25.0+56e42e7
+------------------------------------------------------------
+
+2024-03-17 17:52:37,464 - mmdet - INFO - Distributed training: True
+2024-03-17 17:52:37,633 - mmdet - INFO - Config:
+num_classes = 7
+model = dict(
+    type='SCALE_FCOS',
+    pre_encoder=dict(type='SCALE', in_dim=3, init_cfg=None),
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=False),
+        norm_eval=True),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        start_level=1,
+        add_extra_convs='on_output',
+        num_outs=5,
+        relu_before_extra_convs=True),
+    bbox_head=dict(
+        type='FCOSHead',
+        num_classes=7,
+        in_channels=256,
+        stacked_convs=4,
+        feat_channels=256,
+        strides=[8, 16, 32, 64, 128],
+        loss_cls=dict(
+            type='FocalLoss',
+            use_sigmoid=True,
+            gamma=2.0,
+            alpha=0.25,
+            loss_weight=1.0),
+        loss_bbox=dict(type='IoULoss', loss_weight=1.0),
+        loss_centerness=dict(
+            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)),
+    train_cfg=dict(
+        assigner=dict(
+            type='MaxIoUAssigner',
+            pos_iou_thr=0.5,
+            neg_iou_thr=0.4,
+            min_pos_iou=0,
+            ignore_iof_thr=-1),
+        allowed_border=-1,
+        pos_weight=-1,
+        debug=False),
+    test_cfg=dict(
+        nms_pre=1000,
+        min_bbox_size=0,
+        score_thr=0.05,
+        nms=dict(type='nms', iou_threshold=0.5),
+        max_per_img=100))
+dataset_type = 'QY_Dataset'
+img_norm_cfg = dict(
+    mean=[102.9801, 115.9465, 122.7717], std=[1.0, 1.0, 1.0], to_rgb=False)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[102.9801, 115.9465, 122.7717],
+        std=[1.0, 1.0, 1.0],
+        to_rgb=False),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(1333, 800),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[102.9801, 115.9465, 122.7717],
+                std=[1.0, 1.0, 1.0],
+                to_rgb=False),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=2,
+    workers_per_gpu=2,
+    train=dict(
+        type='QY_Dataset',
+        ann_file='/data/yfs/QY/QY_final_dataset/annotations/train.json',
+        img_prefix='/data/yfs/QY/QY_final_dataset//images',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True),
+            dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='Normalize',
+                mean=[102.9801, 115.9465, 122.7717],
+                std=[1.0, 1.0, 1.0],
+                to_rgb=False),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+        ]),
+    val=dict(
+        type='QY_Dataset',
+        ann_file='/data/yfs/QY/QY_final_dataset/annotations/val.json',
+        img_prefix='/data/yfs/QY/QY_final_dataset//images',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[102.9801, 115.9465, 122.7717],
+                        std=[1.0, 1.0, 1.0],
+                        to_rgb=False),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='QY_Dataset',
+        ann_file='/data/yfs/QY/QY_final_dataset/annotations/val.json',
+        img_prefix='/data/yfs/QY/QY_final_dataset//images',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[102.9801, 115.9465, 122.7717],
+                        std=[1.0, 1.0, 1.0],
+                        to_rgb=False),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+evaluation = dict(interval=1, metric='bbox', classwise='True')
+optimizer = dict(
+    type='SGD',
+    lr=0.01,
+    momentum=0.9,
+    weight_decay=0.0001,
+    paramwise_cfg=dict(bias_lr_mult=2.0, bias_decay_mult=0.0))
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.3333333333333333,
+    step=[8, 11])
+runner = dict(type='EpochBasedRunner', max_epochs=12)
+checkpoint_config = dict(interval=12)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '/home/yfs/mmdetection/checkpoints/fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth'
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+auto_scale_lr = dict(enable=False, base_batch_size=16)
+work_dir = 'log_dir/QY_SCALE_experiment/SCALE_fcos_r50_1x'
+auto_resume = False
+gpu_ids = range(0, 4)
+
+2024-03-17 17:52:37,633 - mmdet - INFO - Set random seed to 3407, deterministic: False
+2024-03-17 17:52:37,967 - mmdet - INFO - initialize ResNet with init_cfg [{'type': 'Kaiming', 'layer': 'Conv2d'}, {'type': 'Constant', 'val': 1, 'layer': ['_BatchNorm', 'GroupNorm']}]
+2024-03-17 17:52:38,141 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,142 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,143 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,144 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,145 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,146 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,146 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,148 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,150 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,151 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,153 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,154 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,155 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,160 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,164 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,168 - mmdet - INFO - initialize Bottleneck with init_cfg {'type': 'Constant', 'val': 0, 'override': {'name': 'norm3'}}
+2024-03-17 17:52:38,186 - mmdet - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+2024-03-17 17:52:38,212 - mmdet - INFO - initialize FCOSHead with init_cfg {'type': 'Normal', 'layer': 'Conv2d', 'std': 0.01, 'override': {'type': 'Normal', 'name': 'conv_cls', 'std': 0.01, 'bias_prob': 0.01}}
+Name of parameter - Initialization information
+
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer1.0.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.1.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer1.1.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.2.bn1.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.2.bn1.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.2.bn2.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.2.bn2.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer1.2.bn3.weight - torch.Size([256]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer1.2.bn3.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.0.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.1.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.1.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.2.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.2.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.2.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.2.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.2.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.2.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.3.bn1.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.3.bn1.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.3.bn2.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.3.bn2.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer2.3.bn3.weight - torch.Size([512]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer2.3.bn3.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.2.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.2.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.2.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.2.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.3.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.3.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.3.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.3.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.4.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.4.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.4.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.4.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.5.bn1.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.5.bn1.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.5.bn2.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.5.bn2.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.2.bn1.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.2.bn1.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.2.bn2.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.2.bn2.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+KaimingInit: a=0, mode=fan_out, nonlinearity=relu, distribution =normal, bias=0 
+
+backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+ConstantInit: val=0, bias=0 
+
+backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.lateral_convs.0.conv.weight - torch.Size([256, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.lateral_convs.1.conv.weight - torch.Size([256, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.lateral_convs.2.conv.weight - torch.Size([256, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.fpn_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.fpn_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.fpn_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.fpn_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+neck.fpn_convs.4.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.4.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.cls_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.cls_convs.1.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.1.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.cls_convs.2.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.2.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.cls_convs.3.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.cls_convs.3.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.reg_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.reg_convs.1.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.1.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.reg_convs.2.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.2.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.reg_convs.3.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.reg_convs.3.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.conv_cls.weight - torch.Size([7, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=-4.59511985013459 
+
+bbox_head.conv_cls.bias - torch.Size([7]): 
+NormalInit: mean=0, std=0.01, bias=-4.59511985013459 
+
+bbox_head.conv_reg.weight - torch.Size([4, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.conv_reg.bias - torch.Size([4]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.conv_centerness.weight - torch.Size([1, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.conv_centerness.bias - torch.Size([1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+bbox_head.scales.0.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.scales.1.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.scales.2.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.scales.3.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+bbox_head.scales.4.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.encoder.0.weight - torch.Size([16, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.encoder.0.bias - torch.Size([16]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.encoder.2.weight - torch.Size([32, 16, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.encoder.2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv1.weight - torch.Size([32, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv1.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv2.weight - torch.Size([32, 32, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv3.weight - torch.Size([32, 32, 5, 5]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.parallel_conv.conv3.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.attention1.0.conv.weight - torch.Size([1, 2, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.attention2.0.conv.weight - torch.Size([1, 2, 5, 5]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.0.weight - torch.Size([96, 192, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.0.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.2.weight - torch.Size([32, 96, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.2.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.4.weight - torch.Size([3, 32, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.sa.decoder.4.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.conv.weight - torch.Size([32, 3, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.conv.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.0.conv.weight - torch.Size([3, 3, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.0.bn.weight - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.0.bn.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.1.conv.weight - torch.Size([32, 3, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.1.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res1.block.1.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.se_block.fc.0.weight - torch.Size([2, 32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.se_block.fc.2.weight - torch.Size([32, 2]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.conv.weight - torch.Size([3, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.conv.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.0.conv.weight - torch.Size([32, 32, 1, 1]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.0.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.0.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.1.conv.weight - torch.Size([3, 32, 3, 3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.1.bn.weight - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+
+pre_encoder.ca.res2.block.1.bn.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of SCALE_FCOS  
+2024-03-17 17:52:44,838 - mmdet - INFO - Automatic scaling of learning rate (LR) has been disabled.
+2024-03-17 17:52:44,920 - mmdet - INFO - load checkpoint from local path: /home/yfs/mmdetection/checkpoints/fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth
+2024-03-17 17:52:45,064 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for bbox_head.conv_cls.weight: copying a param with shape torch.Size([80, 256, 3, 3]) from checkpoint, the shape in current model is torch.Size([7, 256, 3, 3]).
+size mismatch for bbox_head.conv_cls.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([7]).
+missing keys in source state_dict: pre_encoder.sa.parallel_conv.encoder.0.weight, pre_encoder.sa.parallel_conv.encoder.0.bias, pre_encoder.sa.parallel_conv.encoder.2.weight, pre_encoder.sa.parallel_conv.encoder.2.bias, pre_encoder.sa.parallel_conv.conv1.weight, pre_encoder.sa.parallel_conv.conv1.bias, pre_encoder.sa.parallel_conv.conv2.weight, pre_encoder.sa.parallel_conv.conv2.bias, pre_encoder.sa.parallel_conv.conv3.weight, pre_encoder.sa.parallel_conv.conv3.bias, pre_encoder.sa.attention1.0.conv.weight, pre_encoder.sa.attention2.0.conv.weight, pre_encoder.sa.decoder.0.weight, pre_encoder.sa.decoder.0.bias, pre_encoder.sa.decoder.2.weight, pre_encoder.sa.decoder.2.bias, pre_encoder.sa.decoder.4.weight, pre_encoder.sa.decoder.4.bias, pre_encoder.ca.res1.conv.weight, pre_encoder.ca.res1.conv.bias, pre_encoder.ca.res1.block.0.conv.weight, pre_encoder.ca.res1.block.0.bn.weight, pre_encoder.ca.res1.block.0.bn.bias, pre_encoder.ca.res1.block.0.bn.running_mean, pre_encoder.ca.res1.block.0.bn.running_var, pre_encoder.ca.res1.block.1.conv.weight, pre_encoder.ca.res1.block.1.bn.weight, pre_encoder.ca.res1.block.1.bn.bias, pre_encoder.ca.res1.block.1.bn.running_mean, pre_encoder.ca.res1.block.1.bn.running_var, pre_encoder.ca.se_block.fc.0.weight, pre_encoder.ca.se_block.fc.2.weight, pre_encoder.ca.res2.conv.weight, pre_encoder.ca.res2.conv.bias, pre_encoder.ca.res2.block.0.conv.weight, pre_encoder.ca.res2.block.0.bn.weight, pre_encoder.ca.res2.block.0.bn.bias, pre_encoder.ca.res2.block.0.bn.running_mean, pre_encoder.ca.res2.block.0.bn.running_var, pre_encoder.ca.res2.block.1.conv.weight, pre_encoder.ca.res2.block.1.bn.weight, pre_encoder.ca.res2.block.1.bn.bias, pre_encoder.ca.res2.block.1.bn.running_mean, pre_encoder.ca.res2.block.1.bn.running_var
+
+2024-03-17 17:52:45,072 - mmdet - INFO - Start running, host: yfs@4029GP-TRT, work_dir: /home/yfs/mmdetection/log_dir/QY_SCALE_experiment/SCALE_fcos_r50_1x
+2024-03-17 17:52:45,072 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) NumClassCheckHook                  
+(NORMAL      ) DistSamplerSeedHook                
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) NumClassCheckHook                  
+(NORMAL      ) DistSamplerSeedHook                
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2024-03-17 17:52:45,073 - mmdet - INFO - workflow: [('train', 1)], max: 12 epochs
+2024-03-17 17:52:45,073 - mmdet - INFO - Checkpoints will be saved to /home/yfs/mmdetection/log_dir/QY_SCALE_experiment/SCALE_fcos_r50_1x by HardDiskBackend.
+2024-03-17 17:53:12,374 - mmdet - INFO - Epoch [1][50/1238]	lr: 3.987e-03, eta: 2:14:42, time: 0.546, data_time: 0.056, memory: 11439, loss_cls: 0.5047, loss_bbox: 0.3982, loss_centerness: 0.5937, loss: 1.4965, grad_norm: 5.6136
+2024-03-17 17:53:36,204 - mmdet - INFO - Epoch [1][100/1238]	lr: 4.653e-03, eta: 2:05:43, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1945, loss_bbox: 0.2652, loss_centerness: 0.5755, loss: 1.0352, grad_norm: 3.9816
+2024-03-17 17:54:00,106 - mmdet - INFO - Epoch [1][150/1238]	lr: 5.320e-03, eta: 2:02:35, time: 0.478, data_time: 0.007, memory: 11439, loss_cls: 0.1950, loss_bbox: 0.2752, loss_centerness: 0.5734, loss: 1.0436, grad_norm: 3.7167
+2024-03-17 17:54:23,924 - mmdet - INFO - Epoch [1][200/1238]	lr: 5.987e-03, eta: 2:00:43, time: 0.476, data_time: 0.007, memory: 11439, loss_cls: 0.1827, loss_bbox: 0.2756, loss_centerness: 0.5744, loss: 1.0327, grad_norm: 3.7390
+2024-03-17 17:54:47,784 - mmdet - INFO - Epoch [1][250/1238]	lr: 6.653e-03, eta: 1:59:28, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1816, loss_bbox: 0.2734, loss_centerness: 0.5728, loss: 1.0278, grad_norm: 3.8103
+2024-03-17 17:55:11,618 - mmdet - INFO - Epoch [1][300/1238]	lr: 7.320e-03, eta: 1:58:30, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1463, loss_bbox: 0.2551, loss_centerness: 0.5705, loss: 0.9720, grad_norm: 3.1083
+2024-03-17 17:55:35,514 - mmdet - INFO - Epoch [1][350/1238]	lr: 7.987e-03, eta: 1:57:43, time: 0.478, data_time: 0.007, memory: 11439, loss_cls: 0.1438, loss_bbox: 0.2483, loss_centerness: 0.5671, loss: 0.9592, grad_norm: 3.0057
+2024-03-17 17:55:59,602 - mmdet - INFO - Epoch [1][400/1238]	lr: 8.653e-03, eta: 1:57:09, time: 0.482, data_time: 0.007, memory: 11439, loss_cls: 0.1479, loss_bbox: 0.2516, loss_centerness: 0.5690, loss: 0.9685, grad_norm: 2.9047
+2024-03-17 17:56:23,668 - mmdet - INFO - Epoch [1][450/1238]	lr: 9.320e-03, eta: 1:56:37, time: 0.481, data_time: 0.007, memory: 11439, loss_cls: 0.1497, loss_bbox: 0.2676, loss_centerness: 0.5682, loss: 0.9855, grad_norm: 3.2515
+2024-03-17 17:56:47,588 - mmdet - INFO - Epoch [1][500/1238]	lr: 9.987e-03, eta: 1:56:02, time: 0.478, data_time: 0.007, memory: 11439, loss_cls: 0.1555, loss_bbox: 0.2698, loss_centerness: 0.5692, loss: 0.9946, grad_norm: 3.2530
+2024-03-17 17:57:11,464 - mmdet - INFO - Epoch [1][550/1238]	lr: 1.000e-02, eta: 1:55:28, time: 0.478, data_time: 0.007, memory: 11439, loss_cls: 0.1532, loss_bbox: 0.2552, loss_centerness: 0.5686, loss: 0.9770, grad_norm: 3.0370
+2024-03-17 17:57:35,292 - mmdet - INFO - Epoch [1][600/1238]	lr: 1.000e-02, eta: 1:54:55, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1423, loss_bbox: 0.2618, loss_centerness: 0.5682, loss: 0.9723, grad_norm: 2.9382
+2024-03-17 17:57:59,077 - mmdet - INFO - Epoch [1][650/1238]	lr: 1.000e-02, eta: 1:54:22, time: 0.476, data_time: 0.007, memory: 11439, loss_cls: 0.1410, loss_bbox: 0.2518, loss_centerness: 0.5717, loss: 0.9645, grad_norm: 2.7009
+2024-03-17 17:58:22,912 - mmdet - INFO - Epoch [1][700/1238]	lr: 1.000e-02, eta: 1:53:51, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1390, loss_bbox: 0.2558, loss_centerness: 0.5687, loss: 0.9635, grad_norm: 2.7456
+2024-03-17 17:58:46,808 - mmdet - INFO - Epoch [1][750/1238]	lr: 1.000e-02, eta: 1:53:23, time: 0.478, data_time: 0.007, memory: 11439, loss_cls: 0.1423, loss_bbox: 0.2609, loss_centerness: 0.5675, loss: 0.9707, grad_norm: 3.0867
+2024-03-17 17:59:10,543 - mmdet - INFO - Epoch [1][800/1238]	lr: 1.000e-02, eta: 1:52:52, time: 0.475, data_time: 0.007, memory: 11439, loss_cls: 0.1343, loss_bbox: 0.2618, loss_centerness: 0.5674, loss: 0.9636, grad_norm: 2.9934
+2024-03-17 17:59:34,437 - mmdet - INFO - Epoch [1][850/1238]	lr: 1.000e-02, eta: 1:52:25, time: 0.478, data_time: 0.007, memory: 11439, loss_cls: 0.1331, loss_bbox: 0.2504, loss_centerness: 0.5676, loss: 0.9510, grad_norm: 2.7746
+2024-03-17 17:59:58,310 - mmdet - INFO - Epoch [1][900/1238]	lr: 1.000e-02, eta: 1:51:57, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1377, loss_bbox: 0.2458, loss_centerness: 0.5656, loss: 0.9492, grad_norm: 2.7309
+2024-03-17 18:00:22,245 - mmdet - INFO - Epoch [1][950/1238]	lr: 1.000e-02, eta: 1:51:31, time: 0.479, data_time: 0.007, memory: 11439, loss_cls: 0.1364, loss_bbox: 0.2490, loss_centerness: 0.5670, loss: 0.9523, grad_norm: 2.4350
+2024-03-17 18:00:46,098 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 18:00:46,099 - mmdet - INFO - Epoch [1][1000/1238]	lr: 1.000e-02, eta: 1:51:04, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1399, loss_bbox: 0.2561, loss_centerness: 0.5671, loss: 0.9631, grad_norm: 2.7246
+2024-03-17 18:01:09,962 - mmdet - INFO - Epoch [1][1050/1238]	lr: 1.000e-02, eta: 1:50:38, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1327, loss_bbox: 0.2410, loss_centerness: 0.5634, loss: 0.9372, grad_norm: 2.6235
+2024-03-17 18:01:33,950 - mmdet - INFO - Epoch [1][1100/1238]	lr: 1.000e-02, eta: 1:50:13, time: 0.480, data_time: 0.007, memory: 11439, loss_cls: 0.1324, loss_bbox: 0.2692, loss_centerness: 0.5690, loss: 0.9706, grad_norm: 2.9344
+2024-03-17 18:01:57,796 - mmdet - INFO - Epoch [1][1150/1238]	lr: 1.000e-02, eta: 1:49:47, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1184, loss_bbox: 0.2294, loss_centerness: 0.5668, loss: 0.9147, grad_norm: 2.3503
+2024-03-17 18:02:21,652 - mmdet - INFO - Epoch [1][1200/1238]	lr: 1.000e-02, eta: 1:49:21, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1214, loss_bbox: 0.2367, loss_centerness: 0.5662, loss: 0.9242, grad_norm: 2.6058
+2024-03-17 18:03:37,395 - mmdet - INFO - Evaluating bbox...
+2024-03-17 18:03:51,739 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.385
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.635
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.426
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.241
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.442
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.570
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.539
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.539
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.539
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.402
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.682
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.704
+
+2024-03-17 18:03:51,740 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.576 | helmet   | 0.546 | self_clothes | 0.377 |
+| safety_clothes | 0.576 | head     | 0.363 | blur_head    | 0.089 |
+| blur_clothes   | 0.171 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 18:03:51,965 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 18:03:51,965 - mmdet - INFO - Epoch(val) [1][619]	bbox_mAP: 0.3850, bbox_mAP_50: 0.6350, bbox_mAP_75: 0.4260, bbox_mAP_s: 0.2410, bbox_mAP_m: 0.4420, bbox_mAP_l: 0.5700, bbox_mAP_copypaste: 0.385 0.635 0.426 0.241 0.442 0.570
+2024-03-17 18:04:18,276 - mmdet - INFO - Epoch [2][50/1238]	lr: 1.000e-02, eta: 1:45:50, time: 0.526, data_time: 0.055, memory: 11439, loss_cls: 0.1104, loss_bbox: 0.2287, loss_centerness: 0.5636, loss: 0.9027, grad_norm: 2.4089
+2024-03-17 18:04:42,173 - mmdet - INFO - Epoch [2][100/1238]	lr: 1.000e-02, eta: 1:45:32, time: 0.478, data_time: 0.007, memory: 11439, loss_cls: 0.1124, loss_bbox: 0.2347, loss_centerness: 0.5653, loss: 0.9125, grad_norm: 2.5788
+2024-03-17 18:05:06,253 - mmdet - INFO - Epoch [2][150/1238]	lr: 1.000e-02, eta: 1:45:15, time: 0.482, data_time: 0.007, memory: 11439, loss_cls: 0.1042, loss_bbox: 0.2294, loss_centerness: 0.5643, loss: 0.8979, grad_norm: 2.6245
+2024-03-17 18:05:30,106 - mmdet - INFO - Epoch [2][200/1238]	lr: 1.000e-02, eta: 1:44:55, time: 0.477, data_time: 0.007, memory: 11439, loss_cls: 0.1300, loss_bbox: 0.2509, loss_centerness: 0.5640, loss: 0.9449, grad_norm: 2.8578
+2024-03-17 18:05:53,995 - mmdet - INFO - Epoch [2][250/1238]	lr: 1.000e-02, eta: 1:44:36, time: 0.478, data_time: 0.007, memory: 11439, loss_cls: 0.1097, loss_bbox: 0.2193, loss_centerness: 0.5650, loss: 0.8939, grad_norm: 2.3276
+2024-03-17 18:06:17,891 - mmdet - INFO - Epoch [2][300/1238]	lr: 1.000e-02, eta: 1:44:16, time: 0.478, data_time: 0.007, memory: 11439, loss_cls: 0.1103, loss_bbox: 0.2290, loss_centerness: 0.5661, loss: 0.9055, grad_norm: 2.6371
+2024-03-17 18:06:41,568 - mmdet - INFO - Epoch [2][350/1238]	lr: 1.000e-02, eta: 1:43:54, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.1111, loss_bbox: 0.2389, loss_centerness: 0.5608, loss: 0.9107, grad_norm: 2.8771
+2024-03-17 18:07:05,356 - mmdet - INFO - Epoch [2][400/1238]	lr: 1.000e-02, eta: 1:43:33, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.1087, loss_bbox: 0.2254, loss_centerness: 0.5648, loss: 0.8989, grad_norm: 2.4525
+2024-03-17 18:07:29,172 - mmdet - INFO - Epoch [2][450/1238]	lr: 1.000e-02, eta: 1:43:12, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.1064, loss_bbox: 0.2148, loss_centerness: 0.5626, loss: 0.8839, grad_norm: 2.1956
+2024-03-17 18:07:52,977 - mmdet - INFO - Epoch [2][500/1238]	lr: 1.000e-02, eta: 1:42:50, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.1194, loss_bbox: 0.2291, loss_centerness: 0.5662, loss: 0.9147, grad_norm: 2.4725
+2024-03-17 18:08:16,773 - mmdet - INFO - Epoch [2][550/1238]	lr: 1.000e-02, eta: 1:42:29, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.1212, loss_bbox: 0.2460, loss_centerness: 0.5645, loss: 0.9317, grad_norm: 2.7289
+2024-03-17 18:08:40,642 - mmdet - INFO - Epoch [2][600/1238]	lr: 1.000e-02, eta: 1:42:08, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.1197, loss_bbox: 0.2210, loss_centerness: 0.5640, loss: 0.9047, grad_norm: 2.4077
+2024-03-17 18:09:04,448 - mmdet - INFO - Epoch [2][650/1238]	lr: 1.000e-02, eta: 1:41:46, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.1186, loss_bbox: 0.2285, loss_centerness: 0.5651, loss: 0.9122, grad_norm: 2.2891
+2024-03-17 18:09:28,248 - mmdet - INFO - Epoch [2][700/1238]	lr: 1.000e-02, eta: 1:41:24, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.1108, loss_bbox: 0.2261, loss_centerness: 0.5657, loss: 0.9026, grad_norm: 2.4942
+2024-03-17 18:09:52,067 - mmdet - INFO - Epoch [2][750/1238]	lr: 1.000e-02, eta: 1:41:02, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.1032, loss_bbox: 0.2183, loss_centerness: 0.5641, loss: 0.8856, grad_norm: 2.3417
+2024-03-17 18:10:15,850 - mmdet - INFO - Epoch [2][800/1238]	lr: 1.000e-02, eta: 1:40:40, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.1106, loss_bbox: 0.2467, loss_centerness: 0.5662, loss: 0.9235, grad_norm: 2.5420
+2024-03-17 18:10:39,588 - mmdet - INFO - Epoch [2][850/1238]	lr: 1.000e-02, eta: 1:40:18, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.1030, loss_bbox: 0.2298, loss_centerness: 0.5628, loss: 0.8956, grad_norm: 2.3537
+2024-03-17 18:11:03,525 - mmdet - INFO - Epoch [2][900/1238]	lr: 1.000e-02, eta: 1:39:56, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0986, loss_bbox: 0.2231, loss_centerness: 0.5636, loss: 0.8854, grad_norm: 2.3595
+2024-03-17 18:11:27,289 - mmdet - INFO - Epoch [2][950/1238]	lr: 1.000e-02, eta: 1:39:34, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.1044, loss_bbox: 0.2241, loss_centerness: 0.5634, loss: 0.8919, grad_norm: 2.4554
+2024-03-17 18:11:51,200 - mmdet - INFO - Epoch [2][1000/1238]	lr: 1.000e-02, eta: 1:39:12, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.1018, loss_bbox: 0.2296, loss_centerness: 0.5638, loss: 0.8952, grad_norm: 2.3875
+2024-03-17 18:12:15,154 - mmdet - INFO - Epoch [2][1050/1238]	lr: 1.000e-02, eta: 1:38:51, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.1019, loss_bbox: 0.2190, loss_centerness: 0.5640, loss: 0.8849, grad_norm: 2.1962
+2024-03-17 18:12:39,077 - mmdet - INFO - Epoch [2][1100/1238]	lr: 1.000e-02, eta: 1:38:29, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.1167, loss_bbox: 0.2308, loss_centerness: 0.5662, loss: 0.9137, grad_norm: 2.3316
+2024-03-17 18:13:02,861 - mmdet - INFO - Epoch [2][1150/1238]	lr: 1.000e-02, eta: 1:38:06, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.1032, loss_bbox: 0.2180, loss_centerness: 0.5657, loss: 0.8870, grad_norm: 2.3284
+2024-03-17 18:13:26,729 - mmdet - INFO - Epoch [2][1200/1238]	lr: 1.000e-02, eta: 1:37:44, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.1012, loss_bbox: 0.2363, loss_centerness: 0.5627, loss: 0.9002, grad_norm: 2.5813
+2024-03-17 18:14:42,109 - mmdet - INFO - Evaluating bbox...
+2024-03-17 18:14:55,545 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.402
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.697
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.426
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.268
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.446
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.525
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.533
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.533
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.533
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.439
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.637
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.664
+
+2024-03-17 18:14:55,546 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.613 | helmet   | 0.506 | self_clothes | 0.414 |
+| safety_clothes | 0.533 | head     | 0.400 | blur_head    | 0.162 |
+| blur_clothes   | 0.188 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 18:14:55,804 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 18:14:55,804 - mmdet - INFO - Epoch(val) [2][619]	bbox_mAP: 0.4020, bbox_mAP_50: 0.6970, bbox_mAP_75: 0.4260, bbox_mAP_s: 0.2680, bbox_mAP_m: 0.4460, bbox_mAP_l: 0.5250, bbox_mAP_copypaste: 0.402 0.697 0.426 0.268 0.446 0.525
+2024-03-17 18:15:22,053 - mmdet - INFO - Epoch [3][50/1238]	lr: 1.000e-02, eta: 1:35:47, time: 0.525, data_time: 0.057, memory: 11439, loss_cls: 0.0929, loss_bbox: 0.2164, loss_centerness: 0.5613, loss: 0.8705, grad_norm: 2.2382
+2024-03-17 18:15:45,704 - mmdet - INFO - Epoch [3][100/1238]	lr: 1.000e-02, eta: 1:35:26, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0988, loss_bbox: 0.2059, loss_centerness: 0.5605, loss: 0.8651, grad_norm: 2.1206
+2024-03-17 18:16:09,407 - mmdet - INFO - Epoch [3][150/1238]	lr: 1.000e-02, eta: 1:35:04, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0917, loss_bbox: 0.2003, loss_centerness: 0.5609, loss: 0.8529, grad_norm: 2.0390
+2024-03-17 18:16:33,138 - mmdet - INFO - Epoch [3][200/1238]	lr: 1.000e-02, eta: 1:34:43, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0988, loss_bbox: 0.2065, loss_centerness: 0.5644, loss: 0.8696, grad_norm: 2.1804
+2024-03-17 18:16:57,019 - mmdet - INFO - Epoch [3][250/1238]	lr: 1.000e-02, eta: 1:34:22, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.1014, loss_bbox: 0.2150, loss_centerness: 0.5617, loss: 0.8781, grad_norm: 2.2171
+2024-03-17 18:17:20,770 - mmdet - INFO - Epoch [3][300/1238]	lr: 1.000e-02, eta: 1:34:00, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0897, loss_bbox: 0.1972, loss_centerness: 0.5615, loss: 0.8484, grad_norm: 2.1678
+2024-03-17 18:17:44,571 - mmdet - INFO - Epoch [3][350/1238]	lr: 1.000e-02, eta: 1:33:39, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0999, loss_bbox: 0.2169, loss_centerness: 0.5637, loss: 0.8805, grad_norm: 2.1639
+2024-03-17 18:18:08,436 - mmdet - INFO - Epoch [3][400/1238]	lr: 1.000e-02, eta: 1:33:18, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0927, loss_bbox: 0.2089, loss_centerness: 0.5609, loss: 0.8625, grad_norm: 2.1456
+2024-03-17 18:18:32,281 - mmdet - INFO - Epoch [3][450/1238]	lr: 1.000e-02, eta: 1:32:56, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0978, loss_bbox: 0.2178, loss_centerness: 0.5609, loss: 0.8765, grad_norm: 2.2772
+2024-03-17 18:18:56,192 - mmdet - INFO - Epoch [3][500/1238]	lr: 1.000e-02, eta: 1:32:35, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.1039, loss_bbox: 0.2100, loss_centerness: 0.5611, loss: 0.8750, grad_norm: 2.1303
+2024-03-17 18:19:19,998 - mmdet - INFO - Epoch [3][550/1238]	lr: 1.000e-02, eta: 1:32:13, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0939, loss_bbox: 0.2153, loss_centerness: 0.5616, loss: 0.8708, grad_norm: 2.3045
+2024-03-17 18:19:43,815 - mmdet - INFO - Epoch [3][600/1238]	lr: 1.000e-02, eta: 1:31:52, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0952, loss_bbox: 0.2145, loss_centerness: 0.5628, loss: 0.8725, grad_norm: 2.3570
+2024-03-17 18:20:07,732 - mmdet - INFO - Epoch [3][650/1238]	lr: 1.000e-02, eta: 1:31:30, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.1114, loss_bbox: 0.2239, loss_centerness: 0.5634, loss: 0.8987, grad_norm: 2.2538
+2024-03-17 18:20:31,531 - mmdet - INFO - Epoch [3][700/1238]	lr: 1.000e-02, eta: 1:31:08, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0968, loss_bbox: 0.1990, loss_centerness: 0.5609, loss: 0.8567, grad_norm: 2.0329
+2024-03-17 18:20:55,455 - mmdet - INFO - Epoch [3][750/1238]	lr: 1.000e-02, eta: 1:30:47, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.1008, loss_bbox: 0.2158, loss_centerness: 0.5622, loss: 0.8788, grad_norm: 2.2024
+2024-03-17 18:21:19,224 - mmdet - INFO - Epoch [3][800/1238]	lr: 1.000e-02, eta: 1:30:24, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.1033, loss_bbox: 0.2136, loss_centerness: 0.5619, loss: 0.8788, grad_norm: 2.5236
+2024-03-17 18:21:43,074 - mmdet - INFO - Epoch [3][850/1238]	lr: 1.000e-02, eta: 1:30:02, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0950, loss_bbox: 0.2132, loss_centerness: 0.5610, loss: 0.8691, grad_norm: 2.2342
+2024-03-17 18:22:06,976 - mmdet - INFO - Epoch [3][900/1238]	lr: 1.000e-02, eta: 1:29:41, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0972, loss_bbox: 0.2124, loss_centerness: 0.5630, loss: 0.8726, grad_norm: 2.3109
+2024-03-17 18:22:30,874 - mmdet - INFO - Epoch [3][950/1238]	lr: 1.000e-02, eta: 1:29:19, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0973, loss_bbox: 0.2052, loss_centerness: 0.5632, loss: 0.8657, grad_norm: 2.1779
+2024-03-17 18:22:54,709 - mmdet - INFO - Epoch [3][1000/1238]	lr: 1.000e-02, eta: 1:28:57, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.1001, loss_bbox: 0.2111, loss_centerness: 0.5627, loss: 0.8740, grad_norm: 2.2816
+2024-03-17 18:23:18,513 - mmdet - INFO - Epoch [3][1050/1238]	lr: 1.000e-02, eta: 1:28:34, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0920, loss_bbox: 0.1982, loss_centerness: 0.5630, loss: 0.8532, grad_norm: 2.0694
+2024-03-17 18:23:42,291 - mmdet - INFO - Epoch [3][1100/1238]	lr: 1.000e-02, eta: 1:28:12, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0997, loss_bbox: 0.2062, loss_centerness: 0.5611, loss: 0.8669, grad_norm: 2.1016
+2024-03-17 18:24:05,935 - mmdet - INFO - Epoch [3][1150/1238]	lr: 1.000e-02, eta: 1:27:49, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0960, loss_bbox: 0.2076, loss_centerness: 0.5624, loss: 0.8661, grad_norm: 2.1221
+2024-03-17 18:24:29,615 - mmdet - INFO - Epoch [3][1200/1238]	lr: 1.000e-02, eta: 1:27:26, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.1012, loss_bbox: 0.2108, loss_centerness: 0.5628, loss: 0.8749, grad_norm: 2.3809
+2024-03-17 18:25:44,346 - mmdet - INFO - Evaluating bbox...
+2024-03-17 18:25:55,245 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.431
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.704
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.476
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.294
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.487
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.606
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.564
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.564
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.564
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.449
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.680
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.720
+
+2024-03-17 18:25:55,246 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.622 | helmet   | 0.567 | self_clothes | 0.438 |
+| safety_clothes | 0.585 | head     | 0.438 | blur_head    | 0.144 |
+| blur_clothes   | 0.222 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 18:25:55,424 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 18:25:55,424 - mmdet - INFO - Epoch(val) [3][619]	bbox_mAP: 0.4310, bbox_mAP_50: 0.7040, bbox_mAP_75: 0.4760, bbox_mAP_s: 0.2940, bbox_mAP_m: 0.4870, bbox_mAP_l: 0.6060, bbox_mAP_copypaste: 0.431 0.704 0.476 0.294 0.487 0.606
+2024-03-17 18:26:21,611 - mmdet - INFO - Epoch [4][50/1238]	lr: 1.000e-02, eta: 1:26:00, time: 0.524, data_time: 0.057, memory: 11439, loss_cls: 0.0872, loss_bbox: 0.1963, loss_centerness: 0.5580, loss: 0.8416, grad_norm: 2.4125
+2024-03-17 18:26:45,271 - mmdet - INFO - Epoch [4][100/1238]	lr: 1.000e-02, eta: 1:25:38, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0857, loss_bbox: 0.1994, loss_centerness: 0.5600, loss: 0.8451, grad_norm: 2.2138
+2024-03-17 18:27:09,104 - mmdet - INFO - Epoch [4][150/1238]	lr: 1.000e-02, eta: 1:25:17, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0955, loss_bbox: 0.2035, loss_centerness: 0.5602, loss: 0.8592, grad_norm: 2.0733
+2024-03-17 18:27:32,819 - mmdet - INFO - Epoch [4][200/1238]	lr: 1.000e-02, eta: 1:24:54, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0912, loss_bbox: 0.2037, loss_centerness: 0.5604, loss: 0.8553, grad_norm: 2.3313
+2024-03-17 18:27:56,547 - mmdet - INFO - Epoch [4][250/1238]	lr: 1.000e-02, eta: 1:24:32, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0920, loss_bbox: 0.1949, loss_centerness: 0.5593, loss: 0.8463, grad_norm: 2.0936
+2024-03-17 18:28:20,305 - mmdet - INFO - Epoch [4][300/1238]	lr: 1.000e-02, eta: 1:24:10, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0886, loss_bbox: 0.2071, loss_centerness: 0.5596, loss: 0.8553, grad_norm: 2.3715
+2024-03-17 18:28:44,231 - mmdet - INFO - Epoch [4][350/1238]	lr: 1.000e-02, eta: 1:23:49, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0926, loss_bbox: 0.2156, loss_centerness: 0.5624, loss: 0.8706, grad_norm: 2.5350
+2024-03-17 18:29:07,927 - mmdet - INFO - Epoch [4][400/1238]	lr: 1.000e-02, eta: 1:23:27, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0852, loss_bbox: 0.2032, loss_centerness: 0.5587, loss: 0.8472, grad_norm: 2.2955
+2024-03-17 18:29:31,810 - mmdet - INFO - Epoch [4][450/1238]	lr: 1.000e-02, eta: 1:23:05, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0879, loss_bbox: 0.2014, loss_centerness: 0.5600, loss: 0.8493, grad_norm: 2.1508
+2024-03-17 18:29:55,574 - mmdet - INFO - Epoch [4][500/1238]	lr: 1.000e-02, eta: 1:22:43, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0851, loss_bbox: 0.1959, loss_centerness: 0.5602, loss: 0.8411, grad_norm: 2.2533
+2024-03-17 18:30:19,350 - mmdet - INFO - Epoch [4][550/1238]	lr: 1.000e-02, eta: 1:22:20, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0956, loss_bbox: 0.2053, loss_centerness: 0.5634, loss: 0.8643, grad_norm: 2.1365
+2024-03-17 18:30:43,161 - mmdet - INFO - Epoch [4][600/1238]	lr: 1.000e-02, eta: 1:21:58, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0937, loss_bbox: 0.2071, loss_centerness: 0.5623, loss: 0.8630, grad_norm: 2.3394
+2024-03-17 18:31:07,088 - mmdet - INFO - Epoch [4][650/1238]	lr: 1.000e-02, eta: 1:21:36, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0999, loss_bbox: 0.2002, loss_centerness: 0.5605, loss: 0.8607, grad_norm: 2.1767
+2024-03-17 18:31:30,897 - mmdet - INFO - Epoch [4][700/1238]	lr: 1.000e-02, eta: 1:21:14, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0975, loss_bbox: 0.2099, loss_centerness: 0.5612, loss: 0.8686, grad_norm: 2.2421
+2024-03-17 18:31:54,852 - mmdet - INFO - Epoch [4][750/1238]	lr: 1.000e-02, eta: 1:20:52, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0910, loss_bbox: 0.2035, loss_centerness: 0.5602, loss: 0.8546, grad_norm: 2.2810
+2024-03-17 18:32:18,732 - mmdet - INFO - Epoch [4][800/1238]	lr: 1.000e-02, eta: 1:20:30, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0892, loss_bbox: 0.1938, loss_centerness: 0.5613, loss: 0.8443, grad_norm: 2.0478
+2024-03-17 18:32:42,647 - mmdet - INFO - Epoch [4][850/1238]	lr: 1.000e-02, eta: 1:20:08, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.1035, loss_bbox: 0.2117, loss_centerness: 0.5618, loss: 0.8770, grad_norm: 2.3403
+2024-03-17 18:33:06,361 - mmdet - INFO - Epoch [4][900/1238]	lr: 1.000e-02, eta: 1:19:45, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0901, loss_bbox: 0.2074, loss_centerness: 0.5606, loss: 0.8581, grad_norm: 2.4261
+2024-03-17 18:33:30,226 - mmdet - INFO - Epoch [4][950/1238]	lr: 1.000e-02, eta: 1:19:23, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0869, loss_bbox: 0.2146, loss_centerness: 0.5595, loss: 0.8610, grad_norm: 2.5819
+2024-03-17 18:33:53,982 - mmdet - INFO - Epoch [4][1000/1238]	lr: 1.000e-02, eta: 1:19:01, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0942, loss_bbox: 0.1933, loss_centerness: 0.5612, loss: 0.8487, grad_norm: 2.1352
+2024-03-17 18:34:17,822 - mmdet - INFO - Epoch [4][1050/1238]	lr: 1.000e-02, eta: 1:18:38, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0890, loss_bbox: 0.2133, loss_centerness: 0.5623, loss: 0.8646, grad_norm: 2.5423
+2024-03-17 18:34:41,650 - mmdet - INFO - Epoch [4][1100/1238]	lr: 1.000e-02, eta: 1:18:16, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0894, loss_bbox: 0.2110, loss_centerness: 0.5611, loss: 0.8615, grad_norm: 2.3681
+2024-03-17 18:35:05,478 - mmdet - INFO - Epoch [4][1150/1238]	lr: 1.000e-02, eta: 1:17:53, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0950, loss_bbox: 0.2063, loss_centerness: 0.5611, loss: 0.8624, grad_norm: 2.3038
+2024-03-17 18:35:29,292 - mmdet - INFO - Epoch [4][1200/1238]	lr: 1.000e-02, eta: 1:17:31, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0949, loss_bbox: 0.2142, loss_centerness: 0.5623, loss: 0.8713, grad_norm: 2.2673
+2024-03-17 18:36:43,824 - mmdet - INFO - Evaluating bbox...
+2024-03-17 18:36:54,880 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.418
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.697
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.448
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.286
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.487
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.596
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.540
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.540
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.540
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.413
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.673
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.713
+
+2024-03-17 18:36:54,880 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.608 | helmet   | 0.566 | self_clothes | 0.447 |
+| safety_clothes | 0.569 | head     | 0.399 | blur_head    | 0.157 |
+| blur_clothes   | 0.181 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 18:36:55,064 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 18:36:55,064 - mmdet - INFO - Epoch(val) [4][619]	bbox_mAP: 0.4180, bbox_mAP_50: 0.6970, bbox_mAP_75: 0.4480, bbox_mAP_s: 0.2860, bbox_mAP_m: 0.4870, bbox_mAP_l: 0.5960, bbox_mAP_copypaste: 0.418 0.697 0.448 0.286 0.487 0.596
+2024-03-17 18:37:21,220 - mmdet - INFO - Epoch [5][50/1238]	lr: 1.000e-02, eta: 1:16:20, time: 0.523, data_time: 0.056, memory: 11439, loss_cls: 0.0825, loss_bbox: 0.2021, loss_centerness: 0.5597, loss: 0.8443, grad_norm: 2.5031
+2024-03-17 18:37:44,993 - mmdet - INFO - Epoch [5][100/1238]	lr: 1.000e-02, eta: 1:15:58, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0834, loss_bbox: 0.2006, loss_centerness: 0.5577, loss: 0.8417, grad_norm: 2.0417
+2024-03-17 18:38:08,822 - mmdet - INFO - Epoch [5][150/1238]	lr: 1.000e-02, eta: 1:15:36, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0793, loss_bbox: 0.1903, loss_centerness: 0.5600, loss: 0.8296, grad_norm: 2.2507
+2024-03-17 18:38:32,737 - mmdet - INFO - Epoch [5][200/1238]	lr: 1.000e-02, eta: 1:15:14, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0821, loss_bbox: 0.1923, loss_centerness: 0.5602, loss: 0.8346, grad_norm: 2.1420
+2024-03-17 18:38:56,647 - mmdet - INFO - Epoch [5][250/1238]	lr: 1.000e-02, eta: 1:14:52, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0816, loss_bbox: 0.2037, loss_centerness: 0.5591, loss: 0.8443, grad_norm: 2.3486
+2024-03-17 18:39:20,475 - mmdet - INFO - Epoch [5][300/1238]	lr: 1.000e-02, eta: 1:14:29, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0790, loss_bbox: 0.1962, loss_centerness: 0.5593, loss: 0.8345, grad_norm: 2.1977
+2024-03-17 18:39:44,392 - mmdet - INFO - Epoch [5][350/1238]	lr: 1.000e-02, eta: 1:14:07, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0898, loss_bbox: 0.1911, loss_centerness: 0.5588, loss: 0.8396, grad_norm: 1.9881
+2024-03-17 18:40:08,221 - mmdet - INFO - Epoch [5][400/1238]	lr: 1.000e-02, eta: 1:13:45, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0831, loss_bbox: 0.1887, loss_centerness: 0.5597, loss: 0.8316, grad_norm: 2.0585
+2024-03-17 18:40:32,074 - mmdet - INFO - Epoch [5][450/1238]	lr: 1.000e-02, eta: 1:13:23, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0850, loss_bbox: 0.1892, loss_centerness: 0.5604, loss: 0.8346, grad_norm: 2.0157
+2024-03-17 18:40:55,922 - mmdet - INFO - Epoch [5][500/1238]	lr: 1.000e-02, eta: 1:13:00, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0831, loss_bbox: 0.1979, loss_centerness: 0.5599, loss: 0.8409, grad_norm: 2.3225
+2024-03-17 18:41:19,726 - mmdet - INFO - Epoch [5][550/1238]	lr: 1.000e-02, eta: 1:12:38, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0842, loss_bbox: 0.1877, loss_centerness: 0.5594, loss: 0.8314, grad_norm: 2.0816
+2024-03-17 18:41:43,379 - mmdet - INFO - Epoch [5][600/1238]	lr: 1.000e-02, eta: 1:12:15, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0869, loss_bbox: 0.1773, loss_centerness: 0.5595, loss: 0.8237, grad_norm: 2.0526
+2024-03-17 18:42:07,118 - mmdet - INFO - Epoch [5][650/1238]	lr: 1.000e-02, eta: 1:11:53, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0852, loss_bbox: 0.1855, loss_centerness: 0.5589, loss: 0.8295, grad_norm: 1.9289
+2024-03-17 18:42:30,982 - mmdet - INFO - Epoch [5][700/1238]	lr: 1.000e-02, eta: 1:11:30, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0811, loss_bbox: 0.1942, loss_centerness: 0.5598, loss: 0.8351, grad_norm: 2.2819
+2024-03-17 18:42:54,814 - mmdet - INFO - Epoch [5][750/1238]	lr: 1.000e-02, eta: 1:11:08, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0890, loss_bbox: 0.1943, loss_centerness: 0.5587, loss: 0.8420, grad_norm: 2.2294
+2024-03-17 18:43:18,520 - mmdet - INFO - Epoch [5][800/1238]	lr: 1.000e-02, eta: 1:10:45, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0911, loss_bbox: 0.1983, loss_centerness: 0.5571, loss: 0.8464, grad_norm: 2.2560
+2024-03-17 18:43:42,342 - mmdet - INFO - Epoch [5][850/1238]	lr: 1.000e-02, eta: 1:10:23, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0894, loss_bbox: 0.2150, loss_centerness: 0.5608, loss: 0.8653, grad_norm: 2.4814
+2024-03-17 18:44:06,157 - mmdet - INFO - Epoch [5][900/1238]	lr: 1.000e-02, eta: 1:10:00, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0899, loss_bbox: 0.2100, loss_centerness: 0.5592, loss: 0.8590, grad_norm: 2.4567
+2024-03-17 18:44:30,033 - mmdet - INFO - Epoch [5][950/1238]	lr: 1.000e-02, eta: 1:09:38, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0861, loss_bbox: 0.1847, loss_centerness: 0.5592, loss: 0.8301, grad_norm: 2.1211
+2024-03-17 18:44:53,840 - mmdet - INFO - Epoch [5][1000/1238]	lr: 1.000e-02, eta: 1:09:15, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0870, loss_bbox: 0.2031, loss_centerness: 0.5580, loss: 0.8480, grad_norm: 2.2941
+2024-03-17 18:45:17,575 - mmdet - INFO - Epoch [5][1050/1238]	lr: 1.000e-02, eta: 1:08:52, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0837, loss_bbox: 0.1877, loss_centerness: 0.5616, loss: 0.8330, grad_norm: 1.9886
+2024-03-17 18:45:41,220 - mmdet - INFO - Epoch [5][1100/1238]	lr: 1.000e-02, eta: 1:08:29, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0830, loss_bbox: 0.1914, loss_centerness: 0.5602, loss: 0.8346, grad_norm: 2.0454
+2024-03-17 18:46:05,092 - mmdet - INFO - Epoch [5][1150/1238]	lr: 1.000e-02, eta: 1:08:07, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0878, loss_bbox: 0.1975, loss_centerness: 0.5624, loss: 0.8477, grad_norm: 2.3139
+2024-03-17 18:46:28,927 - mmdet - INFO - Epoch [5][1200/1238]	lr: 1.000e-02, eta: 1:07:44, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0871, loss_bbox: 0.1956, loss_centerness: 0.5601, loss: 0.8428, grad_norm: 2.2330
+2024-03-17 18:47:42,987 - mmdet - INFO - Evaluating bbox...
+2024-03-17 18:47:52,418 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.430
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.731
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.446
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.287
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.519
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.605
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.538
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.538
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.538
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.390
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.693
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.727
+
+2024-03-17 18:47:52,419 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.639 | helmet   | 0.563 | self_clothes | 0.463 |
+| safety_clothes | 0.585 | head     | 0.378 | blur_head    | 0.150 |
+| blur_clothes   | 0.235 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 18:47:52,575 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 18:47:52,575 - mmdet - INFO - Epoch(val) [5][619]	bbox_mAP: 0.4300, bbox_mAP_50: 0.7310, bbox_mAP_75: 0.4460, bbox_mAP_s: 0.2870, bbox_mAP_m: 0.5190, bbox_mAP_l: 0.6050, bbox_mAP_copypaste: 0.430 0.731 0.446 0.287 0.519 0.605
+2024-03-17 18:48:18,664 - mmdet - INFO - Epoch [6][50/1238]	lr: 1.000e-02, eta: 1:06:42, time: 0.522, data_time: 0.056, memory: 11439, loss_cls: 0.0820, loss_bbox: 0.1801, loss_centerness: 0.5606, loss: 0.8228, grad_norm: 2.0298
+2024-03-17 18:48:42,345 - mmdet - INFO - Epoch [6][100/1238]	lr: 1.000e-02, eta: 1:06:20, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0761, loss_bbox: 0.1852, loss_centerness: 0.5583, loss: 0.8196, grad_norm: 2.0629
+2024-03-17 18:49:06,017 - mmdet - INFO - Epoch [6][150/1238]	lr: 1.000e-02, eta: 1:05:57, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0781, loss_bbox: 0.1812, loss_centerness: 0.5571, loss: 0.8164, grad_norm: 2.0934
+2024-03-17 18:49:29,862 - mmdet - INFO - Epoch [6][200/1238]	lr: 1.000e-02, eta: 1:05:35, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0775, loss_bbox: 0.1865, loss_centerness: 0.5588, loss: 0.8228, grad_norm: 2.1221
+2024-03-17 18:49:53,784 - mmdet - INFO - Epoch [6][250/1238]	lr: 1.000e-02, eta: 1:05:12, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0761, loss_bbox: 0.1797, loss_centerness: 0.5573, loss: 0.8131, grad_norm: 2.1257
+2024-03-17 18:50:17,689 - mmdet - INFO - Epoch [6][300/1238]	lr: 1.000e-02, eta: 1:04:50, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0779, loss_bbox: 0.1930, loss_centerness: 0.5585, loss: 0.8294, grad_norm: 2.3346
+2024-03-17 18:50:41,628 - mmdet - INFO - Epoch [6][350/1238]	lr: 1.000e-02, eta: 1:04:27, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0792, loss_bbox: 0.1803, loss_centerness: 0.5581, loss: 0.8176, grad_norm: 2.0757
+2024-03-17 18:51:05,622 - mmdet - INFO - Epoch [6][400/1238]	lr: 1.000e-02, eta: 1:04:05, time: 0.480, data_time: 0.008, memory: 11439, loss_cls: 0.0777, loss_bbox: 0.1773, loss_centerness: 0.5597, loss: 0.8146, grad_norm: 2.0279
+2024-03-17 18:51:29,437 - mmdet - INFO - Epoch [6][450/1238]	lr: 1.000e-02, eta: 1:03:42, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0832, loss_bbox: 0.1865, loss_centerness: 0.5576, loss: 0.8272, grad_norm: 2.3752
+2024-03-17 18:51:53,179 - mmdet - INFO - Epoch [6][500/1238]	lr: 1.000e-02, eta: 1:03:20, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0828, loss_bbox: 0.1922, loss_centerness: 0.5579, loss: 0.8330, grad_norm: 2.2565
+2024-03-17 18:52:17,026 - mmdet - INFO - Epoch [6][550/1238]	lr: 1.000e-02, eta: 1:02:57, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0796, loss_bbox: 0.1943, loss_centerness: 0.5588, loss: 0.8327, grad_norm: 2.2864
+2024-03-17 18:52:40,763 - mmdet - INFO - Epoch [6][600/1238]	lr: 1.000e-02, eta: 1:02:35, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0883, loss_bbox: 0.1991, loss_centerness: 0.5580, loss: 0.8454, grad_norm: 2.3665
+2024-03-17 18:53:04,666 - mmdet - INFO - Epoch [6][650/1238]	lr: 1.000e-02, eta: 1:02:12, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0816, loss_bbox: 0.2031, loss_centerness: 0.5591, loss: 0.8438, grad_norm: 2.4536
+2024-03-17 18:53:28,439 - mmdet - INFO - Epoch [6][700/1238]	lr: 1.000e-02, eta: 1:01:49, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0887, loss_bbox: 0.2039, loss_centerness: 0.5605, loss: 0.8531, grad_norm: 2.2745
+2024-03-17 18:53:52,316 - mmdet - INFO - Epoch [6][750/1238]	lr: 1.000e-02, eta: 1:01:27, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0817, loss_bbox: 0.1794, loss_centerness: 0.5568, loss: 0.8179, grad_norm: 2.1645
+2024-03-17 18:54:16,040 - mmdet - INFO - Epoch [6][800/1238]	lr: 1.000e-02, eta: 1:01:04, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0772, loss_bbox: 0.1796, loss_centerness: 0.5606, loss: 0.8174, grad_norm: 2.1029
+2024-03-17 18:54:39,851 - mmdet - INFO - Epoch [6][850/1238]	lr: 1.000e-02, eta: 1:00:41, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0812, loss_bbox: 0.1946, loss_centerness: 0.5616, loss: 0.8373, grad_norm: 2.1094
+2024-03-17 18:55:03,589 - mmdet - INFO - Epoch [6][900/1238]	lr: 1.000e-02, eta: 1:00:18, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0864, loss_bbox: 0.1901, loss_centerness: 0.5580, loss: 0.8345, grad_norm: 2.3207
+2024-03-17 18:55:27,377 - mmdet - INFO - Epoch [6][950/1238]	lr: 1.000e-02, eta: 0:59:56, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0784, loss_bbox: 0.1880, loss_centerness: 0.5587, loss: 0.8251, grad_norm: 2.1638
+2024-03-17 18:55:51,170 - mmdet - INFO - Epoch [6][1000/1238]	lr: 1.000e-02, eta: 0:59:33, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0752, loss_bbox: 0.1778, loss_centerness: 0.5583, loss: 0.8114, grad_norm: 2.2959
+2024-03-17 18:56:14,962 - mmdet - INFO - Epoch [6][1050/1238]	lr: 1.000e-02, eta: 0:59:10, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0752, loss_bbox: 0.1934, loss_centerness: 0.5598, loss: 0.8284, grad_norm: 2.4581
+2024-03-17 18:56:38,769 - mmdet - INFO - Epoch [6][1100/1238]	lr: 1.000e-02, eta: 0:58:47, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0801, loss_bbox: 0.1937, loss_centerness: 0.5604, loss: 0.8341, grad_norm: 2.2281
+2024-03-17 18:57:02,456 - mmdet - INFO - Epoch [6][1150/1238]	lr: 1.000e-02, eta: 0:58:24, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0900, loss_bbox: 0.1928, loss_centerness: 0.5619, loss: 0.8447, grad_norm: 2.0558
+2024-03-17 18:57:26,257 - mmdet - INFO - Epoch [6][1200/1238]	lr: 1.000e-02, eta: 0:58:01, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0870, loss_bbox: 0.1862, loss_centerness: 0.5597, loss: 0.8329, grad_norm: 2.2268
+2024-03-17 18:58:40,424 - mmdet - INFO - Evaluating bbox...
+2024-03-17 18:58:50,309 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.404
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.726
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.410
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.274
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.465
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.582
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.520
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.520
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.520
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.379
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.638
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.751
+
+2024-03-17 18:58:50,309 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.599 | helmet   | 0.511 | self_clothes | 0.423 |
+| safety_clothes | 0.585 | head     | 0.331 | blur_head    | 0.150 |
+| blur_clothes   | 0.230 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 18:58:50,471 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 18:58:50,471 - mmdet - INFO - Epoch(val) [6][619]	bbox_mAP: 0.4040, bbox_mAP_50: 0.7260, bbox_mAP_75: 0.4100, bbox_mAP_s: 0.2740, bbox_mAP_m: 0.4650, bbox_mAP_l: 0.5820, bbox_mAP_copypaste: 0.404 0.726 0.410 0.274 0.465 0.582
+2024-03-17 18:59:16,631 - mmdet - INFO - Epoch [7][50/1238]	lr: 1.000e-02, eta: 0:57:06, time: 0.523, data_time: 0.056, memory: 11439, loss_cls: 0.0759, loss_bbox: 0.1808, loss_centerness: 0.5584, loss: 0.8151, grad_norm: 2.0776
+2024-03-17 18:59:40,523 - mmdet - INFO - Epoch [7][100/1238]	lr: 1.000e-02, eta: 0:56:43, time: 0.478, data_time: 0.009, memory: 11439, loss_cls: 0.0811, loss_bbox: 0.1766, loss_centerness: 0.5593, loss: 0.8170, grad_norm: 2.0199
+2024-03-17 19:00:04,378 - mmdet - INFO - Epoch [7][150/1238]	lr: 1.000e-02, eta: 0:56:21, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0767, loss_bbox: 0.2022, loss_centerness: 0.5586, loss: 0.8374, grad_norm: 2.5223
+2024-03-17 19:00:28,304 - mmdet - INFO - Epoch [7][200/1238]	lr: 1.000e-02, eta: 0:55:58, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0754, loss_bbox: 0.1917, loss_centerness: 0.5576, loss: 0.8247, grad_norm: 2.4783
+2024-03-17 19:00:52,112 - mmdet - INFO - Epoch [7][250/1238]	lr: 1.000e-02, eta: 0:55:35, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0752, loss_bbox: 0.1857, loss_centerness: 0.5598, loss: 0.8208, grad_norm: 2.0860
+2024-03-17 19:01:15,861 - mmdet - INFO - Epoch [7][300/1238]	lr: 1.000e-02, eta: 0:55:12, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0805, loss_bbox: 0.1770, loss_centerness: 0.5579, loss: 0.8155, grad_norm: 2.1939
+2024-03-17 19:01:39,589 - mmdet - INFO - Epoch [7][350/1238]	lr: 1.000e-02, eta: 0:54:50, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0716, loss_bbox: 0.1784, loss_centerness: 0.5565, loss: 0.8065, grad_norm: 2.1576
+2024-03-17 19:02:03,380 - mmdet - INFO - Epoch [7][400/1238]	lr: 1.000e-02, eta: 0:54:27, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0680, loss_bbox: 0.1842, loss_centerness: 0.5572, loss: 0.8094, grad_norm: 2.3077
+2024-03-17 19:02:27,046 - mmdet - INFO - Epoch [7][450/1238]	lr: 1.000e-02, eta: 0:54:04, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0733, loss_bbox: 0.1779, loss_centerness: 0.5576, loss: 0.8088, grad_norm: 2.2692
+2024-03-17 19:02:50,857 - mmdet - INFO - Epoch [7][500/1238]	lr: 1.000e-02, eta: 0:53:41, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0787, loss_bbox: 0.1756, loss_centerness: 0.5576, loss: 0.8119, grad_norm: 2.0012
+2024-03-17 19:03:14,668 - mmdet - INFO - Epoch [7][550/1238]	lr: 1.000e-02, eta: 0:53:19, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0886, loss_bbox: 0.1919, loss_centerness: 0.5608, loss: 0.8412, grad_norm: 2.2104
+2024-03-17 19:03:38,578 - mmdet - INFO - Epoch [7][600/1238]	lr: 1.000e-02, eta: 0:52:56, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0774, loss_bbox: 0.1995, loss_centerness: 0.5574, loss: 0.8343, grad_norm: 2.5928
+2024-03-17 19:04:02,278 - mmdet - INFO - Epoch [7][650/1238]	lr: 1.000e-02, eta: 0:52:33, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0782, loss_bbox: 0.1767, loss_centerness: 0.5566, loss: 0.8115, grad_norm: 2.2304
+2024-03-17 19:04:26,122 - mmdet - INFO - Epoch [7][700/1238]	lr: 1.000e-02, eta: 0:52:10, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0702, loss_bbox: 0.1724, loss_centerness: 0.5558, loss: 0.7983, grad_norm: 1.9961
+2024-03-17 19:04:49,920 - mmdet - INFO - Epoch [7][750/1238]	lr: 1.000e-02, eta: 0:51:47, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0771, loss_bbox: 0.1780, loss_centerness: 0.5588, loss: 0.8138, grad_norm: 1.9129
+2024-03-17 19:05:13,769 - mmdet - INFO - Epoch [7][800/1238]	lr: 1.000e-02, eta: 0:51:25, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0777, loss_bbox: 0.1811, loss_centerness: 0.5553, loss: 0.8142, grad_norm: 2.0788
+2024-03-17 19:05:37,562 - mmdet - INFO - Epoch [7][850/1238]	lr: 1.000e-02, eta: 0:51:02, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0739, loss_bbox: 0.1751, loss_centerness: 0.5579, loss: 0.8069, grad_norm: 2.1193
+2024-03-17 19:06:01,430 - mmdet - INFO - Epoch [7][900/1238]	lr: 1.000e-02, eta: 0:50:39, time: 0.477, data_time: 0.009, memory: 11439, loss_cls: 0.0763, loss_bbox: 0.1882, loss_centerness: 0.5596, loss: 0.8240, grad_norm: 2.2233
+2024-03-17 19:06:25,437 - mmdet - INFO - Epoch [7][950/1238]	lr: 1.000e-02, eta: 0:50:16, time: 0.480, data_time: 0.008, memory: 11439, loss_cls: 0.0718, loss_bbox: 0.1769, loss_centerness: 0.5582, loss: 0.8068, grad_norm: 2.2898
+2024-03-17 19:06:49,388 - mmdet - INFO - Epoch [7][1000/1238]	lr: 1.000e-02, eta: 0:49:53, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0795, loss_bbox: 0.1982, loss_centerness: 0.5620, loss: 0.8397, grad_norm: 2.4584
+2024-03-17 19:07:13,223 - mmdet - INFO - Epoch [7][1050/1238]	lr: 1.000e-02, eta: 0:49:30, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0782, loss_bbox: 0.1826, loss_centerness: 0.5590, loss: 0.8199, grad_norm: 2.1442
+2024-03-17 19:07:37,025 - mmdet - INFO - Epoch [7][1100/1238]	lr: 1.000e-02, eta: 0:49:08, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0825, loss_bbox: 0.1828, loss_centerness: 0.5592, loss: 0.8245, grad_norm: 2.2786
+2024-03-17 19:08:00,818 - mmdet - INFO - Epoch [7][1150/1238]	lr: 1.000e-02, eta: 0:48:45, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0764, loss_bbox: 0.1673, loss_centerness: 0.5593, loss: 0.8031, grad_norm: 2.0091
+2024-03-17 19:08:24,618 - mmdet - INFO - Epoch [7][1200/1238]	lr: 1.000e-02, eta: 0:48:22, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0819, loss_bbox: 0.1846, loss_centerness: 0.5584, loss: 0.8250, grad_norm: 2.3798
+2024-03-17 19:09:39,432 - mmdet - INFO - Evaluating bbox...
+2024-03-17 19:09:50,253 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.453
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.742
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.500
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.341
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.519
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.628
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.569
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.569
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.569
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.461
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.687
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.761
+
+2024-03-17 19:09:50,253 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.642 | helmet   | 0.592 | self_clothes | 0.458 |
+| safety_clothes | 0.609 | head     | 0.437 | blur_head    | 0.180 |
+| blur_clothes   | 0.256 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 19:09:50,438 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 19:09:50,438 - mmdet - INFO - Epoch(val) [7][619]	bbox_mAP: 0.4530, bbox_mAP_50: 0.7420, bbox_mAP_75: 0.5000, bbox_mAP_s: 0.3410, bbox_mAP_m: 0.5190, bbox_mAP_l: 0.6280, bbox_mAP_copypaste: 0.453 0.742 0.500 0.341 0.519 0.628
+2024-03-17 19:10:16,633 - mmdet - INFO - Epoch [8][50/1238]	lr: 1.000e-02, eta: 0:47:30, time: 0.524, data_time: 0.056, memory: 11439, loss_cls: 0.0739, loss_bbox: 0.1852, loss_centerness: 0.5580, loss: 0.8171, grad_norm: 2.4205
+2024-03-17 19:10:40,333 - mmdet - INFO - Epoch [8][100/1238]	lr: 1.000e-02, eta: 0:47:07, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0742, loss_bbox: 0.1696, loss_centerness: 0.5562, loss: 0.8000, grad_norm: 2.0227
+2024-03-17 19:11:04,031 - mmdet - INFO - Epoch [8][150/1238]	lr: 1.000e-02, eta: 0:46:45, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0700, loss_bbox: 0.1695, loss_centerness: 0.5557, loss: 0.7952, grad_norm: 2.0078
+2024-03-17 19:11:27,844 - mmdet - INFO - Epoch [8][200/1238]	lr: 1.000e-02, eta: 0:46:22, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0723, loss_bbox: 0.1739, loss_centerness: 0.5567, loss: 0.8029, grad_norm: 2.1350
+2024-03-17 19:11:51,751 - mmdet - INFO - Epoch [8][250/1238]	lr: 1.000e-02, eta: 0:45:59, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0672, loss_bbox: 0.1698, loss_centerness: 0.5553, loss: 0.7923, grad_norm: 2.1872
+2024-03-17 19:12:15,579 - mmdet - INFO - Epoch [8][300/1238]	lr: 1.000e-02, eta: 0:45:36, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0755, loss_bbox: 0.1727, loss_centerness: 0.5578, loss: 0.8060, grad_norm: 2.1950
+2024-03-17 19:12:39,261 - mmdet - INFO - Epoch [8][350/1238]	lr: 1.000e-02, eta: 0:45:13, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0705, loss_bbox: 0.1658, loss_centerness: 0.5585, loss: 0.7948, grad_norm: 1.9628
+2024-03-17 19:13:03,074 - mmdet - INFO - Epoch [8][400/1238]	lr: 1.000e-02, eta: 0:44:50, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0766, loss_bbox: 0.1798, loss_centerness: 0.5577, loss: 0.8141, grad_norm: 2.1813
+2024-03-17 19:13:27,012 - mmdet - INFO - Epoch [8][450/1238]	lr: 1.000e-02, eta: 0:44:27, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0650, loss_bbox: 0.1785, loss_centerness: 0.5556, loss: 0.7991, grad_norm: 2.2666
+2024-03-17 19:13:50,912 - mmdet - INFO - Epoch [8][500/1238]	lr: 1.000e-02, eta: 0:44:05, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0740, loss_bbox: 0.1842, loss_centerness: 0.5577, loss: 0.8159, grad_norm: 2.1398
+2024-03-17 19:14:14,863 - mmdet - INFO - Epoch [8][550/1238]	lr: 1.000e-02, eta: 0:43:42, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0673, loss_bbox: 0.1685, loss_centerness: 0.5577, loss: 0.7935, grad_norm: 2.0877
+2024-03-17 19:14:38,596 - mmdet - INFO - Epoch [8][600/1238]	lr: 1.000e-02, eta: 0:43:19, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0673, loss_bbox: 0.1825, loss_centerness: 0.5563, loss: 0.8060, grad_norm: 2.3437
+2024-03-17 19:15:02,405 - mmdet - INFO - Epoch [8][650/1238]	lr: 1.000e-02, eta: 0:42:56, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0748, loss_bbox: 0.1749, loss_centerness: 0.5550, loss: 0.8048, grad_norm: 2.1759
+2024-03-17 19:15:26,182 - mmdet - INFO - Epoch [8][700/1238]	lr: 1.000e-02, eta: 0:42:33, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0753, loss_bbox: 0.1820, loss_centerness: 0.5585, loss: 0.8159, grad_norm: 2.2761
+2024-03-17 19:15:50,019 - mmdet - INFO - Epoch [8][750/1238]	lr: 1.000e-02, eta: 0:42:10, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0755, loss_bbox: 0.1768, loss_centerness: 0.5614, loss: 0.8138, grad_norm: 2.0893
+2024-03-17 19:16:13,839 - mmdet - INFO - Epoch [8][800/1238]	lr: 1.000e-02, eta: 0:41:47, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0754, loss_bbox: 0.1694, loss_centerness: 0.5577, loss: 0.8025, grad_norm: 2.0561
+2024-03-17 19:16:37,735 - mmdet - INFO - Epoch [8][850/1238]	lr: 1.000e-02, eta: 0:41:24, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0778, loss_bbox: 0.1808, loss_centerness: 0.5569, loss: 0.8155, grad_norm: 2.1405
+2024-03-17 19:17:01,616 - mmdet - INFO - Epoch [8][900/1238]	lr: 1.000e-02, eta: 0:41:01, time: 0.478, data_time: 0.009, memory: 11439, loss_cls: 0.0748, loss_bbox: 0.1746, loss_centerness: 0.5585, loss: 0.8079, grad_norm: 2.4836
+2024-03-17 19:17:25,450 - mmdet - INFO - Epoch [8][950/1238]	lr: 1.000e-02, eta: 0:40:38, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0710, loss_bbox: 0.1717, loss_centerness: 0.5578, loss: 0.8005, grad_norm: 1.9811
+2024-03-17 19:17:49,213 - mmdet - INFO - Epoch [8][1000/1238]	lr: 1.000e-02, eta: 0:40:15, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0721, loss_bbox: 0.1958, loss_centerness: 0.5566, loss: 0.8245, grad_norm: 2.4403
+2024-03-17 19:18:12,966 - mmdet - INFO - Epoch [8][1050/1238]	lr: 1.000e-02, eta: 0:39:52, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0793, loss_bbox: 0.1768, loss_centerness: 0.5583, loss: 0.8144, grad_norm: 2.1400
+2024-03-17 19:18:36,647 - mmdet - INFO - Epoch [8][1100/1238]	lr: 1.000e-02, eta: 0:39:29, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0853, loss_bbox: 0.1821, loss_centerness: 0.5593, loss: 0.8267, grad_norm: 2.4275
+2024-03-17 19:19:00,555 - mmdet - INFO - Epoch [8][1150/1238]	lr: 1.000e-02, eta: 0:39:06, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0737, loss_bbox: 0.1755, loss_centerness: 0.5542, loss: 0.8034, grad_norm: 2.1413
+2024-03-17 19:19:24,389 - mmdet - INFO - Epoch [8][1200/1238]	lr: 1.000e-02, eta: 0:38:43, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0770, loss_bbox: 0.1875, loss_centerness: 0.5586, loss: 0.8231, grad_norm: 2.2132
+2024-03-17 19:20:38,543 - mmdet - INFO - Evaluating bbox...
+2024-03-17 19:20:47,893 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.444
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.740
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.474
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.319
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.498
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.609
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.565
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.565
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.565
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.447
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.690
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.758
+
+2024-03-17 19:20:47,894 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.649 | helmet   | 0.589 | self_clothes | 0.446 |
+| safety_clothes | 0.586 | head     | 0.427 | blur_head    | 0.177 |
+| blur_clothes   | 0.231 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 19:20:48,043 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 19:20:48,043 - mmdet - INFO - Epoch(val) [8][619]	bbox_mAP: 0.4440, bbox_mAP_50: 0.7400, bbox_mAP_75: 0.4740, bbox_mAP_s: 0.3190, bbox_mAP_m: 0.4980, bbox_mAP_l: 0.6090, bbox_mAP_copypaste: 0.444 0.740 0.474 0.319 0.498 0.609
+2024-03-17 19:21:14,284 - mmdet - INFO - Epoch [9][50/1238]	lr: 1.000e-03, eta: 0:37:55, time: 0.525, data_time: 0.057, memory: 11439, loss_cls: 0.0672, loss_bbox: 0.1479, loss_centerness: 0.5539, loss: 0.7690, grad_norm: 1.7458
+2024-03-17 19:21:37,974 - mmdet - INFO - Epoch [9][100/1238]	lr: 1.000e-03, eta: 0:37:32, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0634, loss_bbox: 0.1475, loss_centerness: 0.5566, loss: 0.7675, grad_norm: 1.5995
+2024-03-17 19:22:01,643 - mmdet - INFO - Epoch [9][150/1238]	lr: 1.000e-03, eta: 0:37:09, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0644, loss_bbox: 0.1434, loss_centerness: 0.5568, loss: 0.7646, grad_norm: 1.6227
+2024-03-17 19:22:25,464 - mmdet - INFO - Epoch [9][200/1238]	lr: 1.000e-03, eta: 0:36:46, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0578, loss_bbox: 0.1390, loss_centerness: 0.5546, loss: 0.7514, grad_norm: 1.5976
+2024-03-17 19:22:49,209 - mmdet - INFO - Epoch [9][250/1238]	lr: 1.000e-03, eta: 0:36:23, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0576, loss_bbox: 0.1388, loss_centerness: 0.5523, loss: 0.7488, grad_norm: 1.5824
+2024-03-17 19:23:12,877 - mmdet - INFO - Epoch [9][300/1238]	lr: 1.000e-03, eta: 0:36:00, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0615, loss_bbox: 0.1396, loss_centerness: 0.5542, loss: 0.7553, grad_norm: 1.6034
+2024-03-17 19:23:36,666 - mmdet - INFO - Epoch [9][350/1238]	lr: 1.000e-03, eta: 0:35:37, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0574, loss_bbox: 0.1384, loss_centerness: 0.5545, loss: 0.7503, grad_norm: 1.6559
+2024-03-17 19:24:00,447 - mmdet - INFO - Epoch [9][400/1238]	lr: 1.000e-03, eta: 0:35:14, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0606, loss_bbox: 0.1394, loss_centerness: 0.5546, loss: 0.7547, grad_norm: 1.5699
+2024-03-17 19:24:24,287 - mmdet - INFO - Epoch [9][450/1238]	lr: 1.000e-03, eta: 0:34:51, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0593, loss_bbox: 0.1440, loss_centerness: 0.5568, loss: 0.7601, grad_norm: 1.5989
+2024-03-17 19:24:47,986 - mmdet - INFO - Epoch [9][500/1238]	lr: 1.000e-03, eta: 0:34:28, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0575, loss_bbox: 0.1365, loss_centerness: 0.5548, loss: 0.7487, grad_norm: 1.5377
+2024-03-17 19:25:11,797 - mmdet - INFO - Epoch [9][550/1238]	lr: 1.000e-03, eta: 0:34:05, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0609, loss_bbox: 0.1477, loss_centerness: 0.5556, loss: 0.7642, grad_norm: 1.6097
+2024-03-17 19:25:35,650 - mmdet - INFO - Epoch [9][600/1238]	lr: 1.000e-03, eta: 0:33:42, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0574, loss_bbox: 0.1358, loss_centerness: 0.5526, loss: 0.7458, grad_norm: 1.6139
+2024-03-17 19:25:59,344 - mmdet - INFO - Epoch [9][650/1238]	lr: 1.000e-03, eta: 0:33:19, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0576, loss_bbox: 0.1330, loss_centerness: 0.5548, loss: 0.7455, grad_norm: 1.7002
+2024-03-17 19:26:23,113 - mmdet - INFO - Epoch [9][700/1238]	lr: 1.000e-03, eta: 0:32:56, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0579, loss_bbox: 0.1356, loss_centerness: 0.5539, loss: 0.7474, grad_norm: 1.6926
+2024-03-17 19:26:46,760 - mmdet - INFO - Epoch [9][750/1238]	lr: 1.000e-03, eta: 0:32:33, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0588, loss_bbox: 0.1370, loss_centerness: 0.5565, loss: 0.7523, grad_norm: 1.5609
+2024-03-17 19:27:10,674 - mmdet - INFO - Epoch [9][800/1238]	lr: 1.000e-03, eta: 0:32:10, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0636, loss_bbox: 0.1381, loss_centerness: 0.5553, loss: 0.7570, grad_norm: 1.6298
+2024-03-17 19:27:34,428 - mmdet - INFO - Epoch [9][850/1238]	lr: 1.000e-03, eta: 0:31:47, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0612, loss_bbox: 0.1422, loss_centerness: 0.5540, loss: 0.7575, grad_norm: 1.6121
+2024-03-17 19:27:58,166 - mmdet - INFO - Epoch [9][900/1238]	lr: 1.000e-03, eta: 0:31:24, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0612, loss_bbox: 0.1396, loss_centerness: 0.5554, loss: 0.7561, grad_norm: 1.5847
+2024-03-17 19:28:21,814 - mmdet - INFO - Epoch [9][950/1238]	lr: 1.000e-03, eta: 0:31:01, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0568, loss_bbox: 0.1331, loss_centerness: 0.5552, loss: 0.7451, grad_norm: 1.5447
+2024-03-17 19:28:45,676 - mmdet - INFO - Epoch [9][1000/1238]	lr: 1.000e-03, eta: 0:30:38, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0548, loss_bbox: 0.1382, loss_centerness: 0.5543, loss: 0.7472, grad_norm: 1.5760
+2024-03-17 19:29:09,502 - mmdet - INFO - Epoch [9][1050/1238]	lr: 1.000e-03, eta: 0:30:15, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0558, loss_bbox: 0.1386, loss_centerness: 0.5538, loss: 0.7483, grad_norm: 1.6895
+2024-03-17 19:29:33,382 - mmdet - INFO - Epoch [9][1100/1238]	lr: 1.000e-03, eta: 0:29:52, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0565, loss_bbox: 0.1382, loss_centerness: 0.5562, loss: 0.7509, grad_norm: 1.6163
+2024-03-17 19:29:57,296 - mmdet - INFO - Epoch [9][1150/1238]	lr: 1.000e-03, eta: 0:29:29, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0607, loss_bbox: 0.1442, loss_centerness: 0.5556, loss: 0.7605, grad_norm: 1.6079
+2024-03-17 19:30:21,014 - mmdet - INFO - Epoch [9][1200/1238]	lr: 1.000e-03, eta: 0:29:06, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0564, loss_bbox: 0.1378, loss_centerness: 0.5547, loss: 0.7489, grad_norm: 1.6857
+2024-03-17 19:31:34,899 - mmdet - INFO - Evaluating bbox...
+2024-03-17 19:31:42,904 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.492
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.760
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.546
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.384
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.541
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.665
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.603
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.603
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.603
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.507
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.714
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.759
+
+2024-03-17 19:31:42,904 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.680 | helmet   | 0.635 | self_clothes | 0.535 |
+| safety_clothes | 0.645 | head     | 0.469 | blur_head    | 0.199 |
+| blur_clothes   | 0.280 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 19:31:43,031 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 19:31:43,031 - mmdet - INFO - Epoch(val) [9][619]	bbox_mAP: 0.4920, bbox_mAP_50: 0.7600, bbox_mAP_75: 0.5460, bbox_mAP_s: 0.3840, bbox_mAP_m: 0.5410, bbox_mAP_l: 0.6650, bbox_mAP_copypaste: 0.492 0.760 0.546 0.384 0.541 0.665
+2024-03-17 19:32:09,348 - mmdet - INFO - Epoch [10][50/1238]	lr: 1.000e-03, eta: 0:28:20, time: 0.526, data_time: 0.056, memory: 11439, loss_cls: 0.0555, loss_bbox: 0.1358, loss_centerness: 0.5533, loss: 0.7446, grad_norm: 1.5882
+2024-03-17 19:32:33,095 - mmdet - INFO - Epoch [10][100/1238]	lr: 1.000e-03, eta: 0:27:57, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0533, loss_bbox: 0.1315, loss_centerness: 0.5526, loss: 0.7375, grad_norm: 1.5537
+2024-03-17 19:32:56,801 - mmdet - INFO - Epoch [10][150/1238]	lr: 1.000e-03, eta: 0:27:34, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0546, loss_bbox: 0.1344, loss_centerness: 0.5543, loss: 0.7433, grad_norm: 1.6334
+2024-03-17 19:33:20,600 - mmdet - INFO - Epoch [10][200/1238]	lr: 1.000e-03, eta: 0:27:11, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0538, loss_bbox: 0.1361, loss_centerness: 0.5541, loss: 0.7440, grad_norm: 1.8568
+2024-03-17 19:33:44,465 - mmdet - INFO - Epoch [10][250/1238]	lr: 1.000e-03, eta: 0:26:48, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0572, loss_bbox: 0.1370, loss_centerness: 0.5555, loss: 0.7496, grad_norm: 1.6436
+2024-03-17 19:34:08,177 - mmdet - INFO - Epoch [10][300/1238]	lr: 1.000e-03, eta: 0:26:25, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0575, loss_bbox: 0.1267, loss_centerness: 0.5551, loss: 0.7392, grad_norm: 1.5922
+2024-03-17 19:34:32,002 - mmdet - INFO - Epoch [10][350/1238]	lr: 1.000e-03, eta: 0:26:02, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0526, loss_bbox: 0.1308, loss_centerness: 0.5519, loss: 0.7353, grad_norm: 1.5323
+2024-03-17 19:34:55,719 - mmdet - INFO - Epoch [10][400/1238]	lr: 1.000e-03, eta: 0:25:39, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0569, loss_bbox: 0.1353, loss_centerness: 0.5538, loss: 0.7460, grad_norm: 1.5943
+2024-03-17 19:35:19,587 - mmdet - INFO - Epoch [10][450/1238]	lr: 1.000e-03, eta: 0:25:16, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0581, loss_bbox: 0.1376, loss_centerness: 0.5531, loss: 0.7487, grad_norm: 1.5997
+2024-03-17 19:35:43,352 - mmdet - INFO - Epoch [10][500/1238]	lr: 1.000e-03, eta: 0:24:52, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0550, loss_bbox: 0.1338, loss_centerness: 0.5544, loss: 0.7432, grad_norm: 1.5548
+2024-03-17 19:36:07,213 - mmdet - INFO - Epoch [10][550/1238]	lr: 1.000e-03, eta: 0:24:29, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0542, loss_bbox: 0.1319, loss_centerness: 0.5555, loss: 0.7416, grad_norm: 1.6911
+2024-03-17 19:36:31,050 - mmdet - INFO - Epoch [10][600/1238]	lr: 1.000e-03, eta: 0:24:06, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0584, loss_bbox: 0.1300, loss_centerness: 0.5533, loss: 0.7417, grad_norm: 1.5822
+2024-03-17 19:36:54,861 - mmdet - INFO - Epoch [10][650/1238]	lr: 1.000e-03, eta: 0:23:43, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0567, loss_bbox: 0.1345, loss_centerness: 0.5541, loss: 0.7453, grad_norm: 1.6529
+2024-03-17 19:37:18,672 - mmdet - INFO - Epoch [10][700/1238]	lr: 1.000e-03, eta: 0:23:20, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0601, loss_bbox: 0.1386, loss_centerness: 0.5567, loss: 0.7554, grad_norm: 1.8257
+2024-03-17 19:37:42,596 - mmdet - INFO - Epoch [10][750/1238]	lr: 1.000e-03, eta: 0:22:57, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0550, loss_bbox: 0.1354, loss_centerness: 0.5565, loss: 0.7470, grad_norm: 1.6403
+2024-03-17 19:38:06,518 - mmdet - INFO - Epoch [10][800/1238]	lr: 1.000e-03, eta: 0:22:34, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0572, loss_bbox: 0.1370, loss_centerness: 0.5535, loss: 0.7477, grad_norm: 1.5854
+2024-03-17 19:38:30,320 - mmdet - INFO - Epoch [10][850/1238]	lr: 1.000e-03, eta: 0:22:11, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0592, loss_bbox: 0.1323, loss_centerness: 0.5540, loss: 0.7455, grad_norm: 1.6454
+2024-03-17 19:38:54,085 - mmdet - INFO - Epoch [10][900/1238]	lr: 1.000e-03, eta: 0:21:48, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0568, loss_bbox: 0.1347, loss_centerness: 0.5550, loss: 0.7465, grad_norm: 1.5823
+2024-03-17 19:39:17,928 - mmdet - INFO - Epoch [10][950/1238]	lr: 1.000e-03, eta: 0:21:25, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0558, loss_bbox: 0.1356, loss_centerness: 0.5552, loss: 0.7466, grad_norm: 1.7264
+2024-03-17 19:39:41,761 - mmdet - INFO - Epoch [10][1000/1238]	lr: 1.000e-03, eta: 0:21:02, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0537, loss_bbox: 0.1267, loss_centerness: 0.5520, loss: 0.7324, grad_norm: 1.6668
+2024-03-17 19:40:05,467 - mmdet - INFO - Epoch [10][1050/1238]	lr: 1.000e-03, eta: 0:20:38, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0542, loss_bbox: 0.1289, loss_centerness: 0.5541, loss: 0.7372, grad_norm: 1.5887
+2024-03-17 19:40:29,356 - mmdet - INFO - Epoch [10][1100/1238]	lr: 1.000e-03, eta: 0:20:15, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0564, loss_bbox: 0.1337, loss_centerness: 0.5550, loss: 0.7450, grad_norm: 1.6141
+2024-03-17 19:40:53,100 - mmdet - INFO - Epoch [10][1150/1238]	lr: 1.000e-03, eta: 0:19:52, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0547, loss_bbox: 0.1315, loss_centerness: 0.5547, loss: 0.7409, grad_norm: 1.5651
+2024-03-17 19:41:16,950 - mmdet - INFO - Epoch [10][1200/1238]	lr: 1.000e-03, eta: 0:19:29, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0550, loss_bbox: 0.1313, loss_centerness: 0.5523, loss: 0.7387, grad_norm: 1.5706
+2024-03-17 19:42:30,589 - mmdet - INFO - Evaluating bbox...
+2024-03-17 19:42:38,302 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.490
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.764
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.546
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.385
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.534
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.645
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.605
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.605
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.605
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.507
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.713
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.783
+
+2024-03-17 19:42:38,303 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.682 | helmet   | 0.636 | self_clothes | 0.523 |
+| safety_clothes | 0.643 | head     | 0.466 | blur_head    | 0.203 |
+| blur_clothes   | 0.279 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 19:42:38,429 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 19:42:38,429 - mmdet - INFO - Epoch(val) [10][619]	bbox_mAP: 0.4900, bbox_mAP_50: 0.7640, bbox_mAP_75: 0.5460, bbox_mAP_s: 0.3850, bbox_mAP_m: 0.5340, bbox_mAP_l: 0.6450, bbox_mAP_copypaste: 0.490 0.764 0.546 0.385 0.534 0.645
+2024-03-17 19:43:04,731 - mmdet - INFO - Epoch [11][50/1238]	lr: 1.000e-03, eta: 0:18:45, time: 0.526, data_time: 0.056, memory: 11439, loss_cls: 0.0524, loss_bbox: 0.1296, loss_centerness: 0.5515, loss: 0.7336, grad_norm: 1.6824
+2024-03-17 19:43:28,394 - mmdet - INFO - Epoch [11][100/1238]	lr: 1.000e-03, eta: 0:18:22, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0526, loss_bbox: 0.1262, loss_centerness: 0.5545, loss: 0.7332, grad_norm: 1.5427
+2024-03-17 19:43:52,159 - mmdet - INFO - Epoch [11][150/1238]	lr: 1.000e-03, eta: 0:17:59, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0509, loss_bbox: 0.1237, loss_centerness: 0.5544, loss: 0.7290, grad_norm: 1.5283
+2024-03-17 19:44:15,862 - mmdet - INFO - Epoch [11][200/1238]	lr: 1.000e-03, eta: 0:17:36, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0512, loss_bbox: 0.1304, loss_centerness: 0.5555, loss: 0.7371, grad_norm: 1.5542
+2024-03-17 19:44:39,729 - mmdet - INFO - Epoch [11][250/1238]	lr: 1.000e-03, eta: 0:17:13, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0521, loss_bbox: 0.1322, loss_centerness: 0.5561, loss: 0.7404, grad_norm: 1.6193
+2024-03-17 19:45:03,442 - mmdet - INFO - Epoch [11][300/1238]	lr: 1.000e-03, eta: 0:16:50, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0536, loss_bbox: 0.1298, loss_centerness: 0.5521, loss: 0.7354, grad_norm: 1.6091
+2024-03-17 19:45:27,333 - mmdet - INFO - Epoch [11][350/1238]	lr: 1.000e-03, eta: 0:16:27, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0551, loss_bbox: 0.1386, loss_centerness: 0.5566, loss: 0.7504, grad_norm: 1.6424
+2024-03-17 19:45:51,202 - mmdet - INFO - Epoch [11][400/1238]	lr: 1.000e-03, eta: 0:16:03, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0545, loss_bbox: 0.1266, loss_centerness: 0.5523, loss: 0.7334, grad_norm: 1.6464
+2024-03-17 19:46:15,131 - mmdet - INFO - Epoch [11][450/1238]	lr: 1.000e-03, eta: 0:15:40, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0523, loss_bbox: 0.1339, loss_centerness: 0.5526, loss: 0.7389, grad_norm: 1.5908
+2024-03-17 19:46:38,956 - mmdet - INFO - Epoch [11][500/1238]	lr: 1.000e-03, eta: 0:15:17, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0544, loss_bbox: 0.1272, loss_centerness: 0.5547, loss: 0.7363, grad_norm: 1.5455
+2024-03-17 19:47:02,857 - mmdet - INFO - Epoch [11][550/1238]	lr: 1.000e-03, eta: 0:14:54, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0571, loss_bbox: 0.1288, loss_centerness: 0.5535, loss: 0.7393, grad_norm: 1.7070
+2024-03-17 19:47:26,662 - mmdet - INFO - Epoch [11][600/1238]	lr: 1.000e-03, eta: 0:14:31, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0526, loss_bbox: 0.1311, loss_centerness: 0.5519, loss: 0.7356, grad_norm: 1.6797
+2024-03-17 19:47:50,569 - mmdet - INFO - Epoch [11][650/1238]	lr: 1.000e-03, eta: 0:14:08, time: 0.478, data_time: 0.009, memory: 11439, loss_cls: 0.0548, loss_bbox: 0.1333, loss_centerness: 0.5523, loss: 0.7404, grad_norm: 1.7136
+2024-03-17 19:48:14,277 - mmdet - INFO - Epoch [11][700/1238]	lr: 1.000e-03, eta: 0:13:45, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0548, loss_bbox: 0.1288, loss_centerness: 0.5544, loss: 0.7380, grad_norm: 1.6592
+2024-03-17 19:48:38,059 - mmdet - INFO - Epoch [11][750/1238]	lr: 1.000e-03, eta: 0:13:22, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0518, loss_bbox: 0.1313, loss_centerness: 0.5546, loss: 0.7377, grad_norm: 1.6867
+2024-03-17 19:49:01,945 - mmdet - INFO - Epoch [11][800/1238]	lr: 1.000e-03, eta: 0:12:58, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0557, loss_bbox: 0.1285, loss_centerness: 0.5538, loss: 0.7379, grad_norm: 1.6864
+2024-03-17 19:49:25,687 - mmdet - INFO - Epoch [11][850/1238]	lr: 1.000e-03, eta: 0:12:35, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0540, loss_bbox: 0.1329, loss_centerness: 0.5545, loss: 0.7414, grad_norm: 1.7305
+2024-03-17 19:49:49,351 - mmdet - INFO - Epoch [11][900/1238]	lr: 1.000e-03, eta: 0:12:12, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0515, loss_bbox: 0.1262, loss_centerness: 0.5523, loss: 0.7300, grad_norm: 1.6259
+2024-03-17 19:50:13,154 - mmdet - INFO - Epoch [11][950/1238]	lr: 1.000e-03, eta: 0:11:49, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0525, loss_bbox: 0.1274, loss_centerness: 0.5550, loss: 0.7349, grad_norm: 1.6434
+2024-03-17 19:50:36,941 - mmdet - INFO - Epoch [11][1000/1238]	lr: 1.000e-03, eta: 0:11:26, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0549, loss_bbox: 0.1284, loss_centerness: 0.5546, loss: 0.7380, grad_norm: 1.5612
+2024-03-17 19:51:00,752 - mmdet - INFO - Epoch [11][1050/1238]	lr: 1.000e-03, eta: 0:11:02, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0540, loss_bbox: 0.1305, loss_centerness: 0.5531, loss: 0.7376, grad_norm: 1.6097
+2024-03-17 19:51:24,491 - mmdet - INFO - Epoch [11][1100/1238]	lr: 1.000e-03, eta: 0:10:39, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0540, loss_bbox: 0.1285, loss_centerness: 0.5542, loss: 0.7367, grad_norm: 1.6558
+2024-03-17 19:51:48,407 - mmdet - INFO - Epoch [11][1150/1238]	lr: 1.000e-03, eta: 0:10:16, time: 0.478, data_time: 0.008, memory: 11439, loss_cls: 0.0507, loss_bbox: 0.1241, loss_centerness: 0.5539, loss: 0.7288, grad_norm: 1.6123
+2024-03-17 19:52:12,248 - mmdet - INFO - Epoch [11][1200/1238]	lr: 1.000e-03, eta: 0:09:53, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0523, loss_bbox: 0.1274, loss_centerness: 0.5538, loss: 0.7335, grad_norm: 1.6574
+2024-03-17 19:53:25,975 - mmdet - INFO - Evaluating bbox...
+2024-03-17 19:53:33,819 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.493
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.764
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.548
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.390
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.536
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.693
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.607
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.607
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.607
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.516
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.708
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.768
+
+2024-03-17 19:53:33,820 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.680 | helmet   | 0.638 | self_clothes | 0.532 |
+| safety_clothes | 0.645 | head     | 0.471 | blur_head    | 0.203 |
+| blur_clothes   | 0.282 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 19:53:33,941 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 19:53:33,941 - mmdet - INFO - Epoch(val) [11][619]	bbox_mAP: 0.4930, bbox_mAP_50: 0.7640, bbox_mAP_75: 0.5480, bbox_mAP_s: 0.3900, bbox_mAP_m: 0.5360, bbox_mAP_l: 0.6930, bbox_mAP_copypaste: 0.493 0.764 0.548 0.390 0.536 0.693
+2024-03-17 19:54:00,225 - mmdet - INFO - Epoch [12][50/1238]	lr: 1.000e-04, eta: 0:09:11, time: 0.525, data_time: 0.057, memory: 11439, loss_cls: 0.0519, loss_bbox: 0.1227, loss_centerness: 0.5507, loss: 0.7253, grad_norm: 1.5314
+2024-03-17 19:54:23,958 - mmdet - INFO - Epoch [12][100/1238]	lr: 1.000e-04, eta: 0:08:48, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0551, loss_bbox: 0.1285, loss_centerness: 0.5549, loss: 0.7385, grad_norm: 1.5977
+2024-03-17 19:54:47,804 - mmdet - INFO - Epoch [12][150/1238]	lr: 1.000e-04, eta: 0:08:24, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0505, loss_bbox: 0.1254, loss_centerness: 0.5532, loss: 0.7291, grad_norm: 1.5170
+2024-03-17 19:55:11,630 - mmdet - INFO - Epoch [12][200/1238]	lr: 1.000e-04, eta: 0:08:01, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0522, loss_bbox: 0.1288, loss_centerness: 0.5539, loss: 0.7349, grad_norm: 1.5818
+2024-03-17 19:55:35,357 - mmdet - INFO - Epoch [12][250/1238]	lr: 1.000e-04, eta: 0:07:38, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0495, loss_bbox: 0.1245, loss_centerness: 0.5543, loss: 0.7283, grad_norm: 1.5150
+2024-03-17 19:55:59,047 - mmdet - INFO - Epoch [12][300/1238]	lr: 1.000e-04, eta: 0:07:15, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0518, loss_bbox: 0.1263, loss_centerness: 0.5520, loss: 0.7301, grad_norm: 1.5172
+2024-03-17 19:56:22,822 - mmdet - INFO - Epoch [12][350/1238]	lr: 1.000e-04, eta: 0:06:52, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0500, loss_bbox: 0.1269, loss_centerness: 0.5543, loss: 0.7312, grad_norm: 1.4555
+2024-03-17 19:56:46,573 - mmdet - INFO - Epoch [12][400/1238]	lr: 1.000e-04, eta: 0:06:29, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0498, loss_bbox: 0.1255, loss_centerness: 0.5527, loss: 0.7280, grad_norm: 1.5755
+2024-03-17 19:57:10,361 - mmdet - INFO - Epoch [12][450/1238]	lr: 1.000e-04, eta: 0:06:05, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0568, loss_bbox: 0.1274, loss_centerness: 0.5541, loss: 0.7383, grad_norm: 1.5289
+2024-03-17 19:57:34,149 - mmdet - INFO - Epoch [12][500/1238]	lr: 1.000e-04, eta: 0:05:42, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0511, loss_bbox: 0.1262, loss_centerness: 0.5528, loss: 0.7301, grad_norm: 1.4966
+2024-03-17 19:57:57,881 - mmdet - INFO - Epoch [12][550/1238]	lr: 1.000e-04, eta: 0:05:19, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0519, loss_bbox: 0.1234, loss_centerness: 0.5551, loss: 0.7304, grad_norm: 1.5434
+2024-03-17 19:58:21,579 - mmdet - INFO - Epoch [12][600/1238]	lr: 1.000e-04, eta: 0:04:56, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0514, loss_bbox: 0.1234, loss_centerness: 0.5527, loss: 0.7275, grad_norm: 1.5952
+2024-03-17 19:58:45,227 - mmdet - INFO - Epoch [12][650/1238]	lr: 1.000e-04, eta: 0:04:33, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0497, loss_bbox: 0.1192, loss_centerness: 0.5540, loss: 0.7229, grad_norm: 1.4873
+2024-03-17 19:59:09,023 - mmdet - INFO - Epoch [12][700/1238]	lr: 1.000e-04, eta: 0:04:09, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0508, loss_bbox: 0.1194, loss_centerness: 0.5534, loss: 0.7237, grad_norm: 1.5238
+2024-03-17 19:59:32,729 - mmdet - INFO - Epoch [12][750/1238]	lr: 1.000e-04, eta: 0:03:46, time: 0.474, data_time: 0.008, memory: 11439, loss_cls: 0.0536, loss_bbox: 0.1243, loss_centerness: 0.5521, loss: 0.7300, grad_norm: 1.5354
+2024-03-17 19:59:56,674 - mmdet - INFO - Epoch [12][800/1238]	lr: 1.000e-04, eta: 0:03:23, time: 0.479, data_time: 0.008, memory: 11439, loss_cls: 0.0511, loss_bbox: 0.1263, loss_centerness: 0.5515, loss: 0.7289, grad_norm: 1.4937
+2024-03-17 20:00:20,470 - mmdet - INFO - Epoch [12][850/1238]	lr: 1.000e-04, eta: 0:03:00, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0512, loss_bbox: 0.1215, loss_centerness: 0.5516, loss: 0.7243, grad_norm: 1.4814
+2024-03-17 20:00:44,333 - mmdet - INFO - Epoch [12][900/1238]	lr: 1.000e-04, eta: 0:02:37, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0507, loss_bbox: 0.1247, loss_centerness: 0.5533, loss: 0.7287, grad_norm: 1.5734
+2024-03-17 20:01:08,195 - mmdet - INFO - Epoch [12][950/1238]	lr: 1.000e-04, eta: 0:02:13, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0481, loss_bbox: 0.1227, loss_centerness: 0.5528, loss: 0.7236, grad_norm: 1.4021
+2024-03-17 20:01:32,041 - mmdet - INFO - Epoch [12][1000/1238]	lr: 1.000e-04, eta: 0:01:50, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0516, loss_bbox: 0.1248, loss_centerness: 0.5536, loss: 0.7299, grad_norm: 1.5345
+2024-03-17 20:01:55,847 - mmdet - INFO - Epoch [12][1050/1238]	lr: 1.000e-04, eta: 0:01:27, time: 0.476, data_time: 0.008, memory: 11439, loss_cls: 0.0508, loss_bbox: 0.1276, loss_centerness: 0.5531, loss: 0.7316, grad_norm: 1.5165
+2024-03-17 20:02:19,711 - mmdet - INFO - Epoch [12][1100/1238]	lr: 1.000e-04, eta: 0:01:04, time: 0.477, data_time: 0.008, memory: 11439, loss_cls: 0.0481, loss_bbox: 0.1217, loss_centerness: 0.5549, loss: 0.7247, grad_norm: 1.5270
+2024-03-17 20:02:43,461 - mmdet - INFO - Epoch [12][1150/1238]	lr: 1.000e-04, eta: 0:00:40, time: 0.475, data_time: 0.008, memory: 11439, loss_cls: 0.0504, loss_bbox: 0.1239, loss_centerness: 0.5528, loss: 0.7271, grad_norm: 1.5592
+2024-03-17 20:03:07,108 - mmdet - INFO - Epoch [12][1200/1238]	lr: 1.000e-04, eta: 0:00:17, time: 0.473, data_time: 0.008, memory: 11439, loss_cls: 0.0500, loss_bbox: 0.1201, loss_centerness: 0.5524, loss: 0.7225, grad_norm: 1.5813
+2024-03-17 20:03:25,415 - mmdet - INFO - Saving checkpoint at 12 epochs
+2024-03-17 20:04:21,496 - mmdet - INFO - Evaluating bbox...
+2024-03-17 20:04:28,779 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.495
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.763
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.553
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.390
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.545
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.688
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.610
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.610
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.610
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.516
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.711
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.772
+
+2024-03-17 20:04:28,780 - mmdet - INFO - 
++----------------+-------+----------+-------+--------------+-------+
+| category       | AP    | category | AP    | category     | AP    |
++----------------+-------+----------+-------+--------------+-------+
+| person         | 0.685 | helmet   | 0.638 | self_clothes | 0.530 |
+| safety_clothes | 0.647 | head     | 0.476 | blur_head    | 0.205 |
+| blur_clothes   | 0.284 | None     | None  | None         | None  |
++----------------+-------+----------+-------+--------------+-------+
+2024-03-17 20:04:28,902 - mmdet - INFO - Exp name: SCALE_fcos_r50_1x.py
+2024-03-17 20:04:28,903 - mmdet - INFO - Epoch(val) [12][619]	bbox_mAP: 0.4950, bbox_mAP_50: 0.7630, bbox_mAP_75: 0.5530, bbox_mAP_s: 0.3900, bbox_mAP_m: 0.5450, bbox_mAP_l: 0.6880, bbox_mAP_copypaste: 0.495 0.763 0.553 0.390 0.545 0.688

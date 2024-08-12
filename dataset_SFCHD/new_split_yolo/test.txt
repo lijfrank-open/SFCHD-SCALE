@@ -1,0 +1,6 @@
+/home/yfs/data/QY_final_dataset/images/192.168.11.13_neg_7c_2832.jpg
+/home/yfs/data/QY_final_dataset/images/192.168.2.35_neg_12c_362.jpg
+/home/yfs/data/QY_final_dataset/images/192.168.2.28_caiji_1_24.jpg
+/home/yfs/data/QY_final_dataset/images/192.168.2.221_400.jpg
+/home/yfs/data/QY_final_dataset/images/192.168.2.34_neg_12c_275.jpg
+/home/yfs/data/QY_final_dataset/images/192.168.2.220_480.jpg
