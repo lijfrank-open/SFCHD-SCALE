@@ -1,17 +1,16 @@
 # SFCHD-SCALE
 The dataset and code of the paper "[Large, Complex, and Realistic Safety Clothing and Helmet Detection: Dataset and Method](sfchd-scale.pdf)".  
-Authors: Fusheng Yu†, Jiang Li†, Xiaoping Wang, Shaojin Wu, Junjie Zhang, Zhigang Zeng († Equal Contribution)  
+Authors: Fusheng Yu†, Jiang Li†, Xiaoping Wang, Depeng Li, Xin Zhan, Shaojin Wu, Junjie Zhang († Equal Contribution)  
 Affiliation: Huazhong University of Science and Technology (HUST)  
 
 ## Citation
 ```bibtex
-@article{yu2024sfchd-scale,
+@article{yuli2025sfchd-scale,
   title={Large, Complex, and Realistic Safety Clothing and Helmet Detection: Dataset and Method},
-  author={Fusheng Yu and Jiang Li and Xiaoping Wang and Shaojin Wu and Junjie Zhang and Zhigang Zeng},
-  year={2024},
-  journal = {},
-  volume = {},
-  pages = {},
+  author={Fusheng Yu and Jiang Li and Xiaoping Wang and Depeng Li and Xin Zhan and Shaojin Wu and Junjie Zhang},
+  year={2025},
+  booktitle = {},
+  pages = {1-6},
   doi={}
 }
 ```
